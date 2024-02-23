@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BUILD_DIR: _build
+  INSTALL_DIR: _install
+  EXPORT_BUILD_DIR: _build_export
+
+jobs:
+
+  cmake_build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check-out code
+        uses: actions/checkout@v3
+
+      - name: Setup Intel oneAPI
+        uses: rscohn2/setup-oneapi@v0
+        with:
+          components: ifx
+
+      - name: Set compiler environment
+        run: echo "FC=ifx" >> ${GITHUB_ENV}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.14
+
+      - name: Setup Ninja
+        uses: ashutoshvarma/setup-ninja@v1.1
+
+      - name: Build Fortuno
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          cmake -B ${BUILD_DIR} -G Ninja -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          cmake --build ${BUILD_DIR}
+          cmake --install ${BUILD_DIR}
+
+      - name: Test CMake export
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${EXPORT_BUILD_DIR} -G Ninja test/export
+          cmake --build ${EXPORT_BUILD_DIR}
+          ${EXPORT_BUILD_DIR}/testapp
+
+      - name: Test PkgConfig export
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export LD_LIBRARY_PATH="${INSTALL_DIR}/lib:${LD_LIBRARY_PATH}"
+          export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+          cflags="$(pkg-config --cflags fortuno)"
+          lflags="$(pkg-config --libs fortuno)"
+          ifx  ${cflags} ${lflags} -o testapp test/export/testapp.f90
+          ./testapp
+          rm ./testapp
