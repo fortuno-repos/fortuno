@@ -8,7 +8,6 @@ project(
 )
 
 find_package(Fortuno REQUIRED)
-message(STATUS "Fortuno unit testing system: ${Fortuno_VERSION}")
 
-add_executable(testapp testapp.f90)
-target_link_libraries(testapp PRIVATE Fortuno::Fortuno)
+add_executable(testapp)
+add_subdirectory(app)
