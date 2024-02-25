@@ -1,3 +1,7 @@
+# This file is part of Fortuno.
+# Licensed under the BSD-2-Clause Plus Patent license.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+
 # Sets up the build type.
 function (fortuno_setup_build_type default_build_type)
 
