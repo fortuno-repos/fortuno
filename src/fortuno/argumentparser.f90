@@ -130,6 +130,8 @@ contains
     allocate(argumentvalues%argvals(0))
     allocate(posargs(0))
     optionsallowed = .true.
+
+    ! Process all arguments
     iarg = 0
     argloop: do while (iarg < nargs)
       iarg = iarg + 1
@@ -183,10 +185,20 @@ contains
         return
       end associate
     end do argloop
+
+    ! Check collected positional arguments
     associate (argdef => this%argdefs(nargdefs))
+      ! If the last argdef was not an option, store all position arguments under this name
       if (.not. allocated(argdef%longopt) .and. argdef%shortopt == "") then
-        argumentvalues%argvals = [argumentvalues%argvals,&
-            & argument_value(name=argdef%name, argval=string_list(posargs))]
+        ! argumentvalues%argvals = [argumentvalues%argvals,&
+        !     & argument_value(name=argdef%name, argval=string_list(posargs))]
+        ! Workaround:gfortran:13.2
+        block
+          class(*), allocatable :: tmp
+          tmp = string_list(posargs)
+          argumentvalues%argvals = [argumentvalues%argvals,&
+              & argument_value(name=argdef%name, argval=tmp)]
+        end block
       else if (size(posargs) > 1) then
         call logger%log_error("Superfluous positional arguments found")
         exitcode = 1
