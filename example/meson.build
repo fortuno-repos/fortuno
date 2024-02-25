@@ -1,3 +1,7 @@
+# This file is part of Fortuno.
+# Licensed under the BSD-2-Clause Plus Patent license.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+
 example_mylib_lib = library(
   'mylib',
   sources: ['mylib.f90'],
