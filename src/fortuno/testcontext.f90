@@ -129,8 +129,22 @@ contains
     allocate(failureinfo)
     call this%create_failure_location(failureinfo%location, file, line)
     if (present(msg)) failureinfo%message = msg
-    if (allocated(this%failureinfo_)) call move_alloc(this%failureinfo_, failureinfo%previous)
+    ! Workaround:ifx:2024.0
+    ! ifx crashes during compilation with optimization on the move_alloc statement.
+    ! if (allocated(this%failureinfo_)) call move_alloc(this%failureinfo_, failureinfo%previous)
+    if (allocated(this%failureinfo_)) call my_move_alloc(this%failureinfo_, failureinfo%previous)
     call move_alloc(failureinfo, this%failureinfo_)
+
+  contains
+
+    ! Workaround move_alloc function.
+    subroutine my_move_alloc(src, trg)
+      type(failure_info), allocatable, intent(inout) :: src
+      type(failure_info), allocatable, intent(out) :: trg
+
+      call move_alloc(src, trg)
+
+    end subroutine my_move_alloc
 
   end subroutine test_context_register_check
 
