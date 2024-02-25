@@ -227,23 +227,24 @@ detailed explanations, further features and use cases.
 Known issues
 ============
 
-In order to offer a simple user interface, and to be modular, flexible and
-extensible, Fortuno uses modern Fortran constructs extensively. Unfortunately,
-this seems to be still challenging for some Fortran compilers. The following
-table gives an overview over the compilers which were tested for building
-Fortuno.
+In order to offer a simple user interface and to allow for maximal reusability
+and extensibility, Fortuno uses object-oriented Fortran constructs extensively.
+Unfortunately, this is challenging for some older Fortran compilers. The
+following table gives an overview over the compilers which were successfully
+tested for building Fortuno. Make sure to use those compilers or any newer
+versions of them.
 
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
 | Intel 2024.0           | * serial: OK                                        |
-| x86_64/Linux           | * mpi (with Intel MPI): OK                          |
+|                        | * mpi: OK                                           |
 +------------------------+-----------------------------------------------------+
 | NAG 7.1 (build 7145)   | * serial: OK                                        |
-| x86_64/Linux           | * mpi (MPICH 4.1): OK                               |
+|                        | * mpi: OK                                           |
 +------------------------+-----------------------------------------------------+
-| GNU 13.2               | * serial: Fails (Internal compiler error)           |
-| x86_64/Linux           |                                                     |
+| GNU 12.2               | * serial: OK                                        |
+|                        | * mpi: OK                                           |
 +------------------------+-----------------------------------------------------+
 
 If you are aware of other compilers being able to build Fortuno, open a pull
