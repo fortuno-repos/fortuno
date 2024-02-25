@@ -1,0 +1,6 @@
+option(
+  'fortuno_subproject',
+  type: 'boolean',
+  value: false,
+  description: 'Obtain Fortuno from subproject not from external dependency'
+)
