@@ -22,11 +22,6 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/${FORTUNO_INSTALL_MODULEDIR}>
 )
 
-# ifx (as of version 2024.0.2) crashes when optimization is turned on
-if (${CMAKE_Fortran_COMPILER_ID} STREQUAL "IntelLLVM")
-  target_compile_options(Fortuno PRIVATE "-O0")
-endif ()
-
 if (FORTUNO_INSTALL)
   install(
     TARGETS Fortuno
