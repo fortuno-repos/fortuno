@@ -3,10 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: ['LICENSE', 'README.rst']
   pull_request:
     branches: [main]
-    paths-ignore: ['LICENSE', 'README.rst']
   workflow_dispatch:
 
 env:
