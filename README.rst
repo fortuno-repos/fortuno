@@ -24,8 +24,8 @@ special pre-processor.
 
 - parallel unit testing for MPI- and coarray-parallel projects, and
 
-- seamless integration with the `fpm <https://fpm.fortran-lang.org/>`_ and
-  `CMake <https://cmake.org/>`_ build systems.
+- integration with the `fpm <https://fpm.fortran-lang.org/>`_, `CMake
+  <https://cmake.org/>`_ and `Meson <https://mesonbuild.com/>`_ build systems.
 
 Detailed **documentation** is available on the `Fortuno documentation
 <https://fortuno.readthedocs.io>`_ page. You can also have a look at the
@@ -38,11 +38,22 @@ The development can be followed and joined at the `Fortuno project
 Quickstart
 ==========
 
+The following instructions demonstrate how to add unit testing via Fortuno to an
+existing project, which uses fpm, CMake or Meson as build system. If you are not
+familiar with any of these build systems, visit the `Fortuno documentation
+<https://fortuno.readthedocs.io>`_ for a step-by-step guide starting from
+scratch.
+
+In the examples below, we will assume that your library has a module ``mylib``,
+which provides a function ``factorial()`` for calculating the factorial of
+integers. Adapt those names to your actual library and routine names.
+
+
 Obtaining Fortuno
 -----------------
 
-The easiest way to obtain Fortuno is to download and to build it as part of your
-project's build process. The actual steps depend on your build system.
+The easiest way to obtain Fortuno is to download and build it as part of your
+project's build process. The actual steps depend on your build system:
 
 * **fpm:** Register Fortuno as a development dependency by adding the following
   lines to your ``fpm.toml`` file::
@@ -61,20 +72,35 @@ project's build process. The actual steps depend on your build system.
     )
     FetchContent_MakeAvailable(Fortuno)
 
+* **Meson:** Create the file ``fortuno.wrap`` in the ``subprojects/`` folder
+  of your project (create the folder, if it does not exist yet) with following
+  content::
+
+    [wrap-git]
+    directory=fortuno
+    url=https://github.com/fortuno-repos/fortuno
+    revision=main
+
+  Register Fortuno as a subproject by adding the following to your main
+  ``meson.build`` file::
+
+    fortuno_subproject = subproject('fortuno')
+    fortuno_dep = fortuno_subproject.get_variable('fortuno_dep')
+
 
 Writing unit tests
 ------------------
 
 For the basic cases, Fortuno unit tests are plain subroutines without any
-arguments. Additional to the unit test subroutines, you only need a minimal
-amount of code to register the tests in the test framework and to provide access
-to them via a command line test driver app.
+arguments. Apart of your test routines, you only need a minimal amount of code
+to register them in the test framework and to provide access to them via a
+command line test driver app.
 
-Given a hypothetical library ``mylib`` providing a function ``factorial()`` for
-calculating the factorial of integers, the minimal test program checking the
-results for two different input values could look as follows::
+Given the hypothetical library ``mylib`` providing the function ``factorial()``,
+the minimal test program checking the results for two different input values
+could look as follows::
 
-  ! testapp.f90
+  ! file: testapp.f90
 
   !> Test app driving Fortuno unit tests.
   program testapp
@@ -88,7 +114,7 @@ results for two different input values could look as follows::
     call execute_serial_cmd_app(&
         testitems=[&
             test("factorial_0", test_factorial_0),&
-            test("factorial_1", test_factorial_1),&
+            test("factorial_1", test_factorial_1)&
         ]&
     )
 
@@ -112,20 +138,20 @@ results for two different input values could look as follows::
 Bulding the test-driver app
 ---------------------------
 
-In order to run the unit tests, the test driver app must be built with your
+In order to run the unit tests, you must build the test driver app with your
 build system:
 
-* **fpm:** If you stored the test-driver app source (``testapp.f90``) in the
+* **fpm:** If you stored the test-driver app source ``testapp.f90`` in the
   ``test/`` folder, fpm will automatically compile it and link it with the
-  Fortuno library when you build your project::
+  Fortuno library when you build your project with ::
 
     fpm build
 
-* **CMake:** Register ``testapp.f90`` for compilation and add the
-  ``Fortuno::Fortuno`` target as dependency in the relevant ``CMakeLists.txt``
-  file. You would, of course, also have to specify your library (e.g. ``mylib``)
-  as dependency. Additionally, register the executable as a test, so that it can
-  be executed via ``ctest``::
+* **CMake:** Declare an executable ``testapp`` with ``testapp.f90`` as source
+  and target ``Fortuno::Fortuno`` as dependency in the ``CMakeLists.txt`` file.
+  Add also the target name of your library (e.g. ``mylib``) as dependency.
+  Additionally, register the executable as a test, so that it can be executed
+  via ``ctest``::
 
     add_executable(testapp testapp.f90)
     target_link_libraries(testapp PRIVATE mylib Fortuno::Fortuno)
@@ -140,23 +166,40 @@ build system:
     cmake -B _build
     cmake --build _build
 
+* **Meson:** Declare an executable ``testapp`` with ``testapp.f90`` as source
+  and ``fortuno_dep`` as dependency in the ``meson.build`` file. Add also your
+  library (e.g. ``mylib_dep``) as dependency::
+
+    testapp_exe = executable(
+      'testapp',
+      sources: ['testapp.f90'],
+      dependencies: [mylib_dep, fortuno_dep],
+    )
+    test('factorial', testapp_exe)
+
+  Build your project as usual::
+
+    meson setup _build
+    ninja -C _build
+
 
 Running the tests
 -----------------
 
-You run the units tests by executing the test app:
+You run the units tests by executing the test app via the testing feature of
+your build system:
 
-* **fpm:** Issue ::
+* **fpm:** ::
 
     fpm test
 
-* **CMake:** Run the CTest application::
+* **CMake:** ::
 
     ctest --verbose --test-dir _build
 
-  You might omit the ``--verbose`` option to suppress the detailed console
-  output of Fortuno. You will only see the final result of the testing procedure
-  then.
+* **Meson:** ::
+
+    meson test -v -C _build
 
 The result is communicated via the testapp's exit code to the build framework
 (zero for success, and non-zero for failure). Additionally, Fortuno logs details
@@ -174,36 +217,11 @@ to the console::
   === Succeeded ===
 
 
-The behavior of the test app can be influenced using command line options. In
-order to get a list of the registered tests, run the ``testapp`` executable with
-the `-l` option::
-
-  fpm test testapp -- -l   # with fpm
-
-  _build/test/testapp -l   # with CMake assuming testapp.f90 is in the test/ subfolder
-
-With the test app as defined above, you should obtain ::
-
-  factorial_0
-  factorial_1
-
-It is also possible to select (or deselect) the tests to run by passing their
-names as command line arguments (prefixed by ``~`` for deselection)::
-
-  # Run only the test 'factorial_0'
-  fpm test testapp -- factorial_0
-
-  # Run all tests except 'factorial_0'
-  fpm test testapp -- ~factorial_0
-
-
 Further information
 --------------------
 
-This quickstart contains only as much information as strictly necessary for
-starting with Fortuno. Please check out the `Fortuno documentation
-<https://fortuno.readthedocs.io>`_ for further use cases, examples and more
-detailed explanations.
+Check out the `Fortuno documentation <https://fortuno.readthedocs.io>`_ for more
+detailed explanations, further features and use cases.
 
 
 Known issues

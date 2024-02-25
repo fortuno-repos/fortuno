@@ -3,19 +3,20 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore: ['LICENSE', 'README.rst']
   pull_request:
     branches: [main]
+    paths-ignore: ['LICENSE', 'README.rst']
   workflow_dispatch:
 
 env:
   BUILD_DIR: _build
   INSTALL_DIR: _install
-  EXPORT_BUILD_DIR: _build_export
 
 jobs:
 
   #
-  # Builds and tests with CMake
+  # Test project on Ubuntu with Intel ifx compiler
   #
   ubuntu-ifx:
 
@@ -36,11 +37,9 @@ jobs:
           echo "FC=ifx" >> ${GITHUB_ENV}
           echo "FPM_FC=ifx" >> ${GITHUB_ENV}
 
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.14
-
-      - name: Setup Ninja
-        uses: ashutoshvarma/setup-ninja@v1.1
+      - name: Setup build tools
+        run: |
+          pip install cmake fpm meson ninja
 
       - name: Build Fortuno
         run: |
@@ -48,32 +47,56 @@ jobs:
           cmake -B ${BUILD_DIR} -G Ninja -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           cmake --build ${BUILD_DIR}
           cmake --install ${BUILD_DIR}
+          rm -rf ${BUILD_DIR}
 
       - name: Test CMake export
         run: |
           source /opt/intel/oneapi/setvars.sh
-          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${EXPORT_BUILD_DIR} -G Ninja test/export
-          cmake --build ${EXPORT_BUILD_DIR}
-          ${EXPORT_BUILD_DIR}/testapp
+          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export
+          cmake --build ${BUILD_DIR}
+          ${BUILD_DIR}/testapp
+          rm -rf ${BUILD_DIR}
 
       - name: Test PkgConfig export
         run: |
           source /opt/intel/oneapi/setvars.sh
-          export LD_LIBRARY_PATH="${INSTALL_DIR}/lib:${LD_LIBRARY_PATH}"
-          export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+          export LD_LIBRARY_PATH="${PWD}/${INSTALL_DIR}/lib:${LD_LIBRARY_PATH}"
+          export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
           cflags="$(pkg-config --cflags fortuno)"
           lflags="$(pkg-config --libs fortuno)"
-          ifx  ${cflags} ${lflags} -o testapp test/export/app/testapp.f90
+          mkdir ${BUILD_DIR}
+          pushd ${BUILD_DIR}
+          ifx  ${cflags} ${lflags} -o testapp ../test/export/app/testapp.f90
           ./testapp
-          rm ./testapp
-
-      - name: Setup fpm
-        uses: fortran-lang/setup-fpm@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          popd
+          rm -rf ${BUILD_DIR}
 
       - name: Test fpm export
         run: |
           source /opt/intel/oneapi/setvars.sh
           cd test/export
           fpm run testapp
+
+      - name: Test meson PkgConfig export
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+          cd test/export
+          meson setup -Dfortuno_subproject=false ${BUILD_DIR}
+          ninja -C ${BUILD_DIR}
+          ${BUILD_DIR}/testapp
+          rm -rf ./${BUILD_DIR}
+
+      - name: Test meson subproject export
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          FORTUNO_DIR=${PWD}
+          GIT_REV=$(git rev-parse HEAD)
+          cd test/export
+          mkdir subprojects
+          echo -e "[wrap-git]\ndirectory=fortuno\n" > subprojects/fortuno.wrap
+          echo -e "url=file://${FORTUNO_DIR}\nrevision=${GIT_REV}\n" >> subprojects/fortuno.wrap
+          meson setup -Dfortuno_subproject=true ${BUILD_DIR}
+          ninja -C ${BUILD_DIR}
+          ${BUILD_DIR}/testapp
+          rm -rf subprojects ${BUILD_DIR}
