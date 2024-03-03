@@ -54,30 +54,9 @@ endif ()
 fortuno_setup_build_type("RelWithDebInfo")
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 
-# Report configuration
-feature_summary(
-  FILENAME ${CMAKE_CURRENT_BINARY_DIR}/Fortuno.info
-  VAR Fortuno_Info
-  DESCRIPTION "Fortuno features and external libraries"
-  FATAL_ON_MISSING_REQUIRED_PACKAGES
-  WHAT ALL
-)
-message(STATUS ${Fortuno_Info})
-
 #[=================================================================================================[
 #                                 Main definition                                                 #
 ]=================================================================================================]
-
-add_library(Fortuno)
-set_target_properties(
-  Fortuno PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  # SOVERSION ${PROJECT_VERSION_MAJOR}
-  SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-  EXPORT_NAME Fortuno
-  OUTPUT_NAME fortuno
-)
-add_library(Fortuno::Fortuno ALIAS Fortuno)
 
 add_subdirectory(src)
 if (FORTUNO_BUILD_EXAMPLES)

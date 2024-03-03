@@ -2,6 +2,17 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
+add_library(Fortuno)
+set_target_properties(
+  Fortuno PROPERTIES
+  VERSION ${PROJECT_VERSION}
+  # SOVERSION ${PROJECT_VERSION_MAJOR}
+  SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+  EXPORT_NAME Fortuno
+  OUTPUT_NAME fortuno
+)
+add_library(Fortuno::Fortuno ALIAS Fortuno)
+
 target_sources(
   Fortuno PRIVATE
   fortuno.f90
