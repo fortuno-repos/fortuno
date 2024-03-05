@@ -1,0 +1,5 @@
+# This file is part of Fortuno.
+# Licensed under the BSD-2-Clause Plus Patent license.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+
+option('build_examples', type: 'boolean', value: false, description: 'Build examples')

@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BUILD_DIR: _build
+  INSTALL_DIR: _install
+
+jobs:
+
+  #
+  # Test Fortuno in various system configurations
+  #
+  fortuno-test:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        compiler: [intel, gnu]
+        exclude:
+          # MacOS has no Intel compiler
+          - os: macos-latest
+            compiler: intel
+
+    steps:
+
+      - name: Check-out code
+        uses: actions/checkout@v4
+
+      - name: Setup Intel compiler
+        if: ${{ contains(matrix.compiler, 'intel') }}
+        uses: rscohn2/setup-oneapi@v0
+        with:
+          components: ifx
+
+      - name: Setup Intel environment
+        if: ${{ contains(matrix.compiler, 'intel') }}
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> ${GITHUB_ENV}
+          echo "FC=ifx" >> ${GITHUB_ENV}
+          echo "FPM_FC=ifx" >> ${GITHUB_ENV}
+
+      - name: Setup GNU compiler
+        if: ${{ contains(matrix.compiler, 'gnu') }}
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: gcc
+          version: 13
+
+      - name: Setup GNU environment
+        if: ${{ contains(matrix.compiler, 'gnu') }}
+        run: |
+          echo "FC=${{ env.FC }}" >> ${GITHUB_ENV}
+          echo "FPM_FC=${{ env.FC }}" >> ${GITHUB_ENV}
+
+      - name: Setup build tools
+        run: |
+          pip install cmake fpm meson ninja
+
+      - name: Build Fortuno
+        run: |
+          cmake -B ${BUILD_DIR} -G Ninja -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          cmake --build ${BUILD_DIR}
+          cmake --install ${BUILD_DIR}
+          rm -rf ${BUILD_DIR}
+
+      - name: Test CMake export
+        run: |
+          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export
+          cmake --build ${BUILD_DIR}
+          ${BUILD_DIR}/testapp
+          rm -rf ${BUILD_DIR}
+
+      - name: Test fpm export
+        run: |
+          cd test/export
+          fpm run testapp
+
+      - name: Test Meson pkgconfig export
+        run: |
+          export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+          cd test/export
+          meson setup --wrap-mode nofallback ${BUILD_DIR}
+          ninja -C ${BUILD_DIR}
+          ${BUILD_DIR}/testapp
+          rm -rf ./${BUILD_DIR}
+
+      - name: Test Meson subproject export
+        run: |
+          FORTUNO_DIR=${PWD}
+          GIT_REV=$(git rev-parse HEAD)
+          cd test/export
+          mkdir subprojects
+          echo -e "[wrap-git]\ndirectory=fortuno\n" > subprojects/fortuno.wrap
+          echo -e "url=file://${FORTUNO_DIR}\nrevision=${GIT_REV}\n" >> subprojects/fortuno.wrap
+          meson setup --wrap-mode forcefallback ${BUILD_DIR}
+          ninja -C ${BUILD_DIR}
+          ${BUILD_DIR}/testapp
+          rm -rf subprojects ${BUILD_DIR}
