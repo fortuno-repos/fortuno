@@ -3,7 +3,7 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Various helper utilities for the different modules
-module fortuno_utils
+module fortuno_base_utils
   use iso_fortran_env, only : stderr => error_unit, stdout => output_unit
   implicit none
 
@@ -62,7 +62,7 @@ module fortuno_utils
 contains
 
   !> Returns the character representation of an integer value
-  function integer_as_char(val) result(repr)
+  pure function integer_as_char(val) result(repr)
 
     !> Integer value to represent
     integer, intent(in) :: val
@@ -95,4 +95,4 @@ contains
 
   end function basename
 
-end module fortuno_utils
+end module fortuno_base_utils

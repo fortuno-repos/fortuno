@@ -3,13 +3,13 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Implements a generic test driver
-module fortuno_testdriver
-  use fortuno_basetypes, only : test_item, test_base
-  use fortuno_basetypes, only : test_case_base, test_suite_base
-  use fortuno_testcontext, only : context_factory, test_context
-  use fortuno_testinfo, only : drive_result, init_drive_result, test_result, teststatus
-  use fortuno_testlogger, only : test_logger, testtypes
-  use fortuno_utils, only : basename, string
+module fortuno_base_testdriver
+  use fortuno_base_basetypes, only : test_item, test_base
+  use fortuno_base_basetypes, only : test_case_base, test_suite_base
+  use fortuno_base_testcontext, only : context_factory, test_context
+  use fortuno_base_testinfo, only : drive_result, init_drive_result, test_result, teststatus
+  use fortuno_base_testlogger, only : test_logger, testtypes
+  use fortuno_base_utils, only : basename, string
   implicit none
 
   private
@@ -405,30 +405,26 @@ contains
     class(test_runner), intent(inout) :: runner
     character(:), allocatable, intent(out) :: repr
 
-    associate (item => testitems(identifier(1))%item)
-      block
-        class(test_base), pointer :: scopeptr
+    class(test_base), pointer :: scopeptr
 
-        scopeptr => item
-        call ctx%push_scope_ptr(scopeptr)
-        if (size(identifier) == 1) then
-          select type (item)
-          class is (test_case_base)
-            call runner%run_test(item, ctx)
-            call item%get_as_char(repr)
-          class default
-            error stop "Internal error, unexpected test type in run_test_"
-          end select
-        else
-          select type (item)
-          class is (test_suite_base)
-            call run_test_(item%items, identifier(2:), ctx, runner, repr)
-          class default
-            error stop "Internal error, unexpected test type in run_test_"
-          end select
-        end if
-      end block
-    end associate
+    scopeptr => testitems(identifier(1))%item
+    call ctx%push_scope_ptr(scopeptr)
+    if (size(identifier) == 1) then
+      select type (item => testitems(identifier(1))%item)
+      class is (test_case_base)
+        call runner%run_test(item, ctx)
+        call item%get_as_char(repr)
+      class default
+        error stop "Internal error, unexpected test type in run_test_"
+      end select
+    else
+      select type (item => testitems(identifier(1))%item)
+      class is (test_suite_base)
+        call run_test_(item%items, identifier(2:), ctx, runner, repr)
+      class default
+        error stop "Internal error, unexpected test type in run_test_"
+      end select
+    end if
 
   end subroutine run_test_
 
@@ -442,29 +438,25 @@ contains
     class(test_runner), intent(inout) :: runner
     character(:), allocatable, intent(out) :: repr
 
-    associate (item => testitems(identifier(1))%item)
-      block
-        class(test_base), pointer :: scopeptr
+    class(test_base), pointer :: scopeptr
 
-        scopeptr => item
-        call ctx%push_scope_ptr(scopeptr)
-        select type (item)
-        class is (test_suite_base)
-          if (size(identifier) == 1) then
-            if (init) then
-              call runner%set_up_suite(item, ctx)
-              call item%get_as_char(repr)
-            else
-              call runner%tear_down_suite(item, ctx)
-            end if
-          else
-            call initialize_finalize_suite_(item%items, identifier(2:), init, ctx, runner, repr)
-          end if
-        class default
-          error stop "Internal error, unexpected test type in initialize_finalize_suite_"
-        end select
-      end block
-    end associate
+    scopeptr => testitems(identifier(1))%item
+    call ctx%push_scope_ptr(scopeptr)
+    select type (item => testitems(identifier(1))%item)
+    class is (test_suite_base)
+      if (size(identifier) == 1) then
+        if (init) then
+          call runner%set_up_suite(item, ctx)
+          call item%get_as_char(repr)
+        else
+          call runner%tear_down_suite(item, ctx)
+        end if
+      else
+        call initialize_finalize_suite_(item%items, identifier(2:), init, ctx, runner, repr)
+      end if
+    class default
+      error stop "Internal error, unexpected test type in initialize_finalize_suite_"
+    end select
 
   end subroutine initialize_finalize_suite_
 
@@ -549,4 +541,4 @@ contains
 
   end subroutine get_selected_suites_and_tests_
 
-end module fortuno_testdriver
+end module fortuno_base_testdriver

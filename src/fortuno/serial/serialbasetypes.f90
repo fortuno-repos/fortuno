@@ -4,7 +4,7 @@
 
 !> Contains base type for serial test suites
 module fortuno_serial_serialbasetypes
-  use fortuno_basetypes, only : test_case_base, test_suite_base
+  use fortuno_base_basetypes, only : test_case_base, test_suite_base
   implicit none
 
   private

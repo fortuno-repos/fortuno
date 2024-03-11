@@ -3,7 +3,7 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains base classes for itemizable test objects
-module fortuno_basetypes
+module fortuno_base_basetypes
   implicit none
 
   private
@@ -71,4 +71,4 @@ contains
 
   end subroutine test_base_get_as_char
 
-end module fortuno_basetypes
+end module fortuno_base_basetypes

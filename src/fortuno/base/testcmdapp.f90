@@ -3,13 +3,13 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains common code used by the various command line apps
-module fortuno_testcmdapp
-  use fortuno_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
+module fortuno_base_testcmdapp
+  use fortuno_base_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
       & init_argument_parser
-  use fortuno_basetypes, only : test_item
-  use fortuno_utils, only : string
-  use fortuno_testdriver, only : test_driver, test_selection
-  use fortuno_testlogger, only : test_logger
+  use fortuno_base_basetypes, only : test_item
+  use fortuno_base_utils, only : string
+  use fortuno_base_testdriver, only : test_driver, test_selection
+  use fortuno_base_testlogger, only : test_logger
   implicit none
 
   private
@@ -177,4 +177,4 @@ contains
 
   end function default_argument_defs
 
-end module fortuno_testcmdapp
+end module fortuno_base_testcmdapp

@@ -4,7 +4,7 @@
 
 !> Contains a trivial implementation for a serial suite
 module fortuno_serial_serialsuite
-  use fortuno_basetypes, only : test_item
+  use fortuno_base_basetypes, only : test_item
   use fortuno_serial_serialbasetypes, only : serial_suite_base
   implicit none
 

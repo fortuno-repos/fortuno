@@ -3,8 +3,8 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains a generic logger to be overriden by specific implementations
-module fortuno_testlogger
-  use fortuno_testinfo, only : drive_result, test_result
+module fortuno_base_testlogger
+  use fortuno_base_testinfo, only : drive_result, test_result
   implicit none
 
   private
@@ -148,4 +148,4 @@ module fortuno_testlogger
 
   end interface
 
-end module fortuno_testlogger
+end module fortuno_base_testlogger

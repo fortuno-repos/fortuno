@@ -4,10 +4,10 @@
 
 !> Contains the command line app for driving serial tests
 module fortuno_serial_serialcmdapp
-  use fortuno_basetypes, only : test_item
+  use fortuno_base_basetypes, only : test_item
   use fortuno_serial_serialdriver, only : init_serial_driver, serial_driver
   use fortuno_serial_serialconlogger, only : serial_console_logger
-  use fortuno_testcmdapp, only : test_cmd_app
+  use fortuno_base_testcmdapp, only : test_cmd_app
   implicit none
 
   private
