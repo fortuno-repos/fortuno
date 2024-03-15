@@ -221,31 +221,32 @@ Check out the `Fortuno documentation <https://fortuno.readthedocs.io>`_ for more
 detailed explanations, further features and use cases.
 
 
-Known issues
-============
+Compiler compatibility
+======================
 
 In order to offer a simple user interface and to allow for maximal reusability
-and extensibility, Fortuno uses object-oriented Fortran constructs extensively.
-Unfortunately, this is challenging for some older Fortran compilers. The
-following table gives an overview over the compilers which were successfully
-tested for building Fortuno. Make sure to use those compilers or any newer
-versions of them.
+and extensibility, Fortuno uses modern Fortran constructs extensively. Building
+Fortuno requires a compiler with Fortran 2018 support. The following table gives
+an overview over the compilers which were successfully tested for building
+Fortuno. We recommend to use those compilers or any newer versions of them.
 
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
 | Intel 2024.0           | * serial: OK                                        |
 |                        | * mpi: OK                                           |
+|                        | * coarray: OK                                       |
 +------------------------+-----------------------------------------------------+
-| NAG 7.1 (build 7145)   | * serial: OK                                        |
+| NAG 7.2 (build 7202)   | * serial: OK                                        |
 |                        | * mpi: OK                                           |
+|                        | * coarray: OK                                       |
 +------------------------+-----------------------------------------------------+
-| GNU 12.2               | * serial: OK                                        |
+| GNU 13.2               | * serial: OK                                        |
 |                        | * mpi: OK                                           |
 +------------------------+-----------------------------------------------------+
 
-If you are aware of other compilers being able to build Fortuno, open a pull
-request, so that we can update the table accordingly.
+If you are aware of any other compilers being able to build Fortuno, open a pull
+request to update the table.
 
 
 License
