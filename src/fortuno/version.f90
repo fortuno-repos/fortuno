@@ -3,8 +3,8 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains version information
-module fortuno_base_version
-  use fortuno_base_utils, only : as_char
+module fortuno_version
+  use fortuno_utils, only : as_char
   implicit none
 
   private
@@ -27,4 +27,4 @@ contains
 
   end function version_string
 
-end module fortuno_base_version
+end module fortuno_version

@@ -3,7 +3,7 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Various helper utilities for the different modules
-module fortuno_base_utils
+module fortuno_utils
   use iso_fortran_env, only : stderr => error_unit, stdout => output_unit
   implicit none
 
@@ -95,4 +95,4 @@ contains
 
   end function basename
 
-end module fortuno_base_utils
+end module fortuno_utils

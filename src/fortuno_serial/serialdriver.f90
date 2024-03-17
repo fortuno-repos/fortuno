@@ -4,13 +4,12 @@
 
 !> Implements a driver for serial tests
 module fortuno_serial_serialdriver
-  use fortuno_base_basetypes, only : test_case_base, test_suite_base
+  use fortuno, only : init_test_driver, test_case_base, test_context, test_driver,&
+      & test_runner, test_suite_base
   use fortuno_serial_serialbasetypes, only : as_serial_case_base, as_serial_suite_base,&
       & serial_case_base, serial_suite_base
   use fortuno_serial_serialcontext, only : as_serial_context, serial_context, serial_context_factory
   use fortuno_serial_serialglobalctx, only : set_serial_global_context
-  use fortuno_base_testcontext, only : test_context
-  use fortuno_base_testdriver, only : init_test_driver, test_driver, test_runner
   implicit none
 
   private

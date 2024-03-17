@@ -35,11 +35,11 @@ The development can be followed and joined at the `Fortuno project
 Quickstart
 ==========
 
-The following instructions demonstrate how to add unit testing via Fortuno to an
-existing project, which uses fpm, CMake or Meson as build system. If you are not
-familiar with any of these build systems, visit the `Fortuno documentation
-<https://fortuno.readthedocs.io>`_ for a step-by-step guide starting from
-scratch.
+The following instructions demonstrate how to add unit tests testing serial code
+via Fortuno to an existing project, which uses fpm, CMake or Meson as build
+system. If you are not familiar with any of these build systems, visit the
+`Fortuno documentation <https://fortuno.readthedocs.io>`_ for a step-by-step
+guide starting from scratch.
 
 In the examples below, we will assume that your library has a module ``mylib``,
 which provides a function ``factorial()`` for calculating the factorial of
@@ -81,8 +81,7 @@ project's build process. The actual steps depend on your build system:
   Register Fortuno as a subproject by adding the following to your main
   ``meson.build`` file::
 
-    fortuno_subproject = subproject('fortuno')
-    fortuno_dep = fortuno_subproject.get_variable('fortuno_dep')
+    fortuno_serial_dep = dependency('fortuno-serial', fallback: ['fortuno', 'fortuno_serial_dep'])
 
 
 Writing unit tests
@@ -102,8 +101,8 @@ could look as follows::
   !> Test app driving Fortuno unit tests.
   program testapp
     use mylib, only : factorial
-    use fortuno, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
-        check => serial_check
+    use fortuno_serial, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
+        & check => serial_check
     implicit none
 
     !> Register tests by providing name and subroutine to run for each test.
@@ -145,13 +144,13 @@ build system:
     fpm build
 
 * **CMake:** Declare an executable ``testapp`` with ``testapp.f90`` as source
-  and target ``Fortuno::Fortuno`` as dependency in the ``CMakeLists.txt`` file.
-  Add also the target name of your library (e.g. ``mylib``) as dependency.
+  and target ``Fortuno::fortuno_serial`` as dependency in the ``CMakeLists.txt``
+  file. Add also the target name of your library (e.g. ``mylib``) as dependency.
   Additionally, register the executable as a test, so that it can be executed
   via ``ctest``::
 
     add_executable(testapp testapp.f90)
-    target_link_libraries(testapp PRIVATE mylib Fortuno::Fortuno)
+    target_link_libraries(testapp PRIVATE mylib Fortuno::fortuno_serial)
     add_test(NAME factorial COMMAND testapp)
 
   Make also sure to call ``enable_testing()`` in your main ``CMakeLists.txt``
@@ -170,7 +169,7 @@ build system:
     testapp_exe = executable(
       'testapp',
       sources: ['testapp.f90'],
-      dependencies: [mylib_dep, fortuno_dep],
+      dependencies: [mylib_dep, fortuno_serial_dep],
     )
     test('factorial', testapp_exe)
 
@@ -243,6 +242,7 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 +------------------------+-----------------------------------------------------+
 | GNU 13.2               | * serial: OK                                        |
 |                        | * mpi: OK                                           |
+|                        | * coarray: not tested yet                           |
 +------------------------+-----------------------------------------------------+
 
 If you are aware of any other compilers being able to build Fortuno, open a pull

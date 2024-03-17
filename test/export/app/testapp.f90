@@ -4,7 +4,7 @@
 
 !> Test app driving Fortuno unit tests
 program testapp
-  use fortuno, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
+  use fortuno_serial, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
       check => serial_check
   implicit none
 

@@ -3,9 +3,9 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains the base context definition
-module fortuno_base_testcontext
-  use fortuno_base_basetypes, only : test_base, test_ptr_item
-  use fortuno_base_testinfo, only : check_result, failure_info, failure_location, init_failure_location,&
+module fortuno_testcontext
+  use fortuno_basetypes, only : test_base, test_ptr_item
+  use fortuno_testinfo, only : check_result, failure_info, failure_location, init_failure_location,&
       & teststatus
   implicit none
 
@@ -311,4 +311,4 @@ contains
 
   end subroutine test_context_create_failure_location
 
-end module fortuno_base_testcontext
+end module fortuno_testcontext

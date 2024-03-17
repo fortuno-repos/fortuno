@@ -2,4 +2,6 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
+option('build_serial_interface', type: 'boolean', value: true, description: 'Build serial interface')
+
 option('build_examples', type: 'boolean', value: false, description: 'Build examples')

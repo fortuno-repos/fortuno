@@ -3,8 +3,8 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Types containing informations about tests and checks
-module fortuno_base_testinfo
-  use fortuno_base_utils, only : as_char, nl
+module fortuno_testinfo
+  use fortuno_utils, only : as_char, nl
   implicit none
 
   private
@@ -242,4 +242,4 @@ contains
 
   end subroutine drive_result_calculate_stats
 
-end module fortuno_base_testinfo
+end module fortuno_testinfo

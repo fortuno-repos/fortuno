@@ -4,9 +4,8 @@
 
 module fixtured_tests
   use mylib, only : factorial
-  use fortuno, only : check => serial_check, test => serial_case_item,&
-      & suite => serial_suite_item, test_item, test_ptr_item,&
-      & serial_suite, serial_case_base
+  use fortuno_serial, only : check => serial_check, test => serial_case_item,&
+      & suite => serial_suite_item, serial_case_base, test_item
   implicit none
 
   private

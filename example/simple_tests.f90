@@ -4,7 +4,7 @@
 
 module simple_tests
   use mylib, only : factorial
-  use fortuno, only : is_equal, test => serial_case_item, check => serial_check,&
+  use fortuno_serial, only : is_equal, test => serial_case_item, check => serial_check,&
       & suite => serial_suite_item, test_item
   implicit none
 

@@ -3,9 +3,9 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains some built-in checkers
-module fortuno_base_checkers
-  use fortuno_base_testinfo, only : check_result, failure_details
-  use fortuno_base_utils, only : as_char, nl
+module fortuno_checkers
+  use fortuno_testinfo, only : check_result, failure_details
+  use fortuno_utils, only : as_char, nl
   implicit none
 
   private
@@ -68,4 +68,4 @@ contains
 
   end function is_equal_i0_i0
 
-end module fortuno_base_checkers
+end module fortuno_checkers

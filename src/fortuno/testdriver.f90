@@ -3,13 +3,13 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Implements a generic test driver
-module fortuno_base_testdriver
-  use fortuno_base_basetypes, only : test_item, test_base
-  use fortuno_base_basetypes, only : test_case_base, test_suite_base
-  use fortuno_base_testcontext, only : context_factory, test_context
-  use fortuno_base_testinfo, only : drive_result, init_drive_result, test_result, teststatus
-  use fortuno_base_testlogger, only : test_logger, testtypes
-  use fortuno_base_utils, only : basename, string
+module fortuno_testdriver
+  use fortuno_basetypes, only : test_item, test_base
+  use fortuno_basetypes, only : test_case_base, test_suite_base
+  use fortuno_testcontext, only : context_factory, test_context
+  use fortuno_testinfo, only : drive_result, init_drive_result, test_result, teststatus
+  use fortuno_testlogger, only : test_logger, testtypes
+  use fortuno_utils, only : basename, string
   implicit none
 
   private
@@ -541,4 +541,4 @@ contains
 
   end subroutine get_selected_suites_and_tests_
 
-end module fortuno_base_testdriver
+end module fortuno_testdriver

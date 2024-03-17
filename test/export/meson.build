@@ -2,28 +2,22 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-### Project definition ###
-
 project(
   'fortuno_test_export',
   'fortran',
   version: '0.0.0',
 )
 
-### Getting dependencies ###
-
 testapp_deps = []
 
-fortuno_dep = dependency('fortuno', fallback: ['fortuno', 'fortuno_dep'])
-testapp_deps += fortuno_dep
+fortuno_serial_dep = dependency('fortuno-serial', fallback: ['fortuno', 'fortuno_serial_dep'])
+testapp_deps += fortuno_serial_dep
 
-### Building the app ###
-
-testapp_srcs = []
+testapp_sources = []
 subdir('app')
 
 testapp_exe = executable(
   'testapp',
-  sources: testapp_srcs,
+  sources: testapp_sources,
   dependencies: testapp_deps,
 )

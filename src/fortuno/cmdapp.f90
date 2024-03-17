@@ -3,41 +3,41 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains common code used by the various command line apps
-module fortuno_base_testcmdapp
-  use fortuno_base_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
+module fortuno_cmdapp
+  use fortuno_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
       & init_argument_parser
-  use fortuno_base_basetypes, only : test_item
-  use fortuno_base_utils, only : string
-  use fortuno_base_testdriver, only : test_driver, test_selection
-  use fortuno_base_testlogger, only : test_logger
+  use fortuno_basetypes, only : test_item
+  use fortuno_utils, only : string
+  use fortuno_testdriver, only : test_driver, test_selection
+  use fortuno_testlogger, only : test_logger
   implicit none
 
   private
-  public :: test_cmd_app
+  public :: cmd_app
   public :: get_selections
   public :: default_argument_defs
 
 
-  !> App for driving tests through command line app
-  type :: test_cmd_app
+  !> App for driving tests through command line interface app
+  type :: cmd_app
     class(test_logger), allocatable :: logger
     class(test_driver), allocatable :: driver
     type(argument_values) :: argvals
   contains
-    procedure :: run => test_cmd_app_run
-    procedure :: parse_args => test_cmd_app_parse_args
-    procedure :: register_tests => test_cmd_app_register_tests
-    procedure :: run_tests => test_cmd_app_run_tests
-  end type test_cmd_app
+    procedure :: run => cmd_app_run
+    procedure :: parse_args => cmd_app_parse_args
+    procedure :: register_tests => cmd_app_register_tests
+    procedure :: run_tests => cmd_app_run_tests
+  end type cmd_app
 
 
 contains
 
-  !> Runs the command line app (calls parse_args(), register_tests() and run_tests())
-  subroutine test_cmd_app_run(this, testitems, exitcode)
+  !> Runs the command line interface app (calls parse_args(), register_tests() and run_tests())
+  subroutine cmd_app_run(this, testitems, exitcode)
 
     !> Instance
-    class(test_cmd_app), intent(inout) :: this
+    class(cmd_app), intent(inout) :: this
 
     !> Test items to be considered by the app
     type(test_item), intent(in) :: testitems(:)
@@ -51,14 +51,14 @@ contains
     if (exitcode >= 0) return
     call this%run_tests(exitcode)
 
-  end subroutine test_cmd_app_run
+  end subroutine cmd_app_run
 
 
   !> Parses the command line arguments
-  subroutine test_cmd_app_parse_args(this, exitcode)
+  subroutine cmd_app_parse_args(this, exitcode)
 
     !> Instance
-    class(test_cmd_app), intent(inout) :: this
+    class(cmd_app), intent(inout) :: this
 
     !> Exit code (-1 if processing can continue, >=0 if program should stop with that exit code)
     integer, intent(out) :: exitcode
@@ -71,14 +71,14 @@ contains
         & )
     call argparser%parse_args(this%argvals, this%logger, exitcode)
 
-  end subroutine test_cmd_app_parse_args
+  end subroutine cmd_app_parse_args
 
 
   !> Register all tests which should be considered
-  subroutine test_cmd_app_register_tests(this, testitems, exitcode)
+  subroutine cmd_app_register_tests(this, testitems, exitcode)
 
     !> Initialized instance on exit
-    class(test_cmd_app), intent(inout) :: this
+    class(cmd_app), intent(inout) :: this
 
     !> Items to be considered by the app
     type(test_item), intent(in) :: testitems(:)
@@ -106,14 +106,14 @@ contains
       return
     end if
 
-  end subroutine test_cmd_app_register_tests
+  end subroutine cmd_app_register_tests
 
 
   !> Runs the initialized app
-  subroutine test_cmd_app_run_tests(this, exitcode)
+  subroutine cmd_app_run_tests(this, exitcode)
 
     !> Instance
-    class(test_cmd_app), intent(inout) :: this
+    class(cmd_app), intent(inout) :: this
 
     !> Exit code of the test run (0 - success, 1 - failure)
     integer, intent(out) :: exitcode
@@ -127,7 +127,7 @@ contains
       exitcode = 1
     end if
 
-  end subroutine test_cmd_app_run_tests
+  end subroutine cmd_app_run_tests
 
 
   !> Converts test selector expressions to test selections
@@ -177,4 +177,4 @@ contains
 
   end function default_argument_defs
 
-end module fortuno_base_testcmdapp
+end module fortuno_cmdapp

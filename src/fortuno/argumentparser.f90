@@ -3,9 +3,9 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Implements a simple command line argument parser
-module fortuno_base_argumentparser
-  use fortuno_base_testlogger, only : test_logger
-  use fortuno_base_utils, only : basename, nl, string, string_list
+module fortuno_argumentparser
+  use fortuno_testlogger, only : test_logger
+  use fortuno_utils, only : basename, nl, string, string_list
   implicit none
 
   type :: argument_types_enum_
@@ -376,4 +376,4 @@ contains
 
   end subroutine print_argument_help_
 
-end module fortuno_base_argumentparser
+end module fortuno_argumentparser

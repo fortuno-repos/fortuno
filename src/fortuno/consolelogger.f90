@@ -3,10 +3,10 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Contains the implementation of the test logger for logging on the console
-module fortuno_base_consolelogger
-  use fortuno_base_testinfo, only : drive_result, failure_info, test_result, teststatus
-  use fortuno_base_testlogger, only : test_logger, testtypes
-  use fortuno_base_utils, only : ansicolors, as_char, stderr, stdout
+module fortuno_consolelogger
+  use fortuno_testinfo, only : drive_result, failure_info, test_result, teststatus
+  use fortuno_testlogger, only : test_logger, testtypes
+  use fortuno_utils, only : ansicolors, as_char, stderr, stdout
   implicit none
 
   private
@@ -420,4 +420,4 @@ contains
 
   end subroutine log_success_
 
-end module fortuno_base_consolelogger
+end module fortuno_consolelogger

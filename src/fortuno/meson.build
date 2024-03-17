@@ -2,9 +2,16 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-fortuno_srcs += files(
-  'base.f90',
-  'serial.f90',
+fortuno_sources += files(
+  'argumentparser.f90',
+  'basetypes.f90',
+  'checkers.f90',
+  'cmdapp.f90',
+  'consolelogger.f90',
+  'testcontext.f90',
+  'testdriver.f90',
+  'testinfo.f90',
+  'testlogger.f90',
+  'utils.f90',
+  'version.f90',
 )
-subdir('base')
-subdir('serial')

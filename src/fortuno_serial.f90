@@ -2,8 +2,9 @@
 ! Licensed under the BSD-2-Clause Plus Patent license.
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
-!> Interface module for the serial part of the Fortuno testing framework
+!> Interface module for the Fortuno testing framework with the serial interface.
 module fortuno_serial
+  use fortuno
   use fortuno_serial_serialbasetypes, only : serial_case_base, serial_suite_base
   use fortuno_serial_serialcmdapp, only : execute_serial_cmd_app, init_serial_cmd_app,&
       & serial_cmd_app

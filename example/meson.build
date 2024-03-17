@@ -18,6 +18,6 @@ example_testapp_exe = executable(
     'simple_tests.f90',
     'testapp.f90',
   ],
-  dependencies: [example_mylib_dep, fortuno_dep],
+  dependencies: [example_mylib_dep, fortuno_serial_dep],
   install: false,
 )

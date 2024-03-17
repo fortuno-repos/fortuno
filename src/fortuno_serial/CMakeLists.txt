@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
 target_sources(
-  Fortuno PRIVATE
+  fortuno_serial PRIVATE
   serialbasetypes.f90
   serialcase.f90
   serialcmdapp.f90
