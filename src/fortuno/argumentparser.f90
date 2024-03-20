@@ -8,6 +8,10 @@ module fortuno_argumentparser
   use fortuno_utils, only : basename, nl, string, string_list
   implicit none
 
+  private
+  public :: argtypes, argument_def, argument_values, argument_parser, init_argument_parser
+
+  ! Helper type for argument types
   type :: argument_types_enum_
     integer :: bool = 1
     integer :: int = 2
@@ -16,6 +20,7 @@ module fortuno_argumentparser
     integer :: stringlist = 5
   end type argument_types_enum_
 
+  !> Possible argument types
   type(argument_types_enum_), parameter :: argtypes = argument_types_enum_()
 
 
@@ -112,7 +117,6 @@ contains
 
     !> Exit code (-1, if processing can continue, >= 0 if processing should stop)
     integer, intent(out) :: exitcode
-
 
     type(string), allocatable :: cmdargs(:), posargs(:)
     logical, allocatable :: processed(:)

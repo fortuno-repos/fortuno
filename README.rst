@@ -134,8 +134,8 @@ could look as follows::
 Bulding the test-driver app
 ---------------------------
 
-In order to run the unit tests, you must build the test driver app with your
-build system:
+In order to run the unit tests, you must first build the test driver app with
+your build system:
 
 * **fpm:** If you stored the test-driver app source ``testapp.f90`` in the
   ``test/`` folder, fpm will automatically compile it and link it with the
@@ -163,8 +163,8 @@ build system:
     cmake --build _build
 
 * **Meson:** Declare an executable ``testapp`` with ``testapp.f90`` as source
-  and ``fortuno_dep`` as dependency in the ``meson.build`` file. Add also your
-  library (e.g. ``mylib_dep``) as dependency::
+  and ``fortuno_serial_dep`` as dependency in the ``meson.build`` file. Add also
+  your library (e.g. ``mylib_dep``) as dependency::
 
     testapp_exe = executable(
       'testapp',

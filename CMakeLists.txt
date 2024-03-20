@@ -12,6 +12,7 @@
 cmake_minimum_required(VERSION 3.22...3.28)
 
 list(APPEND CMAKE_MESSAGE_CONTEXT Fortuno)
+
 project(
   Fortuno
   VERSION 0.1.0
@@ -48,17 +49,17 @@ option(FORTUNO_INSTALL "Fortuno: Install project" ${PROJECT_IS_TOP_LEVEL})
 
 set(
   FORTUNO_INSTALL_MODULEDIR "modules" CACHE STRING
-  "Fortuno: Sub-directory to install the Fortran module files into (relative to CMAKE_INSTALL_LIBDIR)"
+  "Fortuno: Sub-directory for installed Fortran module files (relative to CMAKE_INSTALL_LIBDIR)"
 )
 
 set(
   FORTUNO_THREAD_SAFE_FLAGS "" CACHE STRING
-  "Fortuno: Flags for enforcing thread-safe build during compilation"
+  "Fortuno: Flags needed to enforce thread-safe build during compilation"
 )
 
 set(
   FORTUNO_THREAD_SAFE_LINK_FLAGS "" CACHE STRING
-  "Fortuno: Flags for enforcing thread-safe build durink linkage"
+  "Fortuno: Flags neeeded to enforce thread-safe build durink linkage"
 )
 
 #[=================================================================================================[

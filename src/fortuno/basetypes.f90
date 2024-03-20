@@ -60,6 +60,7 @@ module fortuno_basetypes
 
 contains
 
+
   !> Delivers the character representation of the internal state of a test object
   subroutine test_base_get_as_char(this, repr)
 

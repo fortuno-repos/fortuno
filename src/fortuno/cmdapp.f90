@@ -118,8 +118,6 @@ contains
     !> Exit code of the test run (0 - success, 1 - failure)
     integer, intent(out) :: exitcode
 
-    logical :: exitonfailure_
-
     call this%driver%run_tests(this%logger)
     if (this%driver%driveresult%successful) then
       exitcode = 0

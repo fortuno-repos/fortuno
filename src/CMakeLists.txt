@@ -4,7 +4,7 @@
 
 set(_installed_targets)
 
-# Store generated mod-files in a separate folder
+# Folder for generated mod-files
 set(moduledir "${CMAKE_CURRENT_BINARY_DIR}/modules")
 
 add_library(fortuno)

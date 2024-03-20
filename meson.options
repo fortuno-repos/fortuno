@@ -5,3 +5,13 @@
 option('build_serial_interface', type: 'boolean', value: true, description: 'Build serial interface')
 
 option('build_examples', type: 'boolean', value: false, description: 'Build examples')
+
+option(
+  'thread_safe_flags', type: 'array', value: [],
+  description: 'Fortran compiler arguments to use when compiling thread-safe sources'
+)
+
+option(
+  'thread_safe_link_flags', type: 'array', value: [],
+  description: 'Linker arguments to use when linking thread-safe sources'
+)

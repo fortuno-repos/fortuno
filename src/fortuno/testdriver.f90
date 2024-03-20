@@ -479,7 +479,7 @@ contains
 
     associate (testresult => testresults(ind))
       name = basename(testresult%name)
-      if (allocated(repr)) name = name // "{" // repr // "}"
+      if (allocated(repr)) name = name // " {" // repr // "}"
       if (size(testresult%dependencies) > 0) then
         testresult%reprname = depresults(testresult%dependencies(1))%reprname // "/" // name
       else
@@ -490,6 +490,7 @@ contains
   end subroutine set_repr_name_
 
 
+  !! Returns indices of selected suites and tests.
   subroutine get_selected_suites_and_tests_(suitedata, testdata, selectedsuites, selectedtests,&
         & selections)
     type(test_data), intent(in) :: suitedata(:), testdata(:)

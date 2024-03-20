@@ -156,6 +156,7 @@ module fortuno_testinfo
 
 contains
 
+
   !> Initializes a failure location instance
   subroutine init_failure_location(this, checknr, file, line)
 
