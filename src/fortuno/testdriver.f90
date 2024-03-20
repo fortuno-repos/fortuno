@@ -405,30 +405,26 @@ contains
     class(test_runner), intent(inout) :: runner
     character(:), allocatable, intent(out) :: repr
 
-    associate (item => testitems(identifier(1))%item)
-      block
-        class(test_base), pointer :: scopeptr
+    class(test_base), pointer :: scopeptr
 
-        scopeptr => item
-        call ctx%push_scope_ptr(scopeptr)
-        if (size(identifier) == 1) then
-          select type (item)
-          class is (test_case_base)
-            call runner%run_test(item, ctx)
-            call item%get_as_char(repr)
-          class default
-            error stop "Internal error, unexpected test type in run_test_"
-          end select
-        else
-          select type (item)
-          class is (test_suite_base)
-            call run_test_(item%items, identifier(2:), ctx, runner, repr)
-          class default
-            error stop "Internal error, unexpected test type in run_test_"
-          end select
-        end if
-      end block
-    end associate
+    scopeptr => testitems(identifier(1))%item
+    call ctx%push_scope_ptr(scopeptr)
+    if (size(identifier) == 1) then
+      select type (item => testitems(identifier(1))%item)
+      class is (test_case_base)
+        call runner%run_test(item, ctx)
+        call item%get_as_char(repr)
+      class default
+        error stop "Internal error, unexpected test type in run_test_"
+      end select
+    else
+      select type (item => testitems(identifier(1))%item)
+      class is (test_suite_base)
+        call run_test_(item%items, identifier(2:), ctx, runner, repr)
+      class default
+        error stop "Internal error, unexpected test type in run_test_"
+      end select
+    end if
 
   end subroutine run_test_
 
@@ -442,29 +438,25 @@ contains
     class(test_runner), intent(inout) :: runner
     character(:), allocatable, intent(out) :: repr
 
-    associate (item => testitems(identifier(1))%item)
-      block
-        class(test_base), pointer :: scopeptr
+    class(test_base), pointer :: scopeptr
 
-        scopeptr => item
-        call ctx%push_scope_ptr(scopeptr)
-        select type (item)
-        class is (test_suite_base)
-          if (size(identifier) == 1) then
-            if (init) then
-              call runner%set_up_suite(item, ctx)
-              call item%get_as_char(repr)
-            else
-              call runner%tear_down_suite(item, ctx)
-            end if
-          else
-            call initialize_finalize_suite_(item%items, identifier(2:), init, ctx, runner, repr)
-          end if
-        class default
-          error stop "Internal error, unexpected test type in initialize_finalize_suite_"
-        end select
-      end block
-    end associate
+    scopeptr => testitems(identifier(1))%item
+    call ctx%push_scope_ptr(scopeptr)
+    select type (item => testitems(identifier(1))%item)
+    class is (test_suite_base)
+      if (size(identifier) == 1) then
+        if (init) then
+          call runner%set_up_suite(item, ctx)
+          call item%get_as_char(repr)
+        else
+          call runner%tear_down_suite(item, ctx)
+        end if
+      else
+        call initialize_finalize_suite_(item%items, identifier(2:), init, ctx, runner, repr)
+      end if
+    class default
+      error stop "Internal error, unexpected test type in initialize_finalize_suite_"
+    end select
 
   end subroutine initialize_finalize_suite_
 
@@ -487,7 +479,7 @@ contains
 
     associate (testresult => testresults(ind))
       name = basename(testresult%name)
-      if (allocated(repr)) name = name // "{" // repr // "}"
+      if (allocated(repr)) name = name // " {" // repr // "}"
       if (size(testresult%dependencies) > 0) then
         testresult%reprname = depresults(testresult%dependencies(1))%reprname // "/" // name
       else
@@ -498,6 +490,7 @@ contains
   end subroutine set_repr_name_
 
 
+  !! Returns indices of selected suites and tests.
   subroutine get_selected_suites_and_tests_(suitedata, testdata, selectedsuites, selectedtests,&
         & selections)
     type(test_data), intent(in) :: suitedata(:), testdata(:)

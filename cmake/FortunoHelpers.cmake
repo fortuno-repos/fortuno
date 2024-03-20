@@ -22,3 +22,25 @@ function (fortuno_setup_build_type default_build_type)
   endif()
 
 endfunction()
+
+
+# Defines the ThreadSafeBuild target for the thread-safe parts
+function (fortuno_def_thread_safe_build_target)
+
+  if (FORTUNO_THREAD_SAFE_FLAGS)
+    set(_compiler_flags "${FORTUNO_THREAD_SAFE_FLAGS}")
+  elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
+    set(_compiler_flags "-thread_safe")
+  endif ()
+
+  if (FORTUNO_THREAD_SAFE_LINK_FLAGS)
+    set(_linker_flags "${FORTUNO_THREAD_SAFE_LINK_FLAGS}")
+  elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
+    set(_linker_flags "-thread_safe")
+  endif ()
+
+  add_library(ThreadSafeBuild INTERFACE)
+  target_compile_options(ThreadSafeBuild INTERFACE ${_compiler_flags})
+  target_link_options(ThreadSafeBuild INTERFACE ${_linker_flags})
+
+endfunction ()

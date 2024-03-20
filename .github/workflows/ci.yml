@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Fortuno
         run: |
-          cmake -B ${BUILD_DIR} -G Ninja -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
           cmake --build ${BUILD_DIR}
           cmake --install ${BUILD_DIR}
           rm -rf ${BUILD_DIR}

@@ -12,6 +12,7 @@
 cmake_minimum_required(VERSION 3.22...3.28)
 
 list(APPEND CMAKE_MESSAGE_CONTEXT Fortuno)
+
 project(
   Fortuno
   VERSION 0.1.0
@@ -24,17 +25,41 @@ project(
 #                                 Options                                                         #
 ]=================================================================================================]
 
+include(CMakeDependentOption)
+
 option(FORTUNO_BUILD_SHARED_LIBS "Fortuno: Build as shared library" ${PROJECT_IS_TOP_LEVEL})
 
-option(FORTUNO_BUILD_TESTS "Fortuno: Build test suite" ${PROJECT_IS_TOP_LEVEL})
+option(
+  FORTUNO_BUILD_SERIAL_INTERFACE
+  "Fortuno: whether serial interface should be built (or only core library)"
+  ON
+)
 
-option(FORTUNO_BUILD_EXAMPLES "Fortuno: Build example apps" ${PROJECT_IS_TOP_LEVEL})
+cmake_dependent_option(
+  FORTUNO_BUILD_TESTS "Fortuno: Build test suite" ${PROJECT_IS_TOP_LEVEL}
+  "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
+)
+
+cmake_dependent_option(
+  FORTUNO_BUILD_EXAMPLES "Fortuno: Build example apps" ${PROJECT_IS_TOP_LEVEL}
+  "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
+)
 
 option(FORTUNO_INSTALL "Fortuno: Install project" ${PROJECT_IS_TOP_LEVEL})
 
 set(
   FORTUNO_INSTALL_MODULEDIR "modules" CACHE STRING
-  "Sub-directory to install the Fortran module files into (relative to CMAKE_INSTALL_LIBDIR)"
+  "Fortuno: Sub-directory for installed Fortran module files (relative to CMAKE_INSTALL_LIBDIR)"
+)
+
+set(
+  FORTUNO_THREAD_SAFE_FLAGS "" CACHE STRING
+  "Fortuno: Flags needed to enforce thread-safe build during compilation"
+)
+
+set(
+  FORTUNO_THREAD_SAFE_LINK_FLAGS "" CACHE STRING
+  "Fortuno: Flags neeeded to enforce thread-safe build durink linkage"
 )
 
 #[=================================================================================================[
@@ -49,8 +74,9 @@ if (FORTUNO_INSTALL)
   include(GNUInstallDirs)
 endif ()
 
-fortuno_setup_build_type("RelWithDebInfo")
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
+fortuno_setup_build_type("RelWithDebInfo")
+fortuno_def_thread_safe_build_target()
 
 #[=================================================================================================[
 #                                 Main definition                                                 #
@@ -75,11 +101,20 @@ if (FORTUNO_INSTALL)
     COMPONENT Fortuno_development
   )
 
+  if (FORTUNO_BUILD_SERIAL_INTERFACE)
+    configure_file(cmake/fortuno-serial.pc.in fortuno-serial.pc @ONLY)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-serial.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      COMPONENT Fortuno_development
+    )
+  endif ()
+
   # cmake export files
   write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
-    # COMPATIBILITY SameMajorVersion
+    # TODO: Switch to SameMajorVersion as soon as project version reaches 1.0.
     COMPATIBILITY SameMinorVersion
   )
   configure_package_config_file(
@@ -88,8 +123,9 @@ if (FORTUNO_INSTALL)
       INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
   )
   install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
+    FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
     COMPONENT Fortuno_development
   )

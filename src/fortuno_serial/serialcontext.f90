@@ -4,7 +4,7 @@
 
 !> Serial driver specific context
 module fortuno_serial_serialcontext
-  use fortuno_testcontext, only : context_factory, test_context
+  use fortuno, only : context_factory, test_context
   implicit none
 
   private

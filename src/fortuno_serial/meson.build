@@ -2,7 +2,7 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-fortuno_srcs += files(
+fortuno_serial_sources += files(
   'serialbasetypes.f90',
   'serialcase.f90',
   'serialcmdapp.f90',

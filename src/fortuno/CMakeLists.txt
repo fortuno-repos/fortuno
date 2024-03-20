@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
 target_sources(
-  Fortuno PRIVATE
+  fortuno PRIVATE
   argumentparser.f90
   basetypes.f90
   checkers.f90
+  cmdapp.f90
   consolelogger.f90
-  testcmdapp.f90
   testcontext.f90
   testdriver.f90
   testinfo.f90
@@ -16,4 +16,3 @@ target_sources(
   utils.f90
   version.f90
 )
-add_subdirectory(serial)

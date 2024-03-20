@@ -14,10 +14,10 @@ module fortuno_consolelogger
 
 
   !> Implements a logger which logs to the console
-  type, extends(test_logger), abstract :: console_logger
+  type, extends(test_logger) :: console_logger
   contains
-    procedure(console_logger_is_active), deferred :: is_active
-    procedure(console_logger_get_failure_info_repr), deferred :: get_failure_info_repr
+    procedure :: is_active => console_logger_is_active
+    procedure :: get_failure_info_repr => console_logger_get_failure_info_repr
     procedure :: log_message => console_logger_log_message
     procedure :: log_error => console_logger_log_error
     procedure :: start_drive => console_logger_start_drive
@@ -27,48 +27,6 @@ module fortuno_consolelogger
     procedure :: log_test_result => console_logger_log_test_result
     procedure :: log_drive_result => console_logger_log_drive_result
   end type console_logger
-
-
-  abstract interface
-
-    !> Returns whether the logger is active
-    function console_logger_is_active(this) result(isactive)
-      import :: console_logger
-      implicit none
-
-      !> Instance
-      class(console_logger), intent(in) :: this
-
-      !> Whether logger is active
-      logical :: isactive
-
-    end function console_logger_is_active
-
-
-    !> Returns the representation of the failure information (called collectively)
-    subroutine console_logger_get_failure_info_repr(this, failureinfo, location, message,&
-        & details)
-      import :: console_logger, failure_info
-      implicit none
-
-      !> Instance
-      class(console_logger), intent(in) :: this
-
-      !> Failure info to get the representation from
-      type(failure_info), allocatable, intent(in) :: failureinfo
-
-      !> Location string (unallocated if not available or not relevant)
-      character(:), allocatable, intent(out) :: location
-
-      !> Message string (unallocated if not available or not relevant)
-      character(:), allocatable, intent(out) :: message
-
-      !> Details string (unallocated if not available or not relevant)
-      character(:), allocatable, intent(out) :: details
-
-    end subroutine console_logger_get_failure_info_repr
-
-  end interface
 
 
   character(*), parameter :: notrun_short_ = "!"
@@ -97,6 +55,49 @@ module fortuno_consolelogger
       & ansicolors%yellow // "???????  " // ansicolors%default
 
 contains
+
+
+  !> Returns whether the logger is active
+  function console_logger_is_active(this) result(isactive)
+
+    !> Instance
+    class(console_logger), intent(in) :: this
+
+    !> Whether logger is active
+    logical :: isactive
+
+    isactive = .true.
+
+  end function console_logger_is_active
+
+
+  !> Returns the representation of the failure information (called collectively)
+  subroutine console_logger_get_failure_info_repr(this, failureinfo, location, message,&
+      & details)
+
+    !> Instance
+    class(console_logger), intent(in) :: this
+
+    !> Failure info to get the representation from
+    type(failure_info), allocatable, intent(in) :: failureinfo
+
+    !> Location string (unallocated if not available or not relevant)
+    character(:), allocatable, intent(out) :: location
+
+    !> Message string (unallocated if not available or not relevant)
+    character(:), allocatable, intent(out) :: message
+
+    !> Details string (unallocated if not available or not relevant)
+    character(:), allocatable, intent(out) :: details
+
+    character(:), allocatable :: buffer
+
+    location = failureinfo%location%as_char()
+    if (allocated(failureinfo%message)) message = failureinfo%message
+    if (allocated(failureinfo%details)) details = failureinfo%details%as_char()
+
+  end subroutine console_logger_get_failure_info_repr
+
 
   !> Logs a normal message
   subroutine console_logger_log_message(this, message)

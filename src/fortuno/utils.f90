@@ -62,7 +62,7 @@ module fortuno_utils
 contains
 
   !> Returns the character representation of an integer value
-  function integer_as_char(val) result(repr)
+  pure function integer_as_char(val) result(repr)
 
     !> Integer value to represent
     integer, intent(in) :: val

@@ -4,7 +4,7 @@
 
 !> Contains the simplest possible parameterless serial test implementation
 module fortuno_serial_serialcase
-  use fortuno_basetypes, only : test_item
+  use fortuno, only : test_item
   use fortuno_serial_serialbasetypes, only : serial_case_base
   implicit none
 
