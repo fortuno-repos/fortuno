@@ -4,13 +4,14 @@
 
 !> Contains a trivial implementation of name value pairs
 module fortuno_namedtypes
-  use fortuno_basetypes, only : char_repr
+  use fortuno_basetypes, only : stringable
   use fortuno_utils, only : as_char, nl, string, to_upper
   implicit none
 
   private
   public :: named_item, named_details, named_state
-  public :: char_repr_int
+  public :: stringable_int
+
 
   !> Implements a named item of arbitrary type
   type :: named_item
@@ -24,8 +25,15 @@ module fortuno_namedtypes
   end type named_item
 
 
+  ! Workaround:gfortran:13.2
+  ! Needs defined structure constructor as default constructor does not work with class(*) field
+  interface named_item
+    module procedure new_named_item
+  end interface
+
+
   !> Represents failure details with an array of named items.
-  type, extends(char_repr) :: named_details
+  type, extends(stringable) :: named_details
 
     !> Items containing the information about the failure details
     type(named_item), allocatable :: items(:)
@@ -36,7 +44,7 @@ module fortuno_namedtypes
 
 
   !> Represents test internal state with an array of named items.
-  type, extends(char_repr) :: named_state
+  type, extends(stringable) :: named_state
 
     !> Items containing the information about the failure details
     type(named_item), allocatable :: items(:)
@@ -47,14 +55,14 @@ module fortuno_namedtypes
 
 
   !> Integer with string representation.
-  type, extends(char_repr) :: char_repr_int
+  type, extends(stringable) :: stringable_int
 
     !> Value
     integer :: value
 
   contains
-    procedure :: as_char => char_repr_int_as_char
-  end type char_repr_int
+    procedure :: as_char => stringable_int_as_char
+  end type stringable_int
 
 contains
 
@@ -96,17 +104,35 @@ contains
 
 
   !> Integer with string representation.
-  function char_repr_int_as_char(this) result(repr)
+  function stringable_int_as_char(this) result(repr)
 
     !> Instance
-    class(char_repr_int), intent(in) :: this
+    class(stringable_int), intent(in) :: this
 
     !> Character representation
     character(:), allocatable :: repr
 
     repr = as_char(this%value)
 
-  end function char_repr_int_as_char
+  end function stringable_int_as_char
+
+
+  !> Explicit constructor for named_item (to avoid gfortran compilation problems)
+  function new_named_item(name, val) result(this)
+
+    !> Name of the item
+    character(*), intent(in) :: name
+
+    !> Value of the item
+    class(*), intent(in) :: val
+
+    !> Initialized instance
+    type(named_item) :: this
+
+    this%name = name
+    allocate(this%value, source=val)
+
+  end function new_named_item
 
 
   !! Returns the character representation of an array of named items.
@@ -131,7 +157,9 @@ contains
       select type (namedvalue => items(iitem)%value)
       type is (character(*))
         valuestrings(iitem)%content = namedvalue
-      class is (char_repr)
+      class is (string)
+        valuestrings(iitem)%content = namedvalue%content
+      class is (stringable)
         valuestrings(iitem)%content = namedvalue%as_char()
       class default
         valuestrings(iitem)%content = "???"

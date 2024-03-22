@@ -4,8 +4,9 @@
 
 !> Contains some built-in checkers
 module fortuno_checkers
-  use fortuno_namedtypes, only : named_details, named_item, char_repr_int
+  use fortuno_namedtypes, only : named_details, named_item, stringable_int
   use fortuno_testinfo, only : check_result
+  use fortuno_utils, only : string
   implicit none
 
   private
@@ -32,12 +33,14 @@ contains
     !> Result of the check
     type(check_result) :: checkresult
 
+    type(named_item), allocatable :: items(:)
+
     checkresult%success = (obtained == expected)
     if (.not. checkresult%success) then
       checkresult%details = named_details([&
-          & named_item("failure", "mismatching integer values"),&
-          & named_item("expected", char_repr_int(expected)),&
-          & named_item("obtained", char_repr_int(obtained))&
+          & named_item("failure", "Mismatching integer values"),&
+          & named_item("expected", stringable_int(expected)),&
+          & named_item("obtained", stringable_int(obtained))&
           & ])
     end if
 

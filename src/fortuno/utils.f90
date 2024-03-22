@@ -5,6 +5,7 @@
 !> Various helper utilities for the different modules
 module fortuno_utils
   use iso_fortran_env, only : stderr => error_unit, stdout => output_unit
+  use fortuno_basetypes, only : stringable
   implicit none
 
   private

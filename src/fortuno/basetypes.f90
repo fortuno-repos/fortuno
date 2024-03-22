@@ -7,30 +7,32 @@ module fortuno_basetypes
   implicit none
 
   private
-  public :: char_repr
+  public :: stringable
   public :: test_base, test_case_base, test_suite_base
   public :: test_item, test_ptr_item
 
-  !> Character representable object
-  type, abstract :: char_repr
+
+  !> Character representable object.
+  type, abstract :: stringable
   contains
-    procedure(char_repr_as_char), deferred :: as_char
-  end type char_repr
+    procedure(stringable_as_char), deferred :: as_char
+  end type stringable
+
 
   abstract interface
 
-    !> Returns the character representation of a character representable object.
-    function char_repr_as_char(this) result(charrepr)
-      import :: char_repr
+    !> Character representation of the stringable object.
+    function stringable_as_char(this) result(repr)
+      import :: stringable
       implicit none
 
       !> Instance
-      class(char_repr), intent(in) :: this
+      class(stringable), intent(in) :: this
 
       !> Character representation of the object.
-      character(:), allocatable :: charrepr
+      character(:), allocatable :: repr
 
-    end function char_repr_as_char
+    end function stringable_as_char
 
   end interface
 
@@ -45,7 +47,7 @@ module fortuno_basetypes
     character(:), allocatable :: name
 
     !> Character representable internal state
-    class(char_repr), allocatable :: state
+    class(stringable), allocatable :: state
 
   contains
 

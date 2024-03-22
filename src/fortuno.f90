@@ -4,7 +4,7 @@
 
 !> Interface module for the core library of the Fortuno testing framework
 module fortuno
-  use fortuno_basetypes, only : char_repr, test_base, test_case_base, test_item, test_ptr_item,&
+  use fortuno_basetypes, only : stringable, test_base, test_case_base, test_item, test_ptr_item,&
       & test_suite_base
   use fortuno_consolelogger, only : console_logger
   use fortuno_testcontext, only : context_factory, test_context
