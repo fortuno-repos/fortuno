@@ -7,8 +7,32 @@ module fortuno_basetypes
   implicit none
 
   private
+  public :: char_repr
   public :: test_base, test_case_base, test_suite_base
   public :: test_item, test_ptr_item
+
+  !> Character representable object
+  type, abstract :: char_repr
+  contains
+    procedure(char_repr_as_char), deferred :: as_char
+  end type char_repr
+
+  abstract interface
+
+    !> Returns the character representation of a character representable object.
+    function char_repr_as_char(this) result(charrepr)
+      import :: char_repr
+      implicit none
+
+      !> Instance
+      class(char_repr), intent(in) :: this
+
+      !> Character representation of the object.
+      character(:), allocatable :: charrepr
+
+    end function char_repr_as_char
+
+  end interface
 
 
   !> Base class for all test objects
@@ -19,6 +43,9 @@ module fortuno_basetypes
 
     !> Name of the generic test
     character(:), allocatable :: name
+
+    !> Character representable internal state
+    class(char_repr), allocatable :: state
 
   contains
 
