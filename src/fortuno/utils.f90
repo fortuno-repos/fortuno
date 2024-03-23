@@ -14,7 +14,7 @@ module fortuno_utils
   public :: nl
   public :: stderr, stdout
   public :: string, string_list
-  public :: to_upper
+  public :: as_upper
 
   !> New line character
   character(*), parameter :: nl = new_line("")
@@ -98,7 +98,7 @@ contains
 
 
   !> Converts a string to upper-case.
-  pure function to_upper(str) result(upperstr)
+  pure function as_upper(str) result(upperstr)
 
     !> String to convert
     character(*), intent(in) :: str
@@ -123,6 +123,6 @@ contains
       end if
     end do
 
-  end function to_upper
+  end function as_upper
 
 end module fortuno_utils

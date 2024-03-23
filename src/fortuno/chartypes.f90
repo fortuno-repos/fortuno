@@ -4,7 +4,7 @@
 
 !> Contains various types related to character representations.
 module fortuno_chartypes
-  use fortuno_utils, only : as_char, nl, string, to_upper
+  use fortuno_utils, only : as_char, as_upper, nl, string
   implicit none
 
   private
@@ -202,7 +202,7 @@ contains
       associate(name => items(iitem)%name, val => valuestrings(iitem)%content)
         reprlen = len(name)
         repr(pos : pos + reprlen - 1) = name
-        if (capitalizename) repr(pos:pos) = to_upper(repr(pos:pos))
+        if (capitalizename) repr(pos:pos) = as_upper(repr(pos:pos))
         pos = pos + reprlen
         repr(pos : pos + nameseplen - 1) = namesep
         pos = pos + nameseplen
