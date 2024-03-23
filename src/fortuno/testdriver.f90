@@ -413,7 +413,7 @@ contains
       select type (item => testitems(identifier(1))%item)
       class is (test_case_base)
         call runner%run_test(item, ctx)
-        call item%get_as_char(repr)
+        if (allocated(item%state)) repr = item%state%as_char()
       class default
         error stop "Internal error, unexpected test type in run_test_"
       end select
@@ -447,7 +447,7 @@ contains
       if (size(identifier) == 1) then
         if (init) then
           call runner%set_up_suite(item, ctx)
-          call item%get_as_char(repr)
+          if (allocated(item%state)) repr = item%state%as_char()
         else
           call runner%tear_down_suite(item, ctx)
         end if
@@ -479,7 +479,7 @@ contains
 
     associate (testresult => testresults(ind))
       name = basename(testresult%name)
-      if (allocated(repr)) name = name // " {" // repr // "}"
+      if (allocated(repr)) name = name // "{" // repr // "}"
       if (size(testresult%dependencies) > 0) then
         testresult%reprname = depresults(testresult%dependencies(1))%reprname // "/" // name
       else

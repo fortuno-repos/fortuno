@@ -97,7 +97,7 @@ contains
     if (.not. allocated(this%items)) then
       repr = ""
     end if
-    call get_named_items_as_char_(this%items, repr, itemsep=nl, namesep=": ",&
+    call get_named_items_as_char_(this%items, repr, itemsep=nl, namesep=":",&
         & capitalizename=.false.)
 
   end function named_state_as_char

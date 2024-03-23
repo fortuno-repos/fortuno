@@ -10,6 +10,7 @@ module fortuno
   use fortuno_testcontext, only : context_factory, test_context
   use fortuno_checkers, only : is_equal
   use fortuno_cmdapp, only : cmd_app
+  use fortuno_namedtypes, only : named_details, named_item, named_state, stringable_int
   use fortuno_testdriver, only : init_test_driver, test_driver, test_runner, test_selection
   use fortuno_testinfo, only : check_result, drive_result, failure_info, failure_location,&
       & init_drive_result, init_failure_location, test_result, teststatus

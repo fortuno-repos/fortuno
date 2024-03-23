@@ -49,10 +49,6 @@ module fortuno_basetypes
     !> Character representable internal state
     class(stringable), allocatable :: state
 
-  contains
-
-    procedure :: get_as_char => test_base_get_as_char
-
   end type test_base
 
 
@@ -86,19 +82,5 @@ module fortuno_basetypes
     type(test_item), allocatable :: items(:)
 
   end type test_suite_base
-
-contains
-
-
-  !> Delivers the character representation of the internal state of a test object
-  subroutine test_base_get_as_char(this, repr)
-
-    !> Instance
-    class(test_base), intent(in) :: this
-
-    !> Character representation, or **unallocated** on exit, if there is none
-    character(:), allocatable, intent(out) :: repr
-
-  end subroutine test_base_get_as_char
 
 end module fortuno_basetypes
