@@ -52,7 +52,7 @@ contains
   subroutine serial_case_run(this)
 
     !> Instance
-    class(serial_case), intent(inout) :: this
+    class(serial_case), intent(in) :: this
 
     call this%proc()
 

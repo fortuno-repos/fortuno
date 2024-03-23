@@ -61,7 +61,7 @@ contains
 
   !> Run method of the parametrized test (executing the check directly)
   subroutine parametrized_test_case_run(this)
-    class(parametrized_test_case), intent(inout) :: this
+    class(parametrized_test_case), intent(in) :: this
 
     call check(is_equal(factorial(this%argres%arg), this%argres%res))
 

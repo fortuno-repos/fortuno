@@ -72,7 +72,7 @@ contains
 
   ! Run procedure of the random_test_case class.
   subroutine random_test_case_run(this)
-    class(random_test_case), intent(inout) :: this
+    class(random_test_case), intent(in) :: this
 
     real :: rand
     integer :: nn
