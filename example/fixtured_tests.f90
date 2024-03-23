@@ -4,9 +4,9 @@
 
 module fixtured_tests
   use mylib, only : factorial
-  use fortuno_serial, only : check => serial_check, named_state, failed => serial_failed,&
-      & named_item, test => serial_case_item, suite => serial_suite_item,&
-      & store_state => serial_store_state, serial_case_base, stringable_int, test_item
+  use fortuno_serial, only : char_rep_int, check => serial_check, named_state,&
+      & failed => serial_failed, named_item, test => serial_case_item, suite => serial_suite_item,&
+      & store_state => serial_store_state, serial_case_base, test_item
   implicit none
 
   private
@@ -82,9 +82,10 @@ contains
     ! Set-up fixture by creating a random number
     call random_number(rand)
     nn = int(20.0 * rand) + 1
+    ! Store internal state to aid introspection/identification later
     call store_state(&
         named_state([&
-            named_item("n", stringable_int(nn))&
+            named_item("n", char_rep_int(nn))&
         &])&
     )
     call this%proc(nn)

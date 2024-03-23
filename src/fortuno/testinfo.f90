@@ -4,7 +4,7 @@
 
 !> Types containing informations about tests and checks
 module fortuno_testinfo
-  use fortuno_namedtypes, only : stringable
+  use fortuno_chartypes, only : char_rep
   use fortuno_utils, only : as_char, nl
   implicit none
 
@@ -45,7 +45,7 @@ module fortuno_testinfo
     logical :: success = .false.
 
     !> Further character representable information about the check (reason of failure)
-    class(stringable), allocatable :: details
+    class(char_rep), allocatable :: details
 
   end type check_result
 
@@ -77,7 +77,7 @@ module fortuno_testinfo
     class(failure_location), allocatable :: location
 
     !> Character representable internal details of the check
-    class(stringable), allocatable :: details
+    class(char_rep), allocatable :: details
 
     !> Contains previous failure_info (to be able to chain check infos)
     type(failure_info), allocatable :: previous

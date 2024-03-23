@@ -5,7 +5,7 @@
 !> Implements a generic test driver
 module fortuno_testdriver
   use fortuno_basetypes, only : test_base, test_case_base, test_item, test_suite_base
-  use fortuno_namedtypes, only : stringable
+  use fortuno_chartypes, only : char_rep
   use fortuno_testcontext, only : context_factory, test_context
   use fortuno_testinfo, only : drive_result, init_drive_result, test_result, teststatus
   use fortuno_testlogger, only : test_logger, testtypes
@@ -406,7 +406,7 @@ contains
     character(:), allocatable, intent(out) :: repr
 
     class(test_base), pointer :: scopeptr
-    class(stringable), allocatable :: state
+    class(char_rep), allocatable :: state
 
     scopeptr => testitems(identifier(1))%item
     call ctx%push_scope_ptr(scopeptr)
@@ -441,7 +441,7 @@ contains
     character(:), allocatable, intent(out) :: repr
 
     class(test_base), pointer :: scopeptr
-    class(stringable), allocatable :: state
+    class(char_rep), allocatable :: state
 
     scopeptr => testitems(identifier(1))%item
     call ctx%push_scope_ptr(scopeptr)

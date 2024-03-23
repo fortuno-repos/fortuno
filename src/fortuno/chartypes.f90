@@ -2,38 +2,38 @@
 ! Licensed under the BSD-2-Clause Plus Patent license.
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
-!> Contains a trivial implementation of name value pairs
-module fortuno_namedtypes
+!> Contains various types related to character representations.
+module fortuno_chartypes
   use fortuno_utils, only : as_char, nl, string, to_upper
   implicit none
 
   private
-  public :: stringable
+  public :: char_rep
+  public :: char_rep_int
   public :: named_item, named_details, named_state
-  public :: stringable_int
 
 
   !> Character representable object.
-  type, abstract :: stringable
+  type, abstract :: char_rep
   contains
-    procedure(stringable_as_char), deferred :: as_char
-  end type stringable
+    procedure(char_rep_as_char), deferred :: as_char
+  end type char_rep
 
 
   abstract interface
 
-    !> Character representation of the stringable object.
-    function stringable_as_char(this) result(repr)
-      import :: stringable
+    !> Character representation of the char_rep object.
+    function char_rep_as_char(this) result(repr)
+      import :: char_rep
       implicit none
 
       !> Instance
-      class(stringable), intent(in) :: this
+      class(char_rep), intent(in) :: this
 
       !> Character representation of the object.
       character(:), allocatable :: repr
 
-    end function stringable_as_char
+    end function char_rep_as_char
 
   end interface
 
@@ -58,7 +58,7 @@ module fortuno_namedtypes
 
 
   !> Represents failure details with an array of named items.
-  type, extends(stringable) :: named_details
+  type, extends(char_rep) :: named_details
 
     !> Items containing the information about the failure details
     type(named_item), allocatable :: items(:)
@@ -69,7 +69,7 @@ module fortuno_namedtypes
 
 
   !> Represents test internal state with an array of named items.
-  type, extends(stringable) :: named_state
+  type, extends(char_rep) :: named_state
 
     !> Items containing the information about the failure details
     type(named_item), allocatable :: items(:)
@@ -80,14 +80,14 @@ module fortuno_namedtypes
 
 
   !> Integer with string representation.
-  type, extends(stringable) :: stringable_int
+  type, extends(char_rep) :: char_rep_int
 
     !> Value
     integer :: value
 
   contains
-    procedure :: as_char => stringable_int_as_char
-  end type stringable_int
+    procedure :: as_char => char_rep_int_as_char
+  end type char_rep_int
 
 contains
 
@@ -129,17 +129,17 @@ contains
 
 
   !> Integer with string representation.
-  function stringable_int_as_char(this) result(repr)
+  function char_rep_int_as_char(this) result(repr)
 
     !> Instance
-    class(stringable_int), intent(in) :: this
+    class(char_rep_int), intent(in) :: this
 
     !> Character representation
     character(:), allocatable :: repr
 
     repr = as_char(this%value)
 
-  end function stringable_int_as_char
+  end function char_rep_int_as_char
 
 
   !> Explicit constructor for named_item (to avoid gfortran compilation problems)
@@ -184,7 +184,7 @@ contains
         valuestrings(iitem)%content = namedvalue
       class is (string)
         valuestrings(iitem)%content = namedvalue%content
-      class is (stringable)
+      class is (char_rep)
         valuestrings(iitem)%content = namedvalue%as_char()
       class default
         valuestrings(iitem)%content = "???"
@@ -218,4 +218,4 @@ contains
 
   end subroutine get_named_items_as_char_
 
-end module fortuno_namedtypes
+end module fortuno_chartypes

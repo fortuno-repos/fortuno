@@ -4,7 +4,7 @@
 
 !> Contains some built-in checkers
 module fortuno_checkers
-  use fortuno_namedtypes, only : named_details, named_item, stringable_int
+  use fortuno_chartypes, only : char_rep_int, named_details, named_item
   use fortuno_testinfo, only : check_result
   use fortuno_utils, only : string
   implicit none
@@ -39,8 +39,8 @@ contains
     if (.not. checkresult%success) then
       checkresult%details = named_details([&
           & named_item("failure", "Mismatching integer values"),&
-          & named_item("expected", stringable_int(expected)),&
-          & named_item("obtained", stringable_int(obtained))&
+          & named_item("expected", char_rep_int(expected)),&
+          & named_item("obtained", char_rep_int(obtained))&
           & ])
     end if
 
