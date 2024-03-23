@@ -4,7 +4,7 @@
 
 module fixtured_tests
   use mylib, only : factorial
-  use fortuno_serial, only : char_rep_int, check => serial_check, named_state,&
+  use fortuno_serial, only : char_rep_int, check => serial_check, is_equal, named_state,&
       & failed => serial_failed, named_item, test => serial_case_item, suite => serial_suite_item,&
       & store_state => serial_store_state, serial_case_base, test_item
   implicit none
@@ -48,16 +48,14 @@ contains
   ! TEST n! = n * (n - 1)!
   subroutine test_recursion_down(nn)
     integer, intent(in) :: nn
-    call check(factorial(nn) == nn * factorial(nn - 1))
+    call check(is_equal(factorial(nn), nn * factorial(nn - 1)))
   end subroutine test_recursion_down
 
 
   ! TEST (n + 1)! = (n + 1) * n!
   subroutine test_recursion_up(nn)
     integer, intent(in) :: nn
-    call check(factorial(nn + 1) == (nn  + 1) * factorial(nn))
-    ! Creating a "random" error to demonstrate failure reporting with internal state
-    call check(nn < 15)
+    call check(is_equal(factorial(nn + 1), (nn  + 1) * factorial(nn)))
   end subroutine test_recursion_up
 
 
@@ -81,7 +79,8 @@ contains
 
     ! Set-up fixture by creating a random number
     call random_number(rand)
-    nn = int(20.0 * rand) + 1
+    ! Note: factorials with arguments above 13 overflows with 32 bit integers
+    nn = int(13 * rand) + 1
     ! Store internal state to aid introspection/identification later
     call store_state(&
         named_state([&

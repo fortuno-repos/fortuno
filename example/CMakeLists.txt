@@ -22,6 +22,7 @@ set_target_properties(
 target_sources(
   fortuno_example_testapp PRIVATE
   fixtured_tests.f90
+  parametrized_tests.f90
   simple_tests.f90
   testapp.f90
 )

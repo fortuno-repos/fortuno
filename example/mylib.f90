@@ -26,6 +26,8 @@ contains
     do ii = 2, nn
       fact = fact * ii
     end do
+    ! We create a "bug" which manifests only for certain input values
+    if (nn == 2 .or. nn > 10) fact = fact - 1
 
   end function factorial
 
