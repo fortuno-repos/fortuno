@@ -4,7 +4,7 @@
 
 !> Types containing informations about tests and checks
 module fortuno_testinfo
-  use fortuno_basetypes, only : stringable
+  use fortuno_namedtypes, only : stringable
   use fortuno_utils, only : as_char, nl
   implicit none
 

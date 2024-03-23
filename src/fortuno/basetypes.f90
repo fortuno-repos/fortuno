@@ -7,34 +7,8 @@ module fortuno_basetypes
   implicit none
 
   private
-  public :: stringable
   public :: test_base, test_case_base, test_suite_base
   public :: test_item, test_ptr_item
-
-
-  !> Character representable object.
-  type, abstract :: stringable
-  contains
-    procedure(stringable_as_char), deferred :: as_char
-  end type stringable
-
-
-  abstract interface
-
-    !> Character representation of the stringable object.
-    function stringable_as_char(this) result(repr)
-      import :: stringable
-      implicit none
-
-      !> Instance
-      class(stringable), intent(in) :: this
-
-      !> Character representation of the object.
-      character(:), allocatable :: repr
-
-    end function stringable_as_char
-
-  end interface
 
 
   !> Base class for all test objects
@@ -45,9 +19,6 @@ module fortuno_basetypes
 
     !> Name of the generic test
     character(:), allocatable :: name
-
-    !> Character representable internal state
-    class(stringable), allocatable :: state
 
   end type test_base
 

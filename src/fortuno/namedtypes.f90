@@ -4,13 +4,38 @@
 
 !> Contains a trivial implementation of name value pairs
 module fortuno_namedtypes
-  use fortuno_basetypes, only : stringable
   use fortuno_utils, only : as_char, nl, string, to_upper
   implicit none
 
   private
+  public :: stringable
   public :: named_item, named_details, named_state
   public :: stringable_int
+
+
+  !> Character representable object.
+  type, abstract :: stringable
+  contains
+    procedure(stringable_as_char), deferred :: as_char
+  end type stringable
+
+
+  abstract interface
+
+    !> Character representation of the stringable object.
+    function stringable_as_char(this) result(repr)
+      import :: stringable
+      implicit none
+
+      !> Instance
+      class(stringable), intent(in) :: this
+
+      !> Character representation of the object.
+      character(:), allocatable :: repr
+
+    end function stringable_as_char
+
+  end interface
 
 
   !> Implements a named item of arbitrary type
