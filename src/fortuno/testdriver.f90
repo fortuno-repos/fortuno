@@ -359,7 +359,7 @@ contains
     !> Initial container size
     integer, intent(in) :: initsize
 
-    allocate(this%storage_(100))
+    allocate(this%storage_(initsize))
     ! Setting testdata pointer up, so that it has size 0.
     this%testdata => this%storage_(1:0)
 

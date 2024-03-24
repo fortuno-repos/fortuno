@@ -108,9 +108,7 @@ contains
 
     integer, parameter :: lowerstart = iachar("a")
     integer, parameter :: lowerend = iachar("z")
-    integer, parameter :: upperstart = iachar("A")
-    integer, parameter :: upperend = iachar("Z")
-    integer, parameter :: shift = upperstart - lowerstart
+    integer, parameter :: shift = iachar("A") - lowerstart
 
     integer :: ii, ord
 

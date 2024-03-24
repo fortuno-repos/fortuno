@@ -120,7 +120,7 @@ contains
 
     type(string), allocatable :: cmdargs(:), posargs(:)
     logical, allocatable :: processed(:)
-    character(:), allocatable :: argname, errormsg
+    character(:), allocatable :: argname
     integer :: nargs, nargdefs, iarg, iargdef
     logical optionsallowed, islong, matches
 

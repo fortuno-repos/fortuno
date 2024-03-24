@@ -4,7 +4,7 @@
 
 !> Contains a serial logger implementation
 module fortuno_serial_serialconlogger
-  use fortuno, only : console_logger, failure_info
+  use fortuno, only : console_logger
   implicit none
 
   private

@@ -5,8 +5,8 @@
 module fixtured_tests
   use mylib, only : factorial
   use fortuno_serial, only : char_rep_int, check => serial_check, is_equal, named_state,&
-      & failed => serial_failed, named_item, test => serial_case_item, suite => serial_suite_item,&
-      & store_state => serial_store_state, serial_case_base, test_item
+      & named_item, suite => serial_suite_item, store_state => serial_store_state,&
+      & serial_case_base, test_item
   implicit none
 
   private
@@ -79,7 +79,7 @@ contains
 
     ! Set-up fixture by creating a random number
     call random_number(rand)
-    ! Note: factorials with arguments above 13 overflows with 32 bit integers
+    ! Note: factorial(n) with n > 13 overflows with 32 bit integers
     nn = int(13 * rand) + 1
     ! Store internal state to aid introspection/identification later
     call store_state(&

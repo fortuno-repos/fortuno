@@ -5,7 +5,7 @@
 !> Types containing informations about tests and checks
 module fortuno_testinfo
   use fortuno_chartypes, only : char_rep
-  use fortuno_utils, only : as_char, nl
+  use fortuno_utils, only : as_char
   implicit none
 
   private

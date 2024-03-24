@@ -4,8 +4,8 @@
 
 module parametrized_tests
   use mylib, only : factorial
-  use fortuno_serial, only : as_char, is_equal, serial_case_base, test => serial_case_item,&
-      & check => serial_check, suite => serial_suite_item, test_item
+  use fortuno_serial, only : as_char, is_equal, serial_case_base, check => serial_check,&
+      & suite => serial_suite_item, test_item
   implicit none
 
   private

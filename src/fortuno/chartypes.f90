@@ -51,7 +51,7 @@ module fortuno_chartypes
 
 
   ! Workaround:gfortran:13.2
-  ! Needs defined structure constructor as default constructor does not work with class(*) field
+  ! Needs user defined structure constructor as default constructor can not deal with class(*) field
   interface named_item
     module procedure new_named_item
   end interface
@@ -79,7 +79,7 @@ module fortuno_chartypes
   end type named_state
 
 
-  !> Integer with string representation.
+  !> Character representable integer.
   type, extends(char_rep) :: char_rep_int
 
     !> Value
@@ -103,6 +103,7 @@ contains
 
     if (.not. allocated(this%items)) then
       repr = ""
+      return
     end if
     call get_named_items_as_char_(this%items, repr, itemsep=nl, namesep=": ",&
         & capitalizename=.true.)
@@ -121,6 +122,7 @@ contains
 
     if (.not. allocated(this%items)) then
       repr = ""
+      return
     end if
     call get_named_items_as_char_(this%items, repr, itemsep=nl, namesep=":",&
         & capitalizename=.false.)
@@ -199,15 +201,15 @@ contains
 
     pos = 1
     do iitem = 1, nitems
-      associate(name => items(iitem)%name, val => valuestrings(iitem)%content)
+      associate(name => items(iitem)%name, valstr => valuestrings(iitem)%content)
         reprlen = len(name)
         repr(pos : pos + reprlen - 1) = name
         if (capitalizename) repr(pos:pos) = as_upper(repr(pos:pos))
         pos = pos + reprlen
         repr(pos : pos + nameseplen - 1) = namesep
         pos = pos + nameseplen
-        reprlen = len(val)
-        repr(pos : pos + reprlen - 1) = val
+        reprlen = len(valstr)
+        repr(pos : pos + reprlen - 1) = valstr
         pos = pos + reprlen
         if (iitem /= nitems) then
           repr(pos : pos + itemseplen - 1) = itemsep
