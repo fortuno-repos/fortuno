@@ -4,14 +4,14 @@
 
 !> Global serial context to avoid explicit passing of context when using non-threaded serial driver
 module fortuno_serial_serialglobalctx
-  use fortuno, only : check_result, test_ptr_item
+  use fortuno, only : check_result, char_rep, test_ptr_item
   use fortuno_serial_serialcontext, only : serial_context
   implicit none
 
   private
   public :: serialglobalctx
   public :: set_serial_global_context
-  public :: serial_check, serial_check_failed, serial_failed, serial_skip
+  public :: serial_check, serial_check_failed, serial_failed, serial_skip, serial_store_state
   public :: serial_scope_pointers
 
 
@@ -120,5 +120,16 @@ contains
     scopeptrs = serialglobalctx%scope_pointers()
 
   end function serial_scope_pointers
+
+
+  !> Stores the test state for later introspection
+  subroutine serial_store_state(state)
+
+    !> State to store
+    class(char_rep), intent(in) :: state
+
+    call serialglobalctx%store_state(state)
+
+  end subroutine serial_store_state
 
 end module fortuno_serial_serialglobalctx

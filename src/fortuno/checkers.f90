@@ -4,8 +4,8 @@
 
 !> Contains some built-in checkers
 module fortuno_checkers
-  use fortuno_testinfo, only : check_result, failure_details
-  use fortuno_utils, only : as_char, nl
+  use fortuno_chartypes, only : char_rep_int, named_details, named_item
+  use fortuno_testinfo, only : check_result
   implicit none
 
   private
@@ -17,36 +17,7 @@ module fortuno_checkers
     module procedure is_equal_i0_i0
   end interface is_equal
 
-
-  !> Details of an integer-integer check
-  type, extends(failure_details) :: failure_details_i0_i0
-
-    !> Value obtained
-    integer :: obtained
-
-    !> Value expected
-    integer :: expected
-
-  contains
-    procedure :: as_char => failure_details_i0_i0_as_char
-  end type failure_details_i0_i0
-
 contains
-
-  !> Character representation of an integer-integer check
-  function failure_details_i0_i0_as_char(this) result(repr)
-
-    !> Instance
-    class(failure_details_i0_i0), intent(in) :: this
-
-    !> Character representation of the instance
-    character(:), allocatable :: repr
-
-    repr = "Mismatching integer values" // nl&
-        & // "Obtained: " // as_char(this%obtained) // nl&
-        & // "Expected: " // as_char(this%expected)
-
-  end function failure_details_i0_i0_as_char
 
 
   !> Checks whether two integer values are equal
@@ -63,7 +34,11 @@ contains
 
     checkresult%success = (obtained == expected)
     if (.not. checkresult%success) then
-      checkresult%details = failure_details_i0_i0(obtained, expected)
+      checkresult%details = named_details([&
+          & named_item("failure", "mismatching integer values"),&
+          & named_item("expected", char_rep_int(expected)),&
+          & named_item("obtained", char_rep_int(obtained))&
+          & ])
     end if
 
   end function is_equal_i0_i0

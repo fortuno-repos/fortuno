@@ -5,6 +5,7 @@
 fortuno_sources += files(
   'argumentparser.f90',
   'basetypes.f90',
+  'chartypes.f90',
   'checkers.f90',
   'cmdapp.f90',
   'consolelogger.f90',

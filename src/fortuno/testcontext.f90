@@ -5,6 +5,7 @@
 !> Contains the base context definition
 module fortuno_testcontext
   use fortuno_basetypes, only : test_base, test_ptr_item
+  use fortuno_chartypes, only : char_rep
   use fortuno_testinfo, only : check_result, failure_info, failure_location, init_failure_location,&
       & teststatus
   implicit none
@@ -22,6 +23,9 @@ module fortuno_testcontext
 
     !> Info about check failures in current context
     type(failure_info), allocatable :: failureinfo_
+
+    !> Info about the internal state of the test
+    class(char_rep), allocatable :: state_
 
     !> Status of the context
     integer :: status_ = teststatus%succeeded
@@ -48,6 +52,8 @@ module fortuno_testcontext
     procedure :: push_scope_ptr => test_context_push_scope_ptr
     procedure :: scope_pointers => test_context_scope_pointers
     procedure :: create_failure_location => test_context_create_failure_location
+    procedure :: store_state => test_context_store_state
+    procedure :: pop_state => test_context_pop_state
   end type test_context
 
 
@@ -310,5 +316,33 @@ contains
     end select
 
   end subroutine test_context_create_failure_location
+
+
+  !> Stores the internal state of the test for better identification/introspection
+  subroutine test_context_store_state(this, state)
+
+    !> Instane
+    class(test_context), intent(inout) :: this
+
+    !> Arbitrary (character representable) state object
+    class(char_rep), intent(in) :: state
+
+    this%state_ = state
+
+  end subroutine test_context_store_state
+
+
+  !> Pops the test state from the context
+  subroutine test_context_pop_state(this, state)
+
+    !> Instance
+    class(test_context), intent(inout) :: this
+
+    !> Popped state object
+    class(char_rep), allocatable, intent(out) :: state
+
+    if (allocated(this%state_)) call move_alloc(this%state_, state)
+
+  end subroutine test_context_pop_state
 
 end module fortuno_testcontext

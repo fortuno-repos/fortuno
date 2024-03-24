@@ -25,7 +25,7 @@ module fortuno_serial_serialbasetypes
     subroutine serial_case_base_run(this)
       import serial_case_base
       implicit none
-      class(serial_case_base), intent(inout) :: this
+      class(serial_case_base), intent(in) :: this
     end subroutine serial_case_base_run
 
   end interface

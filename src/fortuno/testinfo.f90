@@ -4,11 +4,12 @@
 
 !> Types containing informations about tests and checks
 module fortuno_testinfo
-  use fortuno_utils, only : as_char, nl
+  use fortuno_chartypes, only : char_rep
+  use fortuno_utils, only : as_char
   implicit none
 
   private
-  public :: check_result, failure_details, failure_info, test_result
+  public :: check_result, failure_info, test_result
   public :: init_failure_location, failure_location
   public :: init_drive_result, drive_result
   public :: teststatus, nteststatusvals
@@ -37,39 +38,14 @@ module fortuno_testinfo
   integer, parameter :: nteststatusvals = 5
 
 
-  !> Contains details about a failed check
-  type, abstract :: failure_details
-  contains
-    procedure(failure_details_as_char), deferred :: as_char
-  end type failure_details
-
-
-  abstract interface
-
-    !> Character representation of the failure details (typically the failure reason)
-    function failure_details_as_char(this) result(repr)
-      import :: failure_details
-      implicit none
-
-      !> Instance
-      class(failure_details), intent(in) :: this
-
-      !> Character representation
-      character(:), allocatable :: repr
-
-    end function failure_details_as_char
-
-  end interface
-
-
   !> Contains the result of a check
   type :: check_result
 
     !> Whether the check was successful
     logical :: success = .false.
 
-    !> Further information about the check (reason of failure)
-    class(failure_details), allocatable :: details
+    !> Further character representable information about the check (reason of failure)
+    class(char_rep), allocatable :: details
 
   end type check_result
 
@@ -100,8 +76,8 @@ module fortuno_testinfo
     !> Failure location information
     class(failure_location), allocatable :: location
 
-    !> Internal details of the check (with method to render it as text)
-    class(failure_details), allocatable :: details
+    !> Character representable internal details of the check
+    class(char_rep), allocatable :: details
 
     !> Contains previous failure_info (to be able to chain check infos)
     type(failure_info), allocatable :: previous

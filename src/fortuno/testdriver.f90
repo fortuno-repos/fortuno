@@ -4,8 +4,8 @@
 
 !> Implements a generic test driver
 module fortuno_testdriver
-  use fortuno_basetypes, only : test_item, test_base
-  use fortuno_basetypes, only : test_case_base, test_suite_base
+  use fortuno_basetypes, only : test_base, test_case_base, test_item, test_suite_base
+  use fortuno_chartypes, only : char_rep
   use fortuno_testcontext, only : context_factory, test_context
   use fortuno_testinfo, only : drive_result, init_drive_result, test_result, teststatus
   use fortuno_testlogger, only : test_logger, testtypes
@@ -359,7 +359,7 @@ contains
     !> Initial container size
     integer, intent(in) :: initsize
 
-    allocate(this%storage_(100))
+    allocate(this%storage_(initsize))
     ! Setting testdata pointer up, so that it has size 0.
     this%testdata => this%storage_(1:0)
 
@@ -406,6 +406,7 @@ contains
     character(:), allocatable, intent(out) :: repr
 
     class(test_base), pointer :: scopeptr
+    class(char_rep), allocatable :: state
 
     scopeptr => testitems(identifier(1))%item
     call ctx%push_scope_ptr(scopeptr)
@@ -413,7 +414,8 @@ contains
       select type (item => testitems(identifier(1))%item)
       class is (test_case_base)
         call runner%run_test(item, ctx)
-        call item%get_as_char(repr)
+        call ctx%pop_state(state)
+        if (allocated(state)) repr = state%as_char()
       class default
         error stop "Internal error, unexpected test type in run_test_"
       end select
@@ -439,6 +441,7 @@ contains
     character(:), allocatable, intent(out) :: repr
 
     class(test_base), pointer :: scopeptr
+    class(char_rep), allocatable :: state
 
     scopeptr => testitems(identifier(1))%item
     call ctx%push_scope_ptr(scopeptr)
@@ -447,7 +450,8 @@ contains
       if (size(identifier) == 1) then
         if (init) then
           call runner%set_up_suite(item, ctx)
-          call item%get_as_char(repr)
+          call ctx%pop_state(state)
+          if (allocated(state)) repr = state%as_char()
         else
           call runner%tear_down_suite(item, ctx)
         end if
@@ -479,7 +483,7 @@ contains
 
     associate (testresult => testresults(ind))
       name = basename(testresult%name)
-      if (allocated(repr)) name = name // " {" // repr // "}"
+      if (allocated(repr)) name = name // "{" // repr // "}"
       if (size(testresult%dependencies) > 0) then
         testresult%reprname = depresults(testresult%dependencies(1))%reprname // "/" // name
       else

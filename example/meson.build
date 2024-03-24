@@ -15,6 +15,7 @@ example_testapp_exe = executable(
   'testapp',
   sources: [
     'fixtured_tests.f90',
+    'parametrized_tests.f90',
     'simple_tests.f90',
     'testapp.f90',
   ],

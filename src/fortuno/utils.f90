@@ -14,6 +14,7 @@ module fortuno_utils
   public :: nl
   public :: stderr, stdout
   public :: string, string_list
+  public :: as_upper
 
   !> New line character
   character(*), parameter :: nl = new_line("")
@@ -94,5 +95,32 @@ contains
     basename = path(lastseppos + 1 :)
 
   end function basename
+
+
+  !> Converts a string to upper-case.
+  pure function as_upper(str) result(upperstr)
+
+    !> String to convert
+    character(*), intent(in) :: str
+
+    !> Upper-case string
+    character(len(str)) :: upperstr
+
+    integer, parameter :: lowerstart = iachar("a")
+    integer, parameter :: lowerend = iachar("z")
+    integer, parameter :: shift = iachar("A") - lowerstart
+
+    integer :: ii, ord
+
+    do ii = 1, len(str)
+      ord = iachar(str(ii:ii))
+      if (ord >= lowerstart .and. ord <= lowerend) then
+        upperstr(ii:ii) = achar(iachar(str(ii:ii)) + shift)
+      else
+        upperstr(ii:ii) = str(ii:ii)
+      end if
+    end do
+
+  end function as_upper
 
 end module fortuno_utils

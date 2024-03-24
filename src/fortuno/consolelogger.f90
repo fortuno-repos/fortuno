@@ -5,7 +5,7 @@
 !> Contains the implementation of the test logger for logging on the console
 module fortuno_consolelogger
   use fortuno_testinfo, only : drive_result, failure_info, test_result, teststatus
-  use fortuno_testlogger, only : test_logger, testtypes
+  use fortuno_testlogger, only : test_logger
   use fortuno_utils, only : ansicolors, as_char, stderr, stdout
   implicit none
 
@@ -89,8 +89,6 @@ contains
 
     !> Details string (unallocated if not available or not relevant)
     character(:), allocatable, intent(out) :: details
-
-    character(:), allocatable :: buffer
 
     location = failureinfo%location%as_char()
     if (allocated(failureinfo%message)) message = failureinfo%message

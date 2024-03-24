@@ -6,6 +6,7 @@ target_sources(
   fortuno PRIVATE
   argumentparser.f90
   basetypes.f90
+  chartypes.f90
   checkers.f90
   cmdapp.f90
   consolelogger.f90
