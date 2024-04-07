@@ -24,7 +24,7 @@ systems.
 - integration with the `fpm <https://fpm.fortran-lang.org/>`_, `CMake
   <https://cmake.org/>`_ and `Meson <https://mesonbuild.com/>`_ build systems.
 
-Detailed **documentation** is available on the `Fortuno documentation
+**Documentation** is available on the `Fortuno documentation
 <https://fortuno.readthedocs.io>`_ page. You can also have a look at the
 examples in the `example folder <example/>`_.
 

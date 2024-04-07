@@ -60,6 +60,13 @@ module fortuno_argumentparser
   end type argument_value
 
 
+  ! Workaround:gfortran:13.2
+  ! Needs user defined structure constructor to deal with class(*) field
+  interface argument_value
+    module procedure new_argument_value
+  end interface
+
+
   !> Collection of all argument values obtained after command line had been prased
   type :: argument_values
     private
@@ -174,7 +181,7 @@ contains
             if (matches) then
               select case (argdef%argtype)
               case (argtypes%bool)
-                argumentvalues%argvals = [argumentvalues%argvals, argument_value(name=argdef%name)]
+                argumentvalues%argvals = [argumentvalues%argvals, argument_value(argdef%name)]
               case default
                 call logger%log_error("Unknown argument type")
                 exitcode = 1
@@ -194,15 +201,8 @@ contains
     associate (argdef => this%argdefs(nargdefs))
       ! If the last argdef was not an option, store all position arguments under this name
       if (.not. allocated(argdef%longopt) .and. argdef%shortopt == "") then
-        ! argumentvalues%argvals = [argumentvalues%argvals,&
-        !     & argument_value(name=argdef%name, argval=string_list(posargs))]
-        ! Workaround:gfortran:13.2
-        block
-          class(*), allocatable :: tmp
-          tmp = string_list(posargs)
-          argumentvalues%argvals = [argumentvalues%argvals,&
-              & argument_value(name=argdef%name, argval=tmp)]
-        end block
+        argumentvalues%argvals = [argumentvalues%argvals,&
+            & argument_value(argdef%name, argval=string_list(posargs))]
       else if (size(posargs) > 1) then
         call logger%log_error("Superfluous positional arguments found")
         exitcode = 1
@@ -268,6 +268,20 @@ contains
     end if
 
   end subroutine argument_values_get_value_stringlist
+
+
+  !> User defined structure constructor for argument_value
+  function new_argument_value(name, argval) result(this)
+    character(*), intent(in) :: name
+    class(*), optional, intent(in) :: argval
+    type(argument_value) :: this
+
+    this%name = name
+    if (present(argval)) then
+      allocate(this%argval, source=argval)
+    end if
+
+  end function new_argument_value
 
 
   !! Returns the command line arguments as an array of strings.
