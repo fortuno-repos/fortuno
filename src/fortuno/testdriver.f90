@@ -82,7 +82,7 @@ module fortuno_testdriver
   end interface
 
 
-  !! Data item stored for each test (name and identifier).
+  !! Data item stored for each test when building a plain non-nested list of all test items.
   type :: test_data
 
     ! Unique integer identifier (path) of the test object
@@ -97,7 +97,7 @@ module fortuno_testdriver
   end type test_data
 
 
-  !! Minimalistic automatically growing array of test_data_ items.
+  !! Minimalistic automatically growing array of test_data items.
   type :: test_data_container
     private
     type(test_data), pointer, public :: testdata(:) => null()
@@ -108,19 +108,29 @@ module fortuno_testdriver
   end type test_data_container
 
 
+  !! Selection related reversible mapping data
+  !!
+  !! Forward mapping: selection index to test/suite index within container
+  !! Reverse mapping: test/suite index within container to selection index
+  !!
+  type :: reversible_mapping
+    integer, allocatable :: fwd(:), rev(:)
+  end type reversible_mapping
+
+
   !> App for driving serial tests through command line app
   type :: test_driver
     private
     !> Result of a test drive, after run_tests() had been invoked
+    type(drive_result), public :: driveresult
+
     class(test_runner), allocatable :: runner
     class(context_factory), allocatable :: ctxfactory
     class(test_logger), allocatable :: logger
-    type(drive_result), public :: driveresult
     type(test_item), allocatable :: testitems(:)
     type(test_data_container) :: testdatacont
     type(test_data_container) :: suitedatacont
-    integer, allocatable :: selectedsuites(:)
-    integer, allocatable :: selectedtests(:)
+    type(reversible_mapping) :: suiteselection, testselection
   contains
     procedure :: register_tests => test_driver_register_tests
     procedure :: run_tests => test_driver_run_tests
@@ -140,6 +150,7 @@ module fortuno_testdriver
   end type
 
 contains
+
 
   !> Initializes a test driver instance
   subroutine init_test_driver(this, ctxfactory, runner)
@@ -173,11 +184,11 @@ contains
 
     this%testitems = testitems
     call init_test_data_container(this%suitedatacont, 100)
-    call init_test_data_container(this%testdatacont, 1000)
+    call init_test_data_container(this%testdatacont, 5000)
     call build_test_data_(this%testitems, "", [integer ::], [integer ::], this%testdatacont,&
         & this%suitedatacont)
     call get_selected_suites_and_tests_(this%suitedatacont%testdata, this%testdatacont%testdata,&
-        & this%selectedsuites, this%selectedtests, selections)
+        & this%suiteselection, this%testselection, selections)
 
   end subroutine test_driver_register_tests
 
@@ -191,19 +202,18 @@ contains
     !> Logger for reporting events
     class(test_logger), intent(inout) :: logger
 
-    call init_drive_result(this%driveresult, size(this%selectedsuites), size(this%selectedtests))
+    call init_drive_result(this%driveresult, size(this%suiteselection%fwd),&
+        & size(this%testselection%fwd))
 
     call logger%start_drive()
     call logger%start_tests()
-    call run_tests_(this%testitems, testtypes%suitesetup, this%suitedatacont%testdata,&
-        & this%selectedsuites, this%driveresult%suiteresults(1, :), this%ctxfactory, this%runner,&
-        & logger)
-    call run_tests_(this%testitems, testtypes%testrun, this%testdatacont%testdata,&
-        & this%selectedtests, this%driveresult%testresults, this%ctxfactory, this%runner, logger,&
-        & this%driveresult%suiteresults(1, :))
-    call run_tests_(this%testitems, testtypes%suiteteardown, this%suitedatacont%testdata,&
-        & this%selectedsuites, this%driveresult%suiteresults(2, :), this%ctxfactory, this%runner,&
-        & logger, this%driveresult%suiteresults(1, :))
+    call run_suite_initializers_finalizers_(.true., this%testitems, this%suitedatacont%testdata,&
+        & this%suiteselection, this%driveresult%suiteresults, this%ctxfactory, this%runner, logger)
+    call run_tests_(this%testitems, this%suiteselection, this%driveresult%suiteresults(1, :),&
+        & this%testdatacont%testdata, this%testselection, this%driveresult%testresults,&
+        & this%ctxfactory, this%runner, logger)
+    call run_suite_initializers_finalizers_(.false., this%testitems, this%suitedatacont%testdata,&
+        this%suiteselection, this%driveresult%suiteresults, this%ctxfactory, this%runner, logger)
     call logger%end_tests()
     call this%driveresult%calculate_stats()
     call logger%log_drive_result(this%driveresult)
@@ -221,67 +231,113 @@ contains
     !> Name of all tests
     type(string), allocatable :: testnames(:)
 
-    integer :: ntests, itest
+    integer :: nselect, iselect
 
-    ntests = size(this%selectedtests)
-    allocate(testnames(ntests))
-    do itest = 1, ntests
-      testnames(itest)%content = this%testdatacont%testdata(this%selectedtests(itest))%name
+    nselect = size(this%testselection%fwd)
+    allocate(testnames(nselect))
+    do iselect = 1, nselect
+      testnames(iselect)%content = this%testdatacont%testdata(this%testselection%fwd(iselect))%name
     end do
 
   end subroutine test_driver_get_test_names
 
 
-  !! Executes various test objects.
-  subroutine run_tests_(testitems, testtype, testdatas, selected, testresults, ctxfactory, runner,&
-        & logger, dependencyresults)
+  subroutine run_suite_initializers_finalizers_(initializer, testitems, suitedatas, suiteselection,&
+      & suiteresults, ctxfactory, runner, logger)
+    logical, intent(in) :: initializer
     type(test_item), intent(inout) :: testitems(:)
-    integer, intent(in) :: testtype
-    type(test_data), intent(inout) :: testdatas(:)
-    integer, intent(in) :: selected(:)
-    type(test_result), target, intent(inout) :: testresults(:)
+    type(test_data), intent(inout) :: suitedatas(:)
+    type(reversible_mapping), intent(in) :: suiteselection
+    type(test_result), intent(inout) :: suiteresults(:,:)
     class(context_factory), intent(inout) :: ctxfactory
     class(test_runner), intent(inout) :: runner
     class(test_logger), intent(inout) :: logger
-    type(test_result), optional, target, intent(in) :: dependencyresults(:)
 
-    type(test_result), pointer :: depresults(:)
     class(test_context), allocatable :: ctx
     character(:), allocatable :: repr
-    integer :: depstatus
-    integer :: iselect
+    integer :: iselect, idata, depstatus, iresult
 
-    if (present(dependencyresults)) then
-      depresults => dependencyresults
+    if (initializer) then
+      iresult = 1
     else
-      depresults => testresults
+      iresult = 2
     end if
 
-    do iselect = 1, size(selected)
-      associate (testdata => testdatas(selected(iselect)), testresult => testresults(iselect))
-        testresult%name = testdata%name
-        testresult%dependencies = testdata%dependencies
+    do iselect = 1, size(suiteselection%fwd)
+      idata = suiteselection%fwd(iselect)
+      associate (suitedata => suitedatas(idata), suiteresult => suiteresults(:, iselect))
+        suiteresult(iresult)%name = suitedata%name
+        ! Dependencies in result should point to entries in suite result array
+        suiteresult(iresult)%dependencies = suiteselection%rev(suitedata%dependencies)
 
-        if (testtype == testtypes%suiteteardown) then
-          depstatus = depresults(iselect)%status
-        else if (size(testdata%dependencies) > 0) then
-          depstatus = depresults(testdata%dependencies(1))%status
+        if (initializer) then
+          ! Initializer depends on the status of the initializaiton of the closest dependency.
+          if (size(suiteresult(1)%dependencies) > 0) then
+            depstatus = suiteresults(1, suiteresult(1)%dependencies(1))%status
+          else
+            depstatus = teststatus%succeeded
+          end if
         else
-          depstatus = teststatus%succeeded
+          ! Finalizer depends on the status of the initializer of the same suite
+          depstatus = suiteresult(1)%status
         end if
 
         if (depstatus == teststatus%succeeded) then
           call ctxfactory%create_context(ctx)
-          select case (testtype)
-          case (testtypes%suitesetup)
-            call initialize_finalize_suite_(testitems, testdata%identifier, .true., ctx, runner,&
-                & repr)
-          case (testtypes%testrun)
-            call run_test_(testitems, testdata%identifier, ctx, runner, repr)
-          case (testtypes%suiteteardown)
-            call initialize_finalize_suite_(testitems, testdata%identifier, .false., ctx, runner,&
-                & repr)
-          end select
+          call initialize_finalize_suite_(testitems, suitedata%identifier, initializer, ctx,&
+              & runner, repr)
+          suiteresult(iresult)%status = ctx%status()
+          call ctx%pop_failure_info(suiteresult(iresult)%failureinfo)
+          deallocate(ctx)
+        else
+          if (depstatus == teststatus%skipped) then
+            suiteresult(iresult)%status = teststatus%skipped
+          else
+            suiteresult(iresult)%status = teststatus%ignored
+          end if
+        end if
+
+        call set_repr_name_(suiteresults(iresult, :), iselect, repr)
+        if (allocated(repr)) deallocate(repr)
+
+        call logger%log_test_result(testtypes%suitesetup, suiteresult(iresult))
+      end associate
+    end do
+
+  end subroutine run_suite_initializers_finalizers_
+
+
+  subroutine run_tests_(testitems, suiteselection, suiteinitresults, testdatas, testselection,&
+      & testresults, ctxfactory, runner, logger)
+    type(test_item), intent(inout) :: testitems(:)
+    type(reversible_mapping), intent(in) :: suiteselection
+    type(test_result), intent(in) :: suiteinitresults(:)
+    type(test_data), intent(inout) :: testdatas(:)
+    type(reversible_mapping), intent(in) :: testselection
+    type(test_result), intent(inout) :: testresults(:)
+    class(context_factory), intent(inout) :: ctxfactory
+    class(test_runner), intent(inout) :: runner
+    class(test_logger), intent(inout) :: logger
+
+    class(test_context), allocatable :: ctx
+    character(:), allocatable :: repr
+    integer :: iselect, idata, depstatus
+
+    do iselect = 1, size(testselection%fwd)
+      idata = testselection%fwd(iselect)
+      associate (testdata => testdatas(idata), testresult => testresults(iselect))
+        testresult%name = testdata%name
+        ! Dependencies in results should point to entries in suite result array
+        testresult%dependencies = suiteselection%rev(testdata%dependencies)
+
+        if (size(testresult%dependencies) > 0) then
+          depstatus = suiteinitresults(testresult%dependencies(1))%status
+        else
+          depstatus = teststatus%succeeded
+        end if
+        if (depstatus == teststatus%succeeded) then
+          call ctxfactory%create_context(ctx)
+          call run_test_(testitems, testdata%identifier, ctx, runner, repr)
           testresult%status = ctx%status()
           call ctx%pop_failure_info(testresult%failureinfo)
           deallocate(ctx)
@@ -293,17 +349,10 @@ contains
           end if
         end if
 
-        select case (testtype)
-        case (testtypes%suitesetup)
-          call set_repr_name_(testresults, iselect, repr)
-        case (testtypes%testrun)
-          call set_repr_name_(testresults, iselect, repr, depresults)
-        case (testtypes%suiteteardown)
-          testresult%reprname = depresults(iselect)%reprname
-        end select
+        call set_repr_name_(testresults, iselect, repr, suiteinitresults)
         if (allocated(repr)) deallocate(repr)
 
-        call logger%log_test_result(testtype, testresult)
+        call logger%log_test_result(testtypes%testrun, testresult)
       end associate
     end do
 
@@ -384,7 +433,7 @@ contains
     type(test_data), pointer :: buffer(:)
 
     if (size(this%storage_) == size(this%testdata)) then
-      newsize = int(size(this%storage_) * 1.4)
+      newsize = max(int(size(this%storage_) * 1.4), size(this%storage_) + 2)
       allocate(buffer(newsize))
       buffer(1 : size(this%storage_)) = this%storage_
       deallocate(this%storage_)
@@ -495,10 +544,10 @@ contains
 
 
   !! Returns indices of selected suites and tests.
-  subroutine get_selected_suites_and_tests_(suitedata, testdata, selectedsuites, selectedtests,&
+  subroutine get_selected_suites_and_tests_(suitedata, testdata, suiteselection, testselection,&
         & selections)
     type(test_data), intent(in) :: suitedata(:), testdata(:)
-    integer, allocatable, intent(out) :: selectedsuites(:), selectedtests(:)
+    type(reversible_mapping), intent(out) :: suiteselection, testselection
     type(test_selection), optional, intent(in) :: selections(:)
 
     logical, allocatable :: testmask(:), suitemask(:)
@@ -507,11 +556,15 @@ contains
     integer :: selectnamelen
     integer :: ii
 
-    selectedsuites = [(ii, ii = 1, size(suitedata))]
-    selectedtests = [(ii, ii = 1, size(testdata))]
     hasselection = present(selections)
     if (hasselection) hasselection = size(selections) > 0
-    if (.not. hasselection) return
+    if (.not. hasselection) then
+      suiteselection%fwd = [(ii, ii = 1, size(suitedata))]
+      suiteselection%rev = suiteselection%fwd
+      testselection%fwd = [(ii, ii = 1, size(testdata))]
+      testselection%rev = testselection%fwd
+      return
+    end if
 
     allocate(testmask(size(testdata)))
     ! If first option is an exclusion, include all tests by default otherwise exclude them.
@@ -541,9 +594,24 @@ contains
       if (testmask(itest)) suitemask(testdata(itest)%dependencies) = .true.
     end do
 
-    selectedsuites = pack(selectedsuites, suitemask)
-    selectedtests = pack(selectedtests, testmask)
+    call get_rev_map_from_mask_(suitemask, suiteselection)
+    call get_rev_map_from_mask_(testmask, testselection)
 
   end subroutine get_selected_suites_and_tests_
+
+
+  subroutine get_rev_map_from_mask_(mask, mapping)
+    logical, intent(in) :: mask(:)
+    type(reversible_mapping), intent(out) :: mapping
+
+    integer :: ii
+
+    mapping%fwd = pack([(ii, ii = 1, size(mask))], mask)
+    allocate(mapping%rev(size(mask)), source=0)
+    do ii = 1, size(mapping%fwd)
+      mapping%rev(mapping%fwd(ii)) = ii
+    end do
+
+  end subroutine get_rev_map_from_mask_
 
 end module fortuno_testdriver
