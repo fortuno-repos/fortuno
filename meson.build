@@ -15,14 +15,14 @@ fortuno_sources = []
 fortuno_serial_sources = []
 subdir('src')
 
-thread_safe_flags = get_option('thread_safe_flags')
+thread_safe_compile_flags = get_option('thread_safe_compile_flags')
 thread_safe_link_flags = get_option('thread_safe_link_flags')
 
 fortuno_lib = library(
   'fortuno',
   version: meson.project_version(),
   sources: fortuno_sources,
-  fortran_args: thread_safe_flags,
+  fortran_args: thread_safe_compile_flags,
   link_args: thread_safe_link_flags,
 )
 

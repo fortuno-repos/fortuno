@@ -53,13 +53,13 @@ set(
 )
 
 set(
-  FORTUNO_THREAD_SAFE_FLAGS "" CACHE STRING
+  FORTUNO_THREAD_SAFE_COMPILE_FLAGS "" CACHE STRING
   "Fortuno: Flags needed to enforce thread-safe build during compilation"
 )
 
 set(
   FORTUNO_THREAD_SAFE_LINK_FLAGS "" CACHE STRING
-  "Fortuno: Flags neeeded to enforce thread-safe build durink linkage"
+  "Fortuno: Flags neeeded to enforce thread-safe build during linking"
 )
 
 #[=================================================================================================[
@@ -76,7 +76,6 @@ endif ()
 
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 fortuno_setup_build_type("RelWithDebInfo")
-fortuno_def_thread_safe_build_target()
 
 #[=================================================================================================[
 #                                 Main definition                                                 #

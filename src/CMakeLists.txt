@@ -18,7 +18,7 @@ set_target_properties(
     OUTPUT_NAME fortuno
     Fortran_MODULE_DIRECTORY "${moduledir}"
 )
-target_link_libraries(fortuno PRIVATE ThreadSafeBuild)
+fortuno_add_thread_safe_build_flags(fortuno)
 target_include_directories(
   fortuno PUBLIC
   $<BUILD_INTERFACE:${moduledir}>
