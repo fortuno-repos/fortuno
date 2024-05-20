@@ -35,15 +35,17 @@ The development can be followed and joined at the `Fortuno project
 Quickstart
 ==========
 
-The following instructions demonstrate how to add unit tests testing serial code
-via Fortuno to an existing project, which uses fpm, CMake or Meson as build
-system. If you are not familiar with any of these build systems, visit the
-`Fortuno documentation <https://fortuno.readthedocs.io>`_ for a step-by-step
-guide starting from scratch.
+If you want to start a new project utilizing the Fortuno unit testing framework,
+use the `Cookiecutter-Fortran-project
+<https://github.com/fortuno-repos/cookiecutter-fortran-project>`_ template
+generator to obtain a minimal, ready to build, run and install project with
+selectable build system (CMake, Fpm or Meson) and Fortuno integration.
 
-In the examples below, we will assume that your library has a module ``mylib``,
-which provides a function ``factorial()`` for calculating the factorial of
-integers. Adapt those names to your actual library and routine names.
+If you wish to add Fortuno unit tests to an already existing project, follow the
+instructions below. In the examples it will be assumed that your library has a
+module ``mylib``, which provides a function ``factorial()`` for calculating the
+factorial of integers. Adapt those names to your actual library and routine
+names.
 
 
 Obtaining Fortuno
