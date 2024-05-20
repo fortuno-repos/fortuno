@@ -38,7 +38,7 @@ Quickstart
 If you want to start a new project utilizing the Fortuno unit testing framework,
 use the `Cookiecutter-Fortran-project
 <https://github.com/fortuno-repos/cookiecutter-fortran-project>`_ template
-generator to obtain a minimal, ready to build, run and install project with
+generator to obtain a minimal, ready to build, test and install project with
 selectable build system (CMake, Fpm or Meson) and Fortuno integration.
 
 If you wish to add Fortuno unit tests to an already existing project, follow the
