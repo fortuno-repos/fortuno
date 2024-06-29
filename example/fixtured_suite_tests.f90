@@ -13,7 +13,7 @@ module fixtured_suite_tests
   public :: get_fixtured_suite_tests
 
 
-  ! Test suite containing data initialized through the set_up() procedures
+  ! Test suite containing data initialized through the set_up() procedure
   type, extends(serial_suite_base) :: random_test_suite
     integer :: nn = -1
   contains
@@ -29,7 +29,7 @@ module fixtured_suite_tests
 
   contains
 
-    ! Overrides run procedure to pass hosting suite's to test procedure
+    ! Overrides run procedure to pass hosting suite's data to test procedure
     procedure :: run => random_test_case_run
 
   end type random_test_case
