@@ -22,9 +22,8 @@ contains
   function serial_suite_item(name, items) result(testitem)
     character(*), intent(in) :: name
     type(test_item), intent(in) :: items(:)
-    type(test_item), allocatable :: testitem
+    type(test_item) :: testitem
 
-    allocate(testitem)
     testitem%item = serial_suite(name=name, items=items)
 
   end function serial_suite_item

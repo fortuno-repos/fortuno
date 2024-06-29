@@ -40,9 +40,8 @@ contains
   function serial_case_item(name, proc) result(testitem)
     character(len=*), intent(in) :: name
     procedure(serial_case_proc) :: proc
-    type(test_item), allocatable :: testitem
+    type(test_item) :: testitem
 
-    allocate(testitem)
     testitem%item = serial_case(name=name, proc=proc)
 
   end function serial_case_item
