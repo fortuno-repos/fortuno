@@ -54,7 +54,10 @@ contains
     type(arg_res), intent(in) :: argres
     type(test_item) :: testitem
 
-    testitem%item = parametrized_test_case(name=prefix // "_" // as_char(argres%arg), argres=argres)
+    character(:), allocatable :: name
+
+    name = prefix // "_" // as_char(argres%arg)
+    testitem%item = parametrized_test_case(name=name, argres=argres)
 
   end function parametrized_test
 
