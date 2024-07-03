@@ -65,11 +65,22 @@ jobs:
         run: |
           pip install cmake fpm meson ninja
 
-      - name: Build Fortuno
+      - name: Build Fortuno with CMake
         run: |
           cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
           cmake --build ${BUILD_DIR}
           cmake --install ${BUILD_DIR}
+          rm -rf ${BUILD_DIR}
+
+      - name: Build Fortuno with Fpm
+        run: |
+          fpm build
+          rm -rf build
+
+      - name: Build Fortuno with Meson
+        run: |
+          meson setup -Dbuild_examples=true ${BUILD_DIR}
+          ninja -C ${BUILD_DIR}
           rm -rf ${BUILD_DIR}
 
       - name: Test CMake export
