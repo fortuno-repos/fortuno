@@ -74,6 +74,8 @@ if (FORTUNO_INSTALL)
   include(GNUInstallDirs)
 endif ()
 
+find_program(FYPP fypp)
+
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 fortuno_setup_build_type("RelWithDebInfo")
 
