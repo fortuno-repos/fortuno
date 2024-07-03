@@ -63,7 +63,7 @@ jobs:
 
       - name: Setup build tools
         run: |
-          pip install cmake fpm meson ninja
+          pip install cmake fpm meson ninja fypp
 
       - name: Build Fortuno
         run: |
