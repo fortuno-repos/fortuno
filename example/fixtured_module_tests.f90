@@ -4,10 +4,10 @@
 
 ! This example illustrates how to use module variables as fixtures. Note that the test procedures
 ! access the module variable containing the fixture data directly via host association for
-! simplicity. If any test modifies a module variable, the tests will no longer be independent. As an
-! alternative, you could derive a new test case class by extending serial_case_base, where test
-! procedures receive the fixture data as `intent(in)` arguments. For further details, refer to the
-! example on fixtured tests.
+! simplicity. If any test modifies this module variable, the tests will no longer be independent. As
+! a more robust alternative, you could derive a new test case class by extending serial_case_base
+! and enforce that the test procedures receive the fixture data as an "intent(in)" argument. For
+! further details, refer to the example on fixtured tests.
 
 module fixtured_module_tests
   use mylib, only : factorial
