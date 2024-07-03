@@ -10,7 +10,7 @@ module fixtured_suite_tests
   implicit none
 
   private
-  public :: get_fixtured_suite_tests
+  public :: fixtured_suite_test_items
 
 
   ! Test suite containing data initialized through the set_up() procedure
@@ -38,7 +38,7 @@ contains
 
 
   ! Returns the tests from this module.
-  function get_fixtured_suite_tests() result(testitems)
+  function fixtured_suite_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
     testitems = [&
@@ -48,7 +48,7 @@ contains
         ])&
     ]
 
-  end function get_fixtured_suite_tests
+  end function fixtured_suite_test_items
 
 
   ! TEST n! = n * (n - 1)!

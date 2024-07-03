@@ -9,12 +9,12 @@ module simple_tests
   implicit none
 
   private
-  public :: get_simple_tests
+  public :: simple_test_items
 
 contains
 
   ! Returns the tests from this module.
-  function get_simple_tests() result(testitems)
+  function simple_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
     testitems = [&
@@ -29,7 +29,7 @@ contains
         ])&
     ]
 
-  end function get_simple_tests
+  end function simple_test_items
 
   ! Test: 0! = 1
   subroutine test_factorial_0()

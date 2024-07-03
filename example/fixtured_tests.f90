@@ -10,7 +10,7 @@ module fixtured_tests
   implicit none
 
   private
-  public :: get_fixtured_tests
+  public :: fixtured_test_items
 
 
   ! Fixtured test case creating a random number before running a test procedure.
@@ -30,7 +30,7 @@ contains
 
 
   ! Returns the tests from this module.
-  function get_fixtured_tests() result(testitems)
+  function fixtured_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
     integer :: ii
@@ -42,7 +42,7 @@ contains
         ])&
     ]
 
-  end function get_fixtured_tests
+  end function fixtured_test_items
 
 
   ! TEST n! = n * (n - 1)!
