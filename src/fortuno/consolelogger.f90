@@ -349,10 +349,10 @@ contains
     call write_failure_info_(this, failureinfo%previous)
     if (failureinfo%location%checknr /= 0) then
       if (this%is_active()) &
-          & write(stdout, "(/, 3a)") ansicolors%red, "-> Unsuccessful check", ansicolors%default
+          & write(stdout, "(/, a)") "-> Unsuccessful check"
     else
       if (this%is_active()) &
-          & write(stdout, "(/, 3a)") ansicolors%red, "-> Failure", ansicolors%default
+          & write(stdout, "(/, a)") "-> Failure"
     end if
     call this%get_failure_info_repr(failureinfo, location, message, details)
     if (this%is_active()) then
