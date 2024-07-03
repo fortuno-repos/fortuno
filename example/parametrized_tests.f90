@@ -9,7 +9,7 @@ module parametrized_tests
   implicit none
 
   private
-  public :: get_parametrized_tests
+  public :: parametrized_test_items
 
 
   !> Contains argument and expected result of a factorial() invokation
@@ -34,7 +34,7 @@ contains
 
 
   !> Returns the tests of this module.
-  function get_parametrized_tests() result(testitems)
+  function parametrized_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
     integer :: ii
@@ -45,7 +45,7 @@ contains
         ])&
     ]
 
-  end function get_parametrized_tests
+  end function parametrized_test_items
 
 
   !> Convenience wrapper to generate a test case for a given argres pair.
