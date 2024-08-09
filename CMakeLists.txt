@@ -143,6 +143,23 @@ if (FORTUNO_INSTALL)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
     COMPONENT Fortuno_development
   )
+  install(
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/fortuno.fypp
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    COMPONENT Fortuno_development
+  )
+  # introduce fake target with information about the folder containing the include file
+  add_library(fortuno_include_dir INTERFACE)
+  target_include_directories(
+    fortuno_include_dir INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+  install(
+    TARGETS fortuno_include_dir
+    EXPORT FortunoTargets
+  )
+
 endif ()
 
 # Make project available for FetchContent

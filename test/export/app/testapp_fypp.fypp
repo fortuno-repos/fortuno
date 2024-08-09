@@ -1,0 +1,36 @@
+! This file is part of Fortuno.
+! Licensed under the BSD-2-Clause Plus Patent license.
+! SPDX-License-Identifier: BSD-2-Clause-Patent
+
+#:include "fortuno.fypp"
+
+!> Test app driving Fortuno unit tests
+program testapp_fypp
+  use fortuno_serial, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
+      check => serial_check, test_item
+  implicit none
+
+  call execute_serial_cmd_app(&
+      testitems=[&
+          test_items()&
+      ]&
+  )
+
+contains
+
+
+  $:TEST("success")
+    @:CHECK(is_equal(1, 1))
+  $:END_TEST()
+
+
+  function test_items() result(testitems)
+    type(test_item), allocatable :: testitems(:)
+
+    testitems = [&
+        $:TEST_ITEMS()
+    ]
+
+  end function test_items
+
+end program testapp_fypp
