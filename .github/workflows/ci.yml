@@ -63,7 +63,7 @@ jobs:
 
       - name: Setup build tools
         run: |
-          pip install cmake fpm meson ninja
+          pip install cmake fpm meson ninja fypp
 
       - name: Build Fortuno with CMake
         run: |
@@ -87,7 +87,7 @@ jobs:
         run: |
           CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export
           cmake --build ${BUILD_DIR}
-          ${BUILD_DIR}/testapp
+          ${BUILD_DIR}/app/testapp
           rm -rf ${BUILD_DIR}
 
       - name: Test fpm export

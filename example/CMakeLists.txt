@@ -29,3 +29,8 @@ target_sources(
   testapp.f90
 )
 target_link_libraries(fortuno_example_testapp PRIVATE fortuno_example_mylib Fortuno::fortuno_serial)
+
+
+if (FYPP)
+  add_subdirectory(fypp)
+endif ()

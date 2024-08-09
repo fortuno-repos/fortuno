@@ -74,6 +74,8 @@ if (FORTUNO_INSTALL)
   include(GNUInstallDirs)
 endif ()
 
+find_program(FYPP fypp)
+
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 fortuno_setup_build_type("RelWithDebInfo")
 
@@ -81,6 +83,7 @@ fortuno_setup_build_type("RelWithDebInfo")
 #                                 Main definition                                                 #
 ]=================================================================================================]
 
+add_subdirectory(include)
 add_subdirectory(src)
 if (FORTUNO_BUILD_EXAMPLES)
   add_subdirectory(example)
@@ -141,6 +144,7 @@ if (FORTUNO_INSTALL)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
     COMPONENT Fortuno_development
   )
+
 endif ()
 
 # Make project available for FetchContent
