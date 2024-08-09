@@ -26,8 +26,10 @@ set(
   parametrized_fypp_tests.fypp
   simple_fypp_tests.fypp
 )
+
+get_target_property(_fortuno_incdir Fortuno::fortuno_include_dir INTERFACE_INCLUDE_DIRECTORIES)
 fortuno_preprocess(
-  ${FYPP} "-I${CMAKE_SOURCE_DIR}/include;--file-var-root=${CMAKE_SOURCE_DIR}"
+  ${FYPP} "-I${_fortuno_incdir};--file-var-root=${CMAKE_SOURCE_DIR}"
   .fypp .f90
   "${fypp-sources}" fypp-f90-sources
 )
