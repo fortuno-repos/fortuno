@@ -47,6 +47,8 @@ contains
             $:TEST_ITEMS(label="simple")
         ])&
     ]
+    #! Stop if there are tests without corresponding generated test_item constructors
+    @:STOP_ON_MISSING_TEST_ITEMS()
 
   end function simple_fypp_test_items
 

@@ -49,11 +49,13 @@ contains
   function fixtured_fypp_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
-      testitems = [&
+    testitems = [&
         suite("fixtured", [&
           $:TEST_ITEMS(constructor="random_test")
         ])&
     ]
+    #! Stop if there are tests without corresponding generated test_item constructors
+    @:STOP_ON_MISSING_TEST_ITEMS()
 
   end function fixtured_fypp_test_items
 
