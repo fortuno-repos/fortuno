@@ -3,7 +3,7 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Test app with command line interface, collecting and executing the tests.
-program testapp
+program testapp_fypp
   use fortuno_serial, only : execute_serial_cmd_app
   use simple_fypp_tests, only : simple_fypp_test_items
   use fixtured_fypp_tests, only : fixtured_fypp_test_items
@@ -18,4 +18,4 @@ program testapp
     ]&
   )
 
-end program testapp
+end program testapp_fypp

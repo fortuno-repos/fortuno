@@ -17,7 +17,7 @@ target_sources(
 add_executable(fortuno_example_fypp_testapp)
 set_target_properties(
   fortuno_example_fypp_testapp PROPERTIES
-  OUTPUT_NAME testapp
+  OUTPUT_NAME testapp_fypp
 )
 
 set(
@@ -35,7 +35,7 @@ fortuno_preprocess(
 target_sources(
   fortuno_example_fypp_testapp PRIVATE
   ${fypp-f90-sources}
-  testapp.f90
+  testapp_fypp.f90
 )
 target_link_libraries(
   fortuno_example_fypp_testapp

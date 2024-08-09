@@ -5,7 +5,7 @@
 #:include "fortuno.fypp"
 
 module fixtured_fypp_tests
-  use mylib, only : factorial
+  use mylib_fypp, only : factorial
   use fortuno_serial, only : char_rep_int, check => serial_check, is_equal, named_state,&
       & named_item, suite => serial_suite_item, store_state => serial_store_state,&
       & serial_case_base, test_item

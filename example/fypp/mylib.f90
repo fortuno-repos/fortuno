@@ -3,7 +3,7 @@
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 !> Demo module/library to be tested
-module mylib
+module mylib_fypp
   implicit none
 
   private
@@ -31,4 +31,4 @@ contains
 
   end function factorial
 
-end module mylib
+end module mylib_fypp
