@@ -13,7 +13,7 @@ module fortuno_chartypes
   public :: named_item, named_details, named_state
 
 
-  !> Character representable object.
+  !> Interface of a character representable object.
   type, abstract :: char_rep
   contains
     procedure(char_rep_as_char), deferred :: as_char
@@ -106,7 +106,7 @@ contains
       return
     end if
     call get_named_items_as_char_(this%items, repr, itemsep=nl, namesep=": ",&
-        & capitalizename=.true.)
+        & capitalizename=.false.)
 
   end function named_details_as_char
 

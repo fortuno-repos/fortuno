@@ -85,6 +85,10 @@ add_subdirectory(src)
 if (FORTUNO_BUILD_EXAMPLES)
   add_subdirectory(example)
 endif ()
+if (FORTUNO_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif ()
 
 #[=================================================================================================[
 #                                 Install or Export                                               #

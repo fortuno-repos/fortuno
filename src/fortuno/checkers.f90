@@ -21,26 +21,27 @@ contains
 
 
   !> Checks whether two integer values are equal
-  function is_equal_i0_i0(obtained, expected) result(checkresult)
+  function is_equal_i0_i0(value1, value2) result(checkresult)
 
-    !> Obtained value
-    integer, intent(in) :: obtained
+    !> First value to check
+    integer, intent(in) :: value1
 
-    !> Expected value
-    integer, intent(in) :: expected
+    !> Second value to check
+    integer, intent(in) :: value2
 
     !> Result of the check
     type(check_result) :: checkresult
 
-    checkresult%success = (obtained == expected)
+    checkresult%success = (value1 == value2)
     if (.not. checkresult%success) then
       checkresult%details = named_details([&
           & named_item("failure", "mismatching integer values"),&
-          & named_item("expected", char_rep_int(expected)),&
-          & named_item("obtained", char_rep_int(obtained))&
+          & named_item("value1", char_rep_int(value1)),&
+          & named_item("value2", char_rep_int(value2))&
           & ])
     end if
 
   end function is_equal_i0_i0
+
 
 end module fortuno_checkers
