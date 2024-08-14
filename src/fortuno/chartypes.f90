@@ -9,7 +9,7 @@ module fortuno_chartypes
 
   private
   public :: char_rep
-  public :: char_rep_int
+  public :: char_rep_int, char_rep_int_r1
   public :: named_item, named_details, named_state
 
 
@@ -89,6 +89,18 @@ module fortuno_chartypes
     procedure :: as_char => char_rep_int_as_char
   end type char_rep_int
 
+
+  !> Character representable integer rank 1 array.
+  type, extends(char_rep) :: char_rep_int_r1
+
+    !> Value
+  integer, allocatable :: value(:)
+
+  contains
+    procedure :: as_char => char_rep_int_r1_as_char
+  end type char_rep_int_r1
+
+
 contains
 
 
@@ -130,7 +142,7 @@ contains
   end function named_state_as_char
 
 
-  !> Integer with string representation.
+  !> String representation of an integer.
   function char_rep_int_as_char(this) result(repr)
 
     !> Instance
@@ -142,6 +154,20 @@ contains
     repr = as_char(this%value)
 
   end function char_rep_int_as_char
+
+
+  !> String representation of an integer rank 1 array.
+  function char_rep_int_r1_as_char(this) result(repr)
+
+    !> Instance
+    class(char_rep_int_r1), intent(in) :: this
+
+    !> Character representation
+    character(:), allocatable :: repr
+
+    repr = as_char(this%value)
+
+  end function char_rep_int_r1_as_char
 
 
   !> Explicit constructor for named_item (to avoid gfortran compilation problems)

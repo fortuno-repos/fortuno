@@ -40,6 +40,7 @@ module fortuno_utils
 
   interface as_char
     module procedure integer_as_char
+    module procedure integer_r1_as_char
   end interface as_char
 
 
@@ -62,6 +63,7 @@ module fortuno_utils
 
 contains
 
+
   !> Returns the character representation of an integer value
   pure function integer_as_char(val) result(repr)
 
@@ -78,6 +80,49 @@ contains
     repr = trim(buffer)
 
   end function integer_as_char
+
+
+  !> Returns the character representation of an integer rank 1 array.
+  pure function integer_r1_as_char(val) result(repr)
+
+    !> Integer array to represent
+    integer, intent(in) :: val(:)
+
+    !> Character representation
+    character(:), allocatable :: repr
+
+    character(*), parameter :: separator = ", "
+    type(string) :: reps(size(val))
+    integer :: replens(size(val))
+    integer :: ii, nn, replen, pos
+
+    if (size(val) == 0) then
+      repr = "[]"
+      return
+    end if
+
+    nn = size(val)
+    do ii = 1, nn
+      reps(ii)%content = as_char(val(ii))
+      replens(ii) = len(reps(ii)%content)
+    end do
+
+    ! take delimiting braces and ", " separator into account
+    replen = sum(replens) + 2 + (nn - 1) * len(separator)
+    allocate(character(replen) :: repr)
+    repr(1:1) = "["
+    pos = 2
+    do ii = 1, nn
+      repr(pos : pos + replens(ii) - 1) = reps(ii)%content
+      pos = pos + replens(ii)
+      if (ii /= nn) then
+        repr(pos : pos + len(separator) - 1) = separator
+        pos = pos + len(separator)
+      end if
+    end do
+    repr(pos:pos) = "]"
+
+  end function integer_r1_as_char
 
 
   !> Returns the last component (base name) of a slash ("/") separated path
