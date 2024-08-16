@@ -2,12 +2,12 @@
 ! Licensed under the BSD-2-Clause Plus Patent license.
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
-#:include "fortuno.fypp"
+#:include "fortuno_serial.fypp"
 
 !> Test app driving Fortuno unit tests
 program testapp_fypp
-  use fortuno_serial, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
-      check => serial_check, test_item
+  use fortuno_serial, only : execute_serial_cmd_app, is_equal, test_item
+  $:FORTUNO_SERIAL_IMPORTS()
   implicit none
 
   call execute_serial_cmd_app(&

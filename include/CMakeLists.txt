@@ -14,7 +14,7 @@ add_library(Fortuno::fortuno_include_dir ALIAS fortuno_include_dir)
 
 if (FORTUNO_INSTALL)
   install(
-    FILES fortuno.fypp
+    FILES fortuno_serial.fypp
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     COMPONENT Fortuno_development
   )
