@@ -38,7 +38,9 @@ jobs:
         if: ${{ contains(matrix.compiler, 'intel') }}
         uses: rscohn2/setup-oneapi@v0
         with:
-          components: ifx
+          # Note: intel 2024.1 and 2024.2 fail to build Fortuno properly due to a compiler bug,
+          # see https://community.intel.com/t5/Intel-Fortran-Compiler/Compiler-bug-Procedure-pointer-association-status-gets-lost/m-p/1612121#M172850
+          components: ifx@2024.0.0
 
       - name: Setup Intel environment
         if: ${{ contains(matrix.compiler, 'intel') }}
