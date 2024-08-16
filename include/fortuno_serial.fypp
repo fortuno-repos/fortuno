@@ -3,12 +3,18 @@
 #! SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #:mute
-#:if not defined('_FORTUNO_FYPP_')
-#:set _FORTUNO_FYPP_
+#:if not defined('_FORTUNO_SERIAL_FYPP_')
+#:set _FORTUNO_SERIAL_FYPP_
 
 #! Internal variable storing registered test items
 #:set _fortuno_registered_tests = {}
 #:set _fortuno_constructed_tests = set()
+
+
+#! Imports the prerequisites needed by the macro definitions in this file
+#:def FORTUNO_SERIAL_IMPORTS()
+  use fortuno_serial, only : serial_case_item, serial_check
+#:enddef
 
 
 #! Starts a test procedure
@@ -39,7 +45,7 @@
 #!     suffix: Suffix to add after the last test (e.g. comma, if further tests will follow)
 #!     constructor: Name of the constructor to use (default: "test")
 #!
-#:def TEST_ITEMS(label="", suffix="", constructor="test")
+#:def TEST_ITEMS(label="", suffix="", constructor="serial_case_item ")
   #:set items = _fortuno_registered_tests[label]
   $:_fortuno_constructed_tests.update(set([(label, item['name']) for item in items]))
   #:set calls = [f"{constructor}('{item['name']}', {item['proc']})" for item in items]
@@ -52,14 +58,14 @@
 #!
 #! Args:
 #!     cond: Condition to check
-#!     **kwargs: any keyword arguments, which should be passed to check()
+#!     **kwargs: any keyword arguments, which should be passed to serial_check()
 #!
 #:def CHECK(cond, **kwargs)
 #:if kwargs
   #:set kwargstr = ", ".join([f"{name}={value}" for name, value in kwargs.items()])
-  call check(${cond}$, file="${_FILE_}$", line=${_LINE_}$, ${kwargstr}$)
+  call serial_check(${cond}$, file="${_FILE_}$", line=${_LINE_}$, ${kwargstr}$)
 #:else
-  call check(${cond}$, file="${_FILE_}$", line=${_LINE_}$)
+  call serial_check(${cond}$, file="${_FILE_}$", line=${_LINE_}$)
 #:endif
 #:enddef
 

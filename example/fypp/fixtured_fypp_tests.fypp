@@ -2,13 +2,14 @@
 ! Licensed under the BSD-2-Clause Plus Patent license.
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
-#:include "fortuno.fypp"
+#:include "fortuno_serial.fypp"
 
 module fixtured_fypp_tests
   use mylib_fypp, only : factorial
-  use fortuno_serial, only : char_rep_int, check => serial_check, is_equal, named_state,&
-      & named_item, suite => serial_suite_item, store_state => serial_store_state,&
+  use fortuno_serial, only : char_rep_int, is_equal, named_state, named_item,&
+      & suite => serial_suite_item, store_state => serial_store_state,&
       & serial_case_base, test_item
+  $:FORTUNO_SERIAL_IMPORTS()
   implicit none
 
   private
@@ -55,7 +56,7 @@ contains
         ])&
     ]
     #! Stop if there are tests without corresponding generated test_item constructors
-    @:STOP_ON_MISSING_TEST_ITEMS()
+    $:STOP_ON_MISSING_TEST_ITEMS()
 
   end function fixtured_fypp_test_items
 
