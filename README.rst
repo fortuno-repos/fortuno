@@ -234,7 +234,7 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
-| Intel 2024.0           | * serial: OK                                        |
+| Intel 2024.0 [1]       | * serial: OK                                        |
 |                        | * mpi: OK                                           |
 |                        | * coarray: OK                                       |
 +------------------------+-----------------------------------------------------+
@@ -247,8 +247,17 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 |                        | * coarray: not tested yet                           |
 +------------------------+-----------------------------------------------------+
 
-If you are aware of any other compilers being able to build Fortuno, open a pull
-request to update the table.
+If you are aware of any other compilers being able to build Fortuno, please,
+open a pull request to update the table.
+
+Notes
+-----
+
+1. Please ensure you are using Intel 2024.0, as newer versions (2024.1 and
+   2024.2) have a confirmed compiler bug that creates an incorrect binary,
+   leading to segmentation faults due to the loss of pointer association status.
+   For more details, refer to the `Intel community discussion
+   <https://community.intel.com/t5/Intel-Fortran-Compiler/Compiler-bug-Procedure-pointer-association-status-gets-lost/m-p/1612121>`_.
 
 
 License
