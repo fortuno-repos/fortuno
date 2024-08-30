@@ -1,0 +1,107 @@
+#! This file is part of Fortuno.
+#! Licensed under the BSD-2-Clause Plus Patent license.
+#! SPDX-License-Identifier: BSD-2-Clause-Patent
+
+#:mute
+#:if not defined('_FORTUNO_SERIAL_FYPP_')
+#:set _FORTUNO_SERIAL_FYPP_
+
+#! Internal variable storing registered test items
+#:set _fortuno_serial_registered_tests = {}
+#:set _fortuno_serial_constructed_tests = set()
+
+
+#! Imports the prerequisites needed by the macro definitions in this file
+#:def FORTUNO_SERIAL_IMPORTS()
+  use fortuno_serial, only : serial_case_item, serial_check, serial_failed
+#:enddef
+
+
+#! Starts a test procedure
+#!
+#! Args:
+#!     name: Test name
+#!     label: Label of the test
+#!     args: Arguments of the test procedure as a list of strings
+#!
+#:def TEST(name, label="", args=None)
+  #:set proc = "test" + ("_" + label if label else "") + "_" + name
+  #:set argstr = ", ".join(args) if args is not None else ""
+  $:_fortuno_serial_registered_tests.setdefault(label, []).append({"name": name, "proc": proc})
+  subroutine ${proc}$(${argstr}$)
+#:enddef
+
+
+#! Ends a test procedure
+#:def END_TEST()
+  end subroutine
+#:enddef
+
+
+#! Gives a list of tests associated with a given label.
+#!
+#! Args:
+#!     label: Label of the tests items to generate (default: "")
+#!     suffix: Suffix to add after the last test (e.g. comma, if further tests will follow)
+#!     constructor: Name of the constructor to use (default: "test")
+#!
+#:def TEST_ITEMS(label="", suffix="", constructor="serial_case_item ")
+  #:set items = _fortuno_serial_registered_tests.get(label)
+  #:if items is None
+    #:stop  "Undefined label ('{}') used in TEST_ITEMS()".format(label)
+  #:endif
+  $:_fortuno_serial_constructed_tests.update(set([(label, item['name']) for item in items]))
+  #:set calls = [f"{constructor}('{item['name']}', {item['proc']})" for item in items]
+  #:set lines = "        " + ",&\n        ".join(calls) + suffix + "&\n"
+  $:lines
+#:enddef
+
+
+#! Calls the check routine and passes file and line nr. information
+#!
+#! Args:
+#!     cond: Condition to check
+#!     **kwargs: any keyword arguments, which should be passed to serial_check()
+#!
+#:def CHECK(cond, **kwargs)
+#:if kwargs
+  #:set kwargstr = ", ".join([f"{name}={value}" for name, value in kwargs.items()])
+  call serial_check(${cond}$, file="${_FILE_}$", line=${_LINE_}$, ${kwargstr}$)
+#:else
+  call serial_check(${cond}$, file="${_FILE_}$", line=${_LINE_}$)
+#:endif
+#:enddef
+
+
+#! Calls the check() routine, passes file and line nr. information and calls return on failure.
+#!
+#! Args:
+#!     cond: Condition to check
+#!     **kwargs: any keyword arguments, which should be passed to check()
+#!
+#:def ASSERT(cond, **kwargs)
+$:CHECK(cond, **kwargs)
+if (serial_failed()) return
+#:enddef
+
+
+#! Stops if not all registered test items had been constructed via TEST_ITEMS() calls
+#!
+#:def STOP_ON_MISSING_TEST_ITEMS()
+#:set _all_items = set()
+#:for label, items in _fortuno_serial_registered_tests.items()
+  #:for item in items
+    $:_all_items.add((label, item['name']))
+  #:endfor
+#:endfor
+#:set _uninst = set(_all_items) - _fortuno_serial_constructed_tests
+#:if _uninst
+  #:set _uninst_list = [(label + "/" + name if label else name) for label, name in _uninst]
+  #:set _uninst_str = ", ".join(_uninst_list)
+  #:stop "Some tests have no corresponding test_item constructors (" + _uninst_str + ")"
+#:endif
+#:enddef
+
+
+#:endif
+#:endmute

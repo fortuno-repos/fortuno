@@ -8,7 +8,7 @@ copyright = "Copyright 2024, Fortuno authors"
 [build]
 auto-executables = false
 auto-tests = true
-auto-examples = true
+auto-examples = false
 module-naming = false
 
 [install]
@@ -18,3 +18,6 @@ library = true
 implicit-typing = false
 implicit-external = false
 source-form = "free"
+
+[example]
+name = "testapp"

@@ -12,6 +12,10 @@ project(
 )
 
 find_package(Fortuno REQUIRED)
+find_program(FYPP fypp REQUIRED)
+if (FYPP)
+  get_target_property(_fortuno_incdir Fortuno::fortuno_include_dir INTERFACE_INCLUDE_DIRECTORIES)
+  set(FYPP_INCOPTS "-I${_fortuno_incdir}")
+endif ()
 
-add_executable(testapp)
 add_subdirectory(app)
