@@ -234,17 +234,12 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
-| Intel 2024.0 [1]       | * serial: OK                                        |
-|                        | * mpi: OK                                           |
-|                        | * coarray: OK                                       |
+| Intel 2024.0 [1]       | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
-| NAG 7.2 (build 7202)   | * serial: OK                                        |
-|                        | * mpi: OK                                           |
-|                        | * coarray: OK                                       |
+| NAG 7.2 (build 7202)   | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
-| GNU 13.2               | * serial: OK                                        |
-|                        | * mpi: OK                                           |
-|                        | * coarray: not tested yet                           |
+| GNU 13.2, 14.1         | * OK (serial, mpi)                                  |
+|                        | * untested (coarray)                                |
 +------------------------+-----------------------------------------------------+
 
 If you are aware of any other compilers being able to build Fortuno, please,
