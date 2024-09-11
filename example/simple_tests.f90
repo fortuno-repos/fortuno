@@ -17,17 +17,31 @@ contains
   function simple_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
-    testitems = [&
-        ! Adding a single test not belonging to any test suite
-        test("factorial_0", test_factorial_0),&
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitems = [&
+    !     ! Adding a single test not belonging to any test suite
+    !     test("factorial_0", test_factorial_0),&
 
-        ! Packing further tests into a suite in order to introduce more structure
-        ! (e.g. running only tests being part of a given suite)
-        suite("simple", [&
-            test("factorial_1", test_factorial_1),&
-            test("factorial_2", test_factorial_2)&
-        ])&
-    ]
+    !     ! Packing further tests into a suite in order to introduce more structure
+    !     ! (e.g. running only tests being part of a given suite)
+    !     suite("simple", [&
+    !         test("factorial_1", test_factorial_1),&
+    !         test("factorial_2", test_factorial_2)&
+    !     ])&
+    ! ]
+    ! -}{+
+    block
+      type(test_item), allocatable :: itembuffer(:)
+      allocate(testitems(2))
+      testitems(1) = test("factorial_0", test_factorial_0)
+      allocate(itembuffer(2))
+      itembuffer(1) = test("factorial_1", test_factorial_1)
+      itembuffer(2) = test("factorial_2", test_factorial_2)
+      testitems(2) = suite("simple", itembuffer)
+    end block
+    ! +}
 
   end function simple_test_items
 

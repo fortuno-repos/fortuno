@@ -36,12 +36,25 @@ contains
   function fixtured_module_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
-    testitems = [&
-        random_module("fixtured_module", [&
-            test("recursion_down", test_recursion_down),&
-            test("recursion_up", test_recursion_up)&
-        ])&
-    ]
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitems = [&
+    !     random_module("fixtured_module", [&
+    !         test("recursion_down", test_recursion_down),&
+    !         test("recursion_up", test_recursion_up)&
+    !     ])&
+    ! ]
+    ! -}{+
+    block
+      type(test_item), allocatable :: itembuffer(:)
+      allocate(itembuffer(2))
+      itembuffer(1) = test("recursion_down", test_recursion_down)
+      itembuffer(2) = test("recursion_up", test_recursion_up)
+      allocate(testitems(1))
+      testitems(1) = random_module("fixtured_module", itembuffer)
+    end block
+    ! +}
 
   end function fixtured_module_test_items
 
@@ -64,7 +77,17 @@ contains
     type(test_item), intent(in) :: items(:)
     type(test_item) :: testitem
 
-    testitem%item = random_module_suite(name=name, items=items)
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitem%item = random_module_suite(name=name, items=items)
+    ! -}{+
+    block
+      type(random_module_suite), allocatable :: randommodsuite
+      randommodsuite = random_module_suite(name=name, items=items)
+      call move_alloc(randommodsuite, testitem%item)
+    end block
+    ! +}
 
   end function random_module
 

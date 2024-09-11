@@ -35,12 +35,29 @@ contains
 
     integer :: ii
 
-    testitems = [&
-        suite("fixtured", [&
-            [(random_test("recursion_down", test_recursion_down), ii = 1, 5)],&
-            [(random_test("recursion_up", test_recursion_up), ii = 1, 5)]&
-        ])&
-    ]
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitems = [&
+    !     suite("fixtured", [&
+    !         [(random_test("recursion_down", test_recursion_down), ii = 1, 5)],&
+    !         [(random_test("recursion_up", test_recursion_up), ii = 1, 5)]&
+    !     ])&
+    ! ]
+    ! -}{+
+    block
+      type(test_item), allocatable :: itembuffer(:)
+      allocate(itembuffer(10))
+      do ii = 1, 5
+        itembuffer(ii) = random_test("recursion_down", test_recursion_down)
+      end do
+      do ii = 1, 5
+        itembuffer(5 + ii) = random_test("recursion_up", test_recursion_up)
+      end do
+      allocate(testitems(1))
+      testitems(1) = suite("fixtured", itembuffer)
+    end block
+    ! +}
 
   end function fixtured_test_items
 
@@ -65,7 +82,17 @@ contains
     procedure(test_recursion_down) :: proc
     type(test_item) :: testitem
 
-    testitem%item = random_test_case(name=name, proc=proc)
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitem%item = random_test_case(name=name, proc=proc)
+    ! -}{+
+    block
+      type(random_test_case), allocatable :: randomtest
+      randomtest = random_test_case(name=name, proc=proc)
+      call move_alloc(randomtest, testitem%item)
+    end block
+    ! +}
 
   end function random_test
 
@@ -82,12 +109,23 @@ contains
     ! Note: factorial(n) with n > 13 overflows with 32 bit integers
     nn = int(13 * rand) + 1
     ! Store internal state to aid introspection/identification later
-    call store_state(&
-        named_state([&
-            named_item("n", char_rep_int(nn))&
-        &])&
-    )
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! call store_state(&
+    !     named_state([&
+    !         named_item("n", char_rep_int(nn))&
+    !     &])&
+    ! )
+    ! -}{+
+    block
+      type(named_item), allocatable :: nameditems(:)
+      allocate(nameditems(1))
+      nameditems(1) = named_item("n", char_rep_int(nn))
+      call store_state(named_state(nameditems))
+    end block
     call this%proc(nn)
+    ! +}
 
   end subroutine random_test_case_run
 

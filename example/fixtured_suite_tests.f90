@@ -41,12 +41,25 @@ contains
   function fixtured_suite_test_items() result(testitems)
     type(test_item), allocatable :: testitems(:)
 
-    testitems = [&
-        random_suite("fixtured_suite", [&
-          random_test("recursion_down", test_recursion_down),&
-          random_test("recursion_up", test_recursion_up)&
-        ])&
-    ]
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitems = [&
+    !     random_suite("fixtured_suite", [&
+    !       random_test("recursion_down", test_recursion_down),&
+    !       random_test("recursion_up", test_recursion_up)&
+    !     ])&
+    ! ]
+    ! -}{+
+    block
+      type(test_item), allocatable :: itembuffer(:)
+      allocate(itembuffer(2))
+      itembuffer(1) = random_test("recursion_down", test_recursion_down)
+      itembuffer(2) = random_test("recursion_up", test_recursion_up)
+      allocate(testitems(1))
+      testitems(1) = random_suite("fixtured_suite", itembuffer)
+    end block
+    ! +}
 
   end function fixtured_suite_test_items
 
@@ -71,7 +84,17 @@ contains
     type(test_item), intent(in) :: items(:)
     type(test_item) :: testitem
 
-    testitem%item = random_test_suite(name=name, items=items)
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitem%item = random_test_suite(name=name, items=items)
+    ! -}{+
+    block
+      type(random_test_suite), allocatable :: randomsuite
+      randomsuite = random_test_suite(name=name, items=items)
+      call move_alloc(randomsuite, testitem%item)
+    end block
+    ! +}
 
   end function random_suite
 
@@ -87,11 +110,22 @@ contains
     this%nn = int(13 * rand) + 1
 
     ! Store internal state to aid introspection/identification later
-    call store_state(&
-        named_state([&
-            named_item("n", char_rep_int(this%nn))&
-        &])&
-    )
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! call store_state(&
+    !     named_state([&
+    !         named_item("n", char_rep_int(this%nn))&
+    !     &])&
+    ! )
+    ! -}{+
+    block
+      type(named_item), allocatable :: nameditems(:)
+      allocate(nameditems(1))
+      nameditems(1) = named_item("n", char_rep_int(this%nn))
+      call store_state(named_state(nameditems))
+    end block
+    ! +}
 
   end subroutine random_test_suite_set_up
 
@@ -102,7 +136,17 @@ contains
     procedure(test_recursion_down) :: proc
     type(test_item) :: testitem
 
-    testitem%item = random_test_case(name=name, proc=proc)
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitem%item = random_test_case(name=name, proc=proc)
+    ! -}{+
+    block
+      type(random_test_case), allocatable :: randomtest
+      randomtest = random_test_case(name=name, proc=proc)
+      call move_alloc(randomtest, testitem%item)
+    end block
+    ! +}
 
   end function random_test
 

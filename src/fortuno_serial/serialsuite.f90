@@ -24,7 +24,12 @@ contains
     type(test_item), intent(in) :: items(:)
     type(test_item) :: testitem
 
-    testitem%item = serial_suite(name=name, items=items)
+    type(serial_suite), allocatable :: serialsuite
+    allocate(serialsuite)
+    serialsuite%name = name
+    serialsuite%items = items
+    call move_alloc(serialsuite, testitem%item)
+    !testitem%item = serial_suite(name=name, items=items)
 
   end function serial_suite_item
 

@@ -161,17 +161,29 @@ contains
     !> Argument defintions
     type(argument_def), allocatable :: argdefs(:)
 
-    argdefs = [&
-        & &
-        & argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
-        & helpmsg="show list of tests to run and exit"),&
-        & &
-        & argument_def("tests", argtypes%stringlist,&
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! argdefs = [&
+    !     & &
+    !     & argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
+    !     & helpmsg="show list of tests to run and exit"),&
+    !     & &
+    !     & argument_def("tests", argtypes%stringlist,&
+    !     & helpmsg="list of tests and suites to include or to exclude when prefixed with '~' (e.g.&
+    !     & 'somesuite ~somesuite/avoidedtest' would run all tests except 'avoidedtest' in the test&
+    !     & suite 'somesuite')")&
+    !     & &
+    !     & ]
+    ! -}{+
+    allocate(argdefs(2))
+    argdefs(1) =  argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
+        & helpmsg="show list of tests to run and exit")
+    argdefs(2) = argument_def("tests", argtypes%stringlist,&
         & helpmsg="list of tests and suites to include or to exclude when prefixed with '~' (e.g.&
         & 'somesuite ~somesuite/avoidedtest' would run all tests except 'avoidedtest' in the test&
-        & suite 'somesuite')")&
-        & &
-        & ]
+        & suite 'somesuite')")
+    ! +}
 
   end function default_argument_defs
 

@@ -39,11 +39,25 @@ contains
 
     integer :: ii
 
-    testitems = [&
-        suite("parametrized", [&
-            (parametrized_test("factorial", testcaseparams(ii)), ii = 1, size(testcaseparams))&
-        ])&
-    ]
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitems = [&
+    !     suite("parametrized", [&
+    !         (parametrized_test("factorial", testcaseparams(ii)), ii = 1, size(testcaseparams))&
+    !     ])&
+    ! ]
+    ! -}{+
+    block
+      type(test_item), allocatable :: itembuffer(:)
+      allocate(itembuffer(size(testcaseparams)))
+      do ii = 1, size(testcaseparams)
+        itembuffer(ii) = parametrized_test("factorial", testcaseparams(ii))
+      end do
+      allocate(testitems(1))
+      testitems(1) = suite("parametrized", itembuffer)
+    end block
+    ! +}
 
   end function parametrized_test_items
 
@@ -57,7 +71,17 @@ contains
     character(:), allocatable :: name
 
     name = prefix // "_" // as_char(argres%arg)
-    testitem%item = parametrized_test_case(name=name, argres=argres)
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! testitem%item = parametrized_test_case(name=name, argres=argres)
+    ! -}{+
+    block
+      type(parametrized_test_case), allocatable :: testcase
+      testcase = parametrized_test_case(name=name, argres=argres)
+      call move_alloc(testcase, testitem%item)
+    end block
+    ! +}
 
   end function parametrized_test
 
