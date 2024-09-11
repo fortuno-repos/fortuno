@@ -1,0 +1,109 @@
+! This file is part of Fortuno.
+! Licensed under the BSD-2-Clause Plus Patent license.
+! SPDX-License-Identifier: BSD-2-Clause-Patent
+
+#:include "fortuno_serial.fypp"
+
+!> Demonstrates the relization of fixtured tests using Fypp macros.
+module test_fixtured_fypp
+  use mylib_fypp, only : factorial
+  use fortuno_serial, only : char_rep_int, is_equal, named_state, named_item,&
+      & suite => serial_suite_item, store_state => serial_store_state,&
+      & serial_case_base, test_item, test_list
+  $:FORTUNO_SERIAL_IMPORTS()
+  implicit none
+
+  private
+  public :: tests
+
+
+  ! Fixtured test case creating a random number before running a test procedure.
+  type, extends(serial_case_base) :: random_test_case
+
+  ! Test procedure to be invoked once fixture setup had been executed
+      procedure(test_recursion_down), pointer, nopass :: proc
+
+  contains
+
+    ! Overrides run procedure to set up fixture before test procedure is invoked.
+    procedure :: run => random_test_case_run
+
+  end type random_test_case
+
+contains
+
+
+  ! TEST n! = n * (n - 1)!
+  $:TEST("recursion_down", args=["nn"])
+    integer, intent(in) :: nn
+    @:CHECK(is_equal(factorial(nn), nn * factorial(nn - 1)))
+  $:END_TEST()
+
+
+  ! TEST (n + 1)! = (n + 1) * n!
+  $:TEST("recursion_up", args=["nn"])
+    integer, intent(in) :: nn
+    @:CHECK(is_equal(factorial(nn + 2), (nn  + 1) * factorial(nn)))
+  $:END_TEST()
+
+
+  ! Returns the tests from this module.
+  function tests()
+    type(test_list) :: tests
+
+    tests = test_list([&
+        suite("fixtured", test_list([&
+          $:TEST_ITEMS(constructor="random_test")
+        ]))&
+    ])
+    #! Stop if there are tests without corresponding generated test_item constructors
+    $:STOP_ON_MISSING_TEST_ITEMS()
+
+  end function tests
+
+
+  ! Returns a random_test_case instance wrapped as test_item to be used in an array constructor.
+  function random_test(name, proc) result(testitem)
+    character(*), intent(in) :: name
+    procedure(test_recursion_down) :: proc
+    type(test_item) :: testitem
+
+    testitem = test_item(random_test_case(name=name, proc=proc))
+
+  end function random_test
+
+
+  ! Runs procedure of the random_test_case class.
+  subroutine random_test_case_run(this)
+    class(random_test_case), intent(in) :: this
+
+    real :: rand
+    integer :: nn
+
+    ! Set-up fixture by creating a random number
+    call random_number(rand)
+
+    ! Note: factorial(n) with n > 13 overflows with 32 bit integers
+    nn = int(13 * rand) + 1
+
+    ! Store internal state (actual value of nn) to aid introspection/identification later
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! call store_state(&
+    !     named_state([&
+    !         named_item("n", char_rep_int(nn))&
+    !     &])&
+    ! )
+    ! -}{+
+    block
+      type(named_item) :: nameditems(1)
+      nameditems(1) = named_item("n", char_rep_int(nn))
+      call store_state(named_state(nameditems))
+    end block
+    call this%proc(nn)
+    ! +}
+
+  end subroutine random_test_case_run
+
+end module test_fixtured_fypp

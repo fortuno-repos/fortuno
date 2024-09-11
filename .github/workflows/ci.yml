@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 env:
   BUILD_DIR: _build
   INSTALL_DIR: _install
+  FPM_EXPORT_DIR: _fpm_export
 
 jobs:
 
@@ -22,12 +23,45 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        compiler: [intel, gnu]
-        exclude:
-          # MacOS has no Intel compiler
-          - os: macos-latest
-            compiler: intel
+        include:
+        - os: ubuntu-latest
+          compiler: gnu
+          mpi: nompi
+          interface: serial
+        - os: ubuntu-latest
+          compiler: gnu
+          mpi: mpich
+          interface: mpi
+        # CMake config file of OpenMPI is broken on ubuntu 22.04
+        # - os: ubuntu-latest
+        #   compiler: gnu
+        #   mpi: openmpi
+        #   interface: mpi
+        - os: ubuntu-latest
+          compiler: intel
+          mpi: nompi
+          interface: serial
+        - os: ubuntu-latest
+          compiler: intel
+          mpi: impi
+          interface: mpi
+        - os: ubuntu-latest
+          compiler: intel
+          mpi: nompi
+          interface: coarray
+        - os: macos-latest
+          compiler: gnu
+          mpi: nompi
+          interface: serial
+        # MPICH on MacOS lacks mpi_f08 interface
+        # - os: macos-latest
+        #   compiler: gnu
+        #   mpi: mpich
+        #   interface: mpi
+        - os: macos-latest
+          compiler: gnu
+          mpi: openmpi
+          interface: mpi
 
     steps:
 
@@ -38,9 +72,10 @@ jobs:
         if: ${{ contains(matrix.compiler, 'intel') }}
         uses: rscohn2/setup-oneapi@v0
         with:
-          # Note: intel 2024.1 and 2024.2 fail to build Fortuno properly due to a compiler bug,
-          # see https://community.intel.com/t5/Intel-Fortran-Compiler/Compiler-bug-Procedure-pointer-association-status-gets-lost/m-p/1612121#M172850
-          components: ifx@2024.0.0
+          components: |
+            ifx
+            icx
+            impi
 
       - name: Setup Intel environment
         if: ${{ contains(matrix.compiler, 'intel') }}
@@ -49,6 +84,9 @@ jobs:
           printenv >> ${GITHUB_ENV}
           echo "FC=ifx" >> ${GITHUB_ENV}
           echo "FPM_FC=ifx" >> ${GITHUB_ENV}
+          # Overriding default FPM_FFLAGS as default setting contains '-standard-semantics'
+          # which is incompatible with intel MPI.
+          echo "FPM_FFLAGS='-warn all -check all,nouninit -error-limit 1 -O0 -g -stand f18 -traceback'" >> ${GITHUB_ENV}
 
       - name: Setup GNU compiler
         if: ${{ contains(matrix.compiler, 'gnu') }}
@@ -63,59 +101,157 @@ jobs:
           echo "FC=${{ env.FC }}" >> ${GITHUB_ENV}
           echo "FPM_FC=${{ env.FC }}" >> ${GITHUB_ENV}
 
+      - name: Setup MPICH on Ubuntu
+        if: ${{ contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'mpich') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mpich
+
+      - name: Setup OpenMPI on Ubuntu
+        if: ${{ contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'openmpi') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openmpi-common openmpi-bin
+
+      - name: Setup MPICH on MacOS
+        if: ${{ contains(matrix.os, 'macos') && contains(matrix.mpi, 'mpich') }}
+        run: |
+          brew install mpich
+
+      - name: Setup OpenMPI on MacOS
+        if: ${{ contains(matrix.os, 'macos') && contains(matrix.mpi, 'openmpi') }}
+        run: |
+          brew install openmpi
+
+      - name: Setup serial interface options
+        if: ${{ contains(matrix.interface, 'serial') }}
+        run: |
+          echo "CMAKE_OPTIONS=-DFORTUNO_WITH_SERIAL=ON" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:with_serial=true" >> ${GITHUB_ENV}
+          echo "INTERFACE=serial" >> ${GITHUB_ENV}
+          echo "RUN_PREFIX=" >> ${GITHUB_ENV}
+
+      - name: Setup mpi interface options
+        if: ${{ contains(matrix.interface, 'mpi') }}
+        run: |
+          echo "CMAKE_OPTIONS=-DFORTUNO_WITH_MPI=ON" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:with_mpi=true" >> ${GITHUB_ENV}
+          echo "INTERFACE=mpi" >> ${GITHUB_ENV}
+          echo "RUN_PREFIX=mpirun -n 2" >> ${GITHUB_ENV}
+
+      - name: Setup coarray interface options
+        if: ${{ contains(matrix.interface, 'coarray') }}
+        run: |
+          echo "CMAKE_OPTIONS=-DFORTUNO_WITH_COARRAY=ON -DFORTUNO_FFLAGS_COARRAY='-coarray' -DFORTUNO_LDFLAGS_COARRAY='-coarray'" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=-Dfflags_coarray=-coarray -Dldflags_coarray=-coarray" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfflags_coarray=-coarray -Dldflags_coarray=-coarray -Dfortuno:with_coarray=true -Dfortuno:fflags_coarray=-coarray -Dfortuno:ldflags_coarray=-coarray" >> ${GITHUB_ENV}
+          echo "FPM_FFLAGS=${FPM_FFLAGS} -coarray" >> ${GITHUB_ENV}
+          echo "FPM_LDFLAGS=${FPM_LDFLAGS} -coarray" >> ${GITHUB_ENV}
+          echo "INTERFACE=coarray" >> ${GITHUB_ENV}
+          echo "RUN_PREFIX=" >> ${GITHUB_ENV}
+
       - name: Setup build tools
         run: |
           pip install cmake fpm meson ninja fypp
 
-      - name: Build Fortuno with CMake
+      - name: Build Fortuno
         run: |
-          cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
+          cmake ${CMAKE_OPTIONS} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
           cmake --build ${BUILD_DIR}
           cmake --install ${BUILD_DIR}
           rm -rf ${BUILD_DIR}
 
-      - name: Build Fortuno with Fpm
-        run: |
-          fpm build
-          rm -rf build
-
-      - name: Build Fortuno with Meson
-        run: |
-          meson setup -Dbuild_examples=true ${BUILD_DIR}
-          ninja -C ${BUILD_DIR}
-          rm -rf ${BUILD_DIR}
-
       - name: Test CMake export
         run: |
-          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export
+          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export/${INTERFACE}
           cmake --build ${BUILD_DIR}
-          ${BUILD_DIR}/app/testapp
-          ${BUILD_DIR}/app/testapp_fypp
+          ${RUN_PREFIX} ${BUILD_DIR}/app/testapp
+          # ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fypp
           rm -rf ${BUILD_DIR}
 
       - name: Test fpm export
         run: |
-          cd test/export
-          fpm run testapp
+          ./devel/fpm-repo/export-fpm-repo.sh ${INTERFACE} ${FPM_EXPORT_DIR}
+          fpm run -C ${FPM_EXPORT_DIR}/test/export/${INTERFACE} testapp
+          rm -rf ${FPM_EXPORT_DIR}
 
       - name: Test Meson pkgconfig export
+        # Meson only detects OpenMPI reliably (as of version 1.3.2)
+        if: ${{ !contains(matrix.interface, 'mpi') || contains(matrix.mpi, 'openmpi') }}
         run: |
           export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-          cd test/export
-          meson setup --wrap-mode nofallback ${BUILD_DIR}
+          cd test/export/${INTERFACE}
+          meson setup ${MESON_OPTIONS_NOFALLBACK} --wrap-mode nofallback ${BUILD_DIR}
           ninja -C ${BUILD_DIR}
-          ${BUILD_DIR}/testapp
+          ${RUN_PREFIX} ${BUILD_DIR}/testapp
           rm -rf ./${BUILD_DIR}
 
       - name: Test Meson subproject export
+        # Meson only detects OpenMPI reliably (as of version 1.3.2)
+        if: ${{ !contains(matrix.interface, 'mpi') || contains(matrix.mpi, 'openmpi') }}
         run: |
           FORTUNO_DIR=${PWD}
           GIT_REV=$(git rev-parse HEAD)
-          cd test/export
+          cd test/export/${INTERFACE}
           mkdir subprojects
           echo -e "[wrap-git]\ndirectory=fortuno\n" > subprojects/fortuno.wrap
           echo -e "url=file://${FORTUNO_DIR}\nrevision=${GIT_REV}\n" >> subprojects/fortuno.wrap
-          meson setup --wrap-mode forcefallback ${BUILD_DIR}
+          meson setup ${MESON_OPTIONS_FALLBACK} --wrap-mode forcefallback ${BUILD_DIR}
           ninja -C ${BUILD_DIR}
-          ${BUILD_DIR}/testapp
+          ${RUN_PREFIX} ${BUILD_DIR}/testapp
           rm -rf subprojects ${BUILD_DIR}
+
+  deploy-fpm:
+    needs: fortuno-test
+    if: github.repository == 'fortuno-repos/fortuno' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check-out code
+        uses: actions/checkout@v4
+
+      - name: Export serial repository content
+        run: ./devel/fpm-repo/export-fpm-repo.sh serial _fpm_serial
+
+      - name: Push to serial repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_SERIAL }}
+        with:
+            source-directory: _fpm_serial
+            destination-github-username: 'aradi'
+            destination-repository-name: 'fortuno-fpm-serial'
+            user-email: aradi@uni-bremen.de
+            target-branch: main
+
+      - name: Export mpi repository content
+        run: ./devel/fpm-repo/export-fpm-repo.sh mpi _fpm_mpi
+
+      - name: Push to mpi repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_MPI }}
+        with:
+            source-directory: _fpm_mpi
+            destination-github-username: 'aradi'
+            destination-repository-name: 'fortuno-fpm-mpi'
+            user-email: aradi@uni-bremen.de
+            target-branch: main
+
+      - name: Export coarray repository content
+        run: ./devel/fpm-repo/export-fpm-repo.sh coarray _fpm_coarray
+
+      - name: Push to coarray repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_COARRAY }}
+        with:
+            source-directory: _fpm_coarray
+            destination-github-username: 'aradi'
+            destination-repository-name: 'fortuno-fpm-coarray'
+            user-email: aradi@uni-bremen.de
+            target-branch: main

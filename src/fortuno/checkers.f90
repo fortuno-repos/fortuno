@@ -34,11 +34,27 @@ contains
 
     checkresult%success = (obtained == expected)
     if (.not. checkresult%success) then
-      checkresult%details = named_details([&
-          & named_item("failure", "mismatching integer values"),&
-          & named_item("expected", char_rep_int(expected)),&
-          & named_item("obtained", char_rep_int(obtained))&
-          & ])
+      ! Workaround:gfortran:14.1 (bug 116679)
+      ! Omit array expression to avoid memory leak
+      ! {-
+      ! checkresult%details = named_details([&
+      !     & named_item("failure", "mismatching integer values"),&
+      !     & named_item("expected", char_rep_int(expected)),&
+      !     & named_item("obtained", char_rep_int(obtained))&
+      !     & ])
+      ! -}{+
+      block
+        type(named_details), allocatable :: nameddetails
+        allocate(nameddetails)
+        allocate(nameddetails%items(3))
+        associate (items => nameddetails%items)
+          items(1) = named_item("failure", "mismatching integer values")
+          items(2) = named_item("expected", char_rep_int(expected))
+          items(3) = named_item("obtained", char_rep_int(obtained))
+        end associate
+        call move_alloc(nameddetails, checkresult%details)
+      end block
+      ! +}
     end if
 
   end function is_equal_i0_i0

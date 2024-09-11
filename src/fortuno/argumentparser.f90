@@ -181,7 +181,22 @@ contains
             if (matches) then
               select case (argdef%argtype)
               case (argtypes%bool)
-                argumentvalues%argvals = [argumentvalues%argvals, argument_value(argdef%name)]
+                ! Workaround:gfortran:14.1 (bug 116679)
+                ! Omit array expression to avoid memory leak
+                ! {-
+                ! argumentvalues%argvals = [argumentvalues%argvals, argument_value(argdef%name)]
+                ! -}{+
+                block
+                  type(argument_value), allocatable :: argvalbuffer(:)
+                  integer :: nn
+                  nn = size(argumentvalues%argvals)
+                  allocate(argvalbuffer(nn + 1))
+                  argvalbuffer(1 : nn) = argumentvalues%argvals
+                  argvalbuffer(nn + 1) = argument_value(argdef%name)
+                  call move_alloc(argvalbuffer, argumentvalues%argvals)
+                end block
+                ! +}
+
               case default
                 call logger%log_error("Unknown argument type")
                 exitcode = 1
@@ -201,8 +216,23 @@ contains
     associate (argdef => this%argdefs(nargdefs))
       ! If the last argdef was not an option, store all position arguments under this name
       if (.not. allocated(argdef%longopt) .and. argdef%shortopt == "") then
-        argumentvalues%argvals = [argumentvalues%argvals,&
-            & argument_value(argdef%name, argval=string_list(posargs))]
+        ! Workaround:gfortran:14.1 (bug 116679)
+        ! Omit array expression to avoid memory leak
+        ! {-
+        ! argumentvalues%argvals = [argumentvalues%argvals,&
+        !     & argument_value(argdef%name, argval=string_list(posargs))]
+        ! -}{+
+        block
+          type(argument_value), allocatable :: argvalbuffer(:)
+          integer :: nn
+          nn = size(argumentvalues%argvals)
+          allocate(argvalbuffer(nn + 1))
+          argvalbuffer(1 : nn) = argumentvalues%argvals
+          argvalbuffer(nn + 1) = argument_value(argdef%name, argval=string_list(posargs))
+          call move_alloc(argvalbuffer, argumentvalues%argvals)
+        end block
+        ! +}
+
       else if (size(posargs) > 1) then
         call logger%log_error("Superfluous positional arguments found")
         exitcode = 1
