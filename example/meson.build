@@ -14,11 +14,11 @@ example_mylib_dep = declare_dependency(
 example_testapp_exe = executable(
   'testapp',
   sources: [
-    'fixtured_module_tests.f90',
-    'fixtured_suite_tests.f90',
-    'fixtured_tests.f90',
-    'parametrized_tests.f90',
-    'simple_tests.f90',
+    'test_fixtured_module.f90',
+    'test_fixtured_suite.f90',
+    'test_fixtured.f90',
+    'test_parametrized.f90',
+    'test_simple.f90',
     'testapp.f90',
   ],
   dependencies: [example_mylib_dep, fortuno_serial_dep],

@@ -4,14 +4,15 @@
 
 #:include "fortuno_serial.fypp"
 
-module simple_fypp_tests
+!> Demonstrates the realization of simple unit tests using Fypp macros.
+module test_simple_fypp
   use mylib_fypp, only : factorial
-  use fortuno_serial, only : is_equal, suite => serial_suite_item, test_item
+  use fortuno_serial, only : is_equal, suite => serial_suite_item, test_list
   $:FORTUNO_SERIAL_IMPORTS()
   implicit none
 
   private
-  public :: simple_fypp_test_items
+  public :: tests
 
 contains
 
@@ -34,22 +35,22 @@ contains
 
 
   ! Returns the tests from this module.
-  function simple_fypp_test_items() result(testitems)
-    type(test_item), allocatable :: testitems(:)
+  function tests()
+    type(test_list) :: tests
 
-    testitems = [&
+    tests = test_list([&
         ! Adding a single test not belonging to any test suite
         $:TEST_ITEMS(suffix=",")
 
         ! Packing further tests into a suite in order to introduce more structure
         ! (e.g. running only tests being part of a given suite)
-        suite("simple", [&
+        suite("simple", test_list([&
             $:TEST_ITEMS(label="simple")
-        ])&
-    ]
+        ]))&
+    ])
     #! Stop if there are tests without corresponding generated test_item constructors
     $:STOP_ON_MISSING_TEST_ITEMS()
 
-  end function simple_fypp_test_items
+  end function tests
 
-end module simple_fypp_tests
+end module test_simple_fypp

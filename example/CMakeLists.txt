@@ -21,12 +21,12 @@ set_target_properties(
 )
 target_sources(
   fortuno_example_testapp PRIVATE
-  fixtured_module_tests.f90
-  fixtured_suite_tests.f90
-  fixtured_tests.f90
-  parametrized_tests.f90
-  simple_tests.f90
   testapp.f90
+  test_fixtured.f90
+  test_fixtured_module.f90
+  test_fixtured_suite.f90
+  test_parametrized.f90
+  test_simple.f90
 )
 target_link_libraries(fortuno_example_testapp PRIVATE fortuno_example_mylib Fortuno::fortuno_serial)
 

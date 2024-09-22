@@ -42,17 +42,7 @@ contains
     procedure(serial_case_proc) :: proc
     type(test_item) :: testitem
 
-    ! Workaround:gfortran:14.1 (bug 116679)
-    ! Omit array expression to avoid memory leak
-    ! {-
-    ! testitem%item = serial_case(name=name, proc=proc)
-    ! -}{+
-    block
-      type(serial_case), allocatable :: item
-      item = serial_case(name=name, proc=proc)
-      call move_alloc(item, testitem%item)
-    end block
-    ! +}
+    call testitem%init(serial_case(name=name, proc=proc))
 
   end function serial_case_item
 

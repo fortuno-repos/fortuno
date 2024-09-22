@@ -100,23 +100,24 @@ could look as follows::
 
   ! file: testapp.f90
 
-  !> Test app driving Fortuno unit tests.
-  program testapp
+  !> Module containing the tests
+  module testapp_tests
     use mylib, only : factorial
-    use fortuno_serial, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
-        & check => serial_check
+    use fortuno_serial, only : is_equal, test => serial_case_item, check => serial_check, test_list
     implicit none
 
-    ! Register tests by providing name and subroutine to run for each test.
-    ! Note: this routine does not return but stops the program with the right exit code.
-    call execute_serial_cmd_app(&
-        testitems=[&
-            test("factorial_0", test_factorial_0),&
-            test("factorial_1", test_factorial_1)&
-        ]&
-    )
-
   contains
+
+    !> Returns the tests in this module
+    function tests()
+      type(test_list) :: tests
+
+      tests = test_list([&
+          test("factorial_0", test_factorial_0),&
+          test("factorial_1", test_factorial_1)&
+      ])
+
+    end function tests
 
     ! Test: 0! = 1
     subroutine test_factorial_0()
@@ -129,6 +130,19 @@ could look as follows::
     subroutine test_factorial_1()
       call check(is_equal(factorial(1), 1))
     end subroutine test_factorial_1
+
+  end module testapp_tests
+
+
+  !> Test app driving Fortuno unit tests.
+  program testapp
+    use fortuno_serial, only : execute_serial_cmd_app
+    use testapp_tests, only : tests
+    implicit none
+
+    ! Register tests by providing name and subroutine to run for each test.
+    ! Note: this routine does not return but stops the program with the right exit code.
+    call execute_serial_cmd_app(tests())
 
   end program testapp
 
@@ -234,7 +248,7 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
-| Intel 2024.0 [1]       | * OK (serial, mpi, coarray)                         |
+| Intel 2024.1           | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
 | NAG 7.2 (build 7202)   | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
@@ -244,15 +258,6 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 
 If you are aware of any other compilers being able to build Fortuno, please,
 open a pull request to update the table.
-
-Notes
------
-
-1. Please ensure you are using Intel 2024.0, as newer versions (2024.1 and
-   2024.2) have a confirmed compiler bug that creates an incorrect binary,
-   leading to segmentation faults due to the loss of pointer association status.
-   For more details, refer to the `Intel community discussion
-   <https://community.intel.com/t5/Intel-Fortran-Compiler/Compiler-bug-Procedure-pointer-association-status-gets-lost/m-p/1612121>`_.
 
 
 License

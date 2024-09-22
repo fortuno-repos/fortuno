@@ -22,9 +22,9 @@ set_target_properties(
 
 set(
   fypp-sources
-  fixtured_fypp_tests.fypp
-  parametrized_fypp_tests.fypp
-  simple_fypp_tests.fypp
+  test_fixtured_fypp.fypp
+  test_parametrized_fypp.fypp
+  test_simple_fypp.fypp
 )
 
 get_target_property(_fortuno_incdir Fortuno::fortuno_include_dir INTERFACE_INCLUDE_DIRECTORIES)

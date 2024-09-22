@@ -4,15 +4,16 @@
 
 #:include "fortuno_serial.fypp"
 
-module parametrized_fypp_tests
+!> Demonstrates a possible realization of parametrized tests using Fypp macros.
+module test_parametrized_fypp
   use mylib_fypp, only : factorial
   use fortuno_serial, only : as_char, is_equal, serial_case_base, suite => serial_suite_item,&
-      & test_item
+      & test_item, test_list
   $:FORTUNO_SERIAL_IMPORTS()
   implicit none
 
   private
-  public :: parametrized_fypp_test_items
+  public :: tests
 
 
   !> Contains argument and expected result of a factorial() invokation
@@ -37,18 +38,18 @@ contains
 
 
   !> Returns the tests of this module.
-  function parametrized_fypp_test_items() result(testitems)
-    type(test_item), allocatable :: testitems(:)
+  function tests()
+    type(test_list) :: tests
 
     integer :: ii
 
-    testitems = [&
-        suite("parametrized", [&
+    tests = test_list([&
+        suite("parametrized", test_list([&
             (parametrized_test("factorial", testcaseparams(ii)), ii = 1, size(testcaseparams))&
-        ])&
-    ]
+        ]))&
+    ])
 
-  end function parametrized_fypp_test_items
+  end function tests
 
 
   !> Run method of the parametrized test (executing the check directly)
@@ -60,7 +61,7 @@ contains
   end subroutine parametrized_test_case_run
 
 
-  !> Convenience wrapper to generate a test case wrapped as test_item for a given argres pair.
+  !> Convenience function to generate a parametrized test item (to be used in an array constructor)
   function parametrized_test(prefix, argres) result(testitem)
     character(*), intent(in) :: prefix
     type(arg_res), intent(in) :: argres
@@ -69,8 +70,8 @@ contains
     character(:), allocatable :: name
 
     name = prefix // "_" // as_char(argres%arg)
-    testitem%item = parametrized_test_case(name=name, argres=argres)
+    testitem = test_item(parametrized_test_case(name=name, argres=argres))
 
   end function parametrized_test
 
-end module parametrized_fypp_tests
+end module test_parametrized_fypp

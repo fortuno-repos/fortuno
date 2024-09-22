@@ -4,7 +4,7 @@
 
 !> Contains a trivial implementation for a serial suite
 module fortuno_serial_serialsuite
-  use fortuno, only : test_item
+  use fortuno, only : test_item, test_list
   use fortuno_serial_serialbasetypes, only : serial_suite_base
   implicit none
 
@@ -19,17 +19,12 @@ module fortuno_serial_serialsuite
 contains
 
   !> Returns a serial suite instance wrapped as test_item
-  function serial_suite_item(name, items) result(testitem)
+  function serial_suite_item(name, tests) result(testitem)
     character(*), intent(in) :: name
-    type(test_item), intent(in) :: items(:)
+    type(test_list), intent(in) :: tests
     type(test_item) :: testitem
 
-    type(serial_suite), allocatable :: serialsuite
-    allocate(serialsuite)
-    serialsuite%name = name
-    serialsuite%items = items
-    call move_alloc(serialsuite, testitem%item)
-    !testitem%item = serial_suite(name=name, items=items)
+    call testitem%init(serial_suite(name=name, tests=tests))
 
   end function serial_suite_item
 

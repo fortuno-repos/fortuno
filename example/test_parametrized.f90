@@ -2,14 +2,15 @@
 ! Licensed under the BSD-2-Clause Plus Patent license.
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
-module parametrized_tests
+!> Demonstrates a possible realization of parametrized tests.
+module test_parametrized
   use mylib, only : factorial
   use fortuno_serial, only : as_char, is_equal, serial_case_base, check => serial_check,&
-      & suite => serial_suite_item, test_item
+      & suite => serial_suite_item, test_item, test_list
   implicit none
 
   private
-  public :: parametrized_test_items
+  public :: tests
 
 
   !> Contains argument and expected result of a factorial() invokation
@@ -34,35 +35,21 @@ contains
 
 
   !> Returns the tests of this module.
-  function parametrized_test_items() result(testitems)
-    type(test_item), allocatable :: testitems(:)
+  function tests()
+    type(test_list) :: tests
 
     integer :: ii
 
-    ! Workaround:gfortran:14.1 (bug 116679)
-    ! Omit array expression to avoid memory leak
-    ! {-
-    ! testitems = [&
-    !     suite("parametrized", [&
-    !         (parametrized_test("factorial", testcaseparams(ii)), ii = 1, size(testcaseparams))&
-    !     ])&
-    ! ]
-    ! -}{+
-    block
-      type(test_item), allocatable :: itembuffer(:)
-      allocate(itembuffer(size(testcaseparams)))
-      do ii = 1, size(testcaseparams)
-        itembuffer(ii) = parametrized_test("factorial", testcaseparams(ii))
-      end do
-      allocate(testitems(1))
-      testitems(1) = suite("parametrized", itembuffer)
-    end block
-    ! +}
+    tests = test_list([&
+        suite("parametrized", test_list([&
+            (parametrized_test("factorial", testcaseparams(ii)), ii = 1, size(testcaseparams))&
+        ]))&
+    ])
 
-  end function parametrized_test_items
+  end function tests
 
 
-  !> Convenience wrapper to generate a test case for a given argres pair.
+  !> Convenience function to generate a parametrized test item (to be used in an array constructor)
   function parametrized_test(prefix, argres) result(testitem)
     character(*), intent(in) :: prefix
     type(arg_res), intent(in) :: argres
@@ -71,17 +58,7 @@ contains
     character(:), allocatable :: name
 
     name = prefix // "_" // as_char(argres%arg)
-    ! Workaround:gfortran:14.1 (bug 116679)
-    ! Omit array expression to avoid memory leak
-    ! {-
-    ! testitem%item = parametrized_test_case(name=name, argres=argres)
-    ! -}{+
-    block
-      type(parametrized_test_case), allocatable :: testcase
-      testcase = parametrized_test_case(name=name, argres=argres)
-      call move_alloc(testcase, testitem%item)
-    end block
-    ! +}
+    testitem = test_item(parametrized_test_case(name=name, argres=argres))
 
   end function parametrized_test
 
@@ -94,4 +71,4 @@ contains
 
   end subroutine parametrized_test_case_run
 
-end module parametrized_tests
+end module test_parametrized

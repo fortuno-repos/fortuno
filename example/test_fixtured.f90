@@ -2,21 +2,22 @@
 ! Licensed under the BSD-2-Clause Plus Patent license.
 ! SPDX-License-Identifier: BSD-2-Clause-Patent
 
-module fixtured_tests
+!> Demo for realizing fixtured tests by overriding the run() method of the test_case object.
+module test_fixtured
   use mylib, only : factorial
   use fortuno_serial, only : char_rep_int, check => serial_check, is_equal, named_state,&
       & named_item, suite => serial_suite_item, store_state => serial_store_state,&
-      & serial_case_base, test_item
+      & serial_case_base, test_item, test_list
   implicit none
 
   private
-  public :: fixtured_test_items
+  public :: tests
 
 
   ! Fixtured test case creating a random number before running a test procedure.
   type, extends(serial_case_base) :: random_test_case
 
-  ! Test procedure to be invoked once fixture setup had been executed
+  ! Test procedure to be called after fixture setup had finished.
     procedure(test_recursion_down), pointer, nopass :: proc
 
   contains
@@ -30,36 +31,19 @@ contains
 
 
   ! Returns the tests from this module.
-  function fixtured_test_items() result(testitems)
-    type(test_item), allocatable :: testitems(:)
+  function tests()
+    type(test_list) :: tests
 
     integer :: ii
 
-    ! Workaround:gfortran:14.1 (bug 116679)
-    ! Omit array expression to avoid memory leak
-    ! {-
-    ! testitems = [&
-    !     suite("fixtured", [&
-    !         [(random_test("recursion_down", test_recursion_down), ii = 1, 5)],&
-    !         [(random_test("recursion_up", test_recursion_up), ii = 1, 5)]&
-    !     ])&
-    ! ]
-    ! -}{+
-    block
-      type(test_item), allocatable :: itembuffer(:)
-      allocate(itembuffer(10))
-      do ii = 1, 5
-        itembuffer(ii) = random_test("recursion_down", test_recursion_down)
-      end do
-      do ii = 1, 5
-        itembuffer(5 + ii) = random_test("recursion_up", test_recursion_up)
-      end do
-      allocate(testitems(1))
-      testitems(1) = suite("fixtured", itembuffer)
-    end block
-    ! +}
+    tests = test_list([&
+        suite("fixtured", test_list([&
+            [(random_test("recursion_down", test_recursion_down), ii = 1, 5)],&
+            [(random_test("recursion_up", test_recursion_up), ii = 1, 5)]&
+        ]))&
+    ])
 
-  end function fixtured_test_items
+  end function tests
 
 
   ! TEST n! = n * (n - 1)!
@@ -76,28 +60,18 @@ contains
   end subroutine test_recursion_up
 
 
-  ! Convenience function returning a random_test_case instance wrapped as test_item.
+  ! Returns a random_test_case instance wrapped as test_item to be used in an array constructor.
   function random_test(name, proc) result(testitem)
     character(*), intent(in) :: name
     procedure(test_recursion_down) :: proc
     type(test_item) :: testitem
 
-    ! Workaround:gfortran:14.1 (bug 116679)
-    ! Omit array expression to avoid memory leak
-    ! {-
-    ! testitem%item = random_test_case(name=name, proc=proc)
-    ! -}{+
-    block
-      type(random_test_case), allocatable :: randomtest
-      randomtest = random_test_case(name=name, proc=proc)
-      call move_alloc(randomtest, testitem%item)
-    end block
-    ! +}
+    testitem = test_item(random_test_case(name=name, proc=proc))
 
   end function random_test
 
 
-  ! Run procedure of the random_test_case class.
+  ! Runs procedure of the random_test_case class.
   subroutine random_test_case_run(this)
     class(random_test_case), intent(in) :: this
 
@@ -106,9 +80,11 @@ contains
 
     ! Set-up fixture by creating a random number
     call random_number(rand)
+
     ! Note: factorial(n) with n > 13 overflows with 32 bit integers
     nn = int(13 * rand) + 1
-    ! Store internal state to aid introspection/identification later
+
+    ! Store internal state (actual value of nn) to aid introspection/identification later
     ! Workaround:gfortran:14.1 (bug 116679)
     ! Omit array expression to avoid memory leak
     ! {-
@@ -119,8 +95,7 @@ contains
     ! )
     ! -}{+
     block
-      type(named_item), allocatable :: nameditems(:)
-      allocate(nameditems(1))
+      type(named_item) :: nameditems(1)
       nameditems(1) = named_item("n", char_rep_int(nn))
       call store_state(named_state(nameditems))
     end block
@@ -129,4 +104,4 @@ contains
 
   end subroutine random_test_case_run
 
-end module fixtured_tests
+end module test_fixtured

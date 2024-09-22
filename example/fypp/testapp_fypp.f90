@@ -4,18 +4,17 @@
 
 !> Test app with command line interface, collecting and executing the tests.
 program testapp_fypp
-  use fortuno_serial, only : execute_serial_cmd_app
-  use simple_fypp_tests, only : simple_fypp_test_items
-  use fixtured_fypp_tests, only : fixtured_fypp_test_items
-  use parametrized_fypp_tests, only : parametrized_fypp_test_items
+  use fortuno_serial, only : execute_serial_cmd_app, test_list
+  use test_fixtured_fypp, only : fixtured_fypp_tests => tests
+  use test_parametrized_fypp, only : parametrized_fypp_tests => tests
+  use test_simple_fypp, only : simple_fypp_tests => tests
   implicit none
 
-  call execute_serial_cmd_app(&
-    testitems=[&
-      simple_fypp_test_items(),&
-      fixtured_fypp_test_items(),&
-      parametrized_fypp_test_items()&
-    ]&
+  call execute_serial_cmd_app(test_list([&
+      simple_fypp_tests(),&
+      fixtured_fypp_tests(),&
+      parametrized_fypp_tests()&
+    ])&
   )
 
 end program testapp_fypp
