@@ -2,22 +2,22 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-list(APPEND CMAKE_MESSAGE_CONTEXT Fypp)
+list(APPEND CMAKE_MESSAGE_CONTEXT SerialFypp)
 
-add_library(fortuno_example_fypp_mylib)
+add_library(fortuno_example_serial_fypp_mylib)
 set_target_properties(
-  fortuno_example_fypp_mylib PROPERTIES
+  fortuno_example_serial_fypp_mylib PROPERTIES
   OUTPUT_NAME mylib
 )
 target_sources(
-  fortuno_example_fypp_mylib PRIVATE
+  fortuno_example_serial_fypp_mylib PRIVATE
   mylib.f90
 )
 
-add_executable(fortuno_example_fypp_testapp)
+add_executable(fortuno_example_serial_fypp_testapp)
 set_target_properties(
-  fortuno_example_fypp_testapp PROPERTIES
-  OUTPUT_NAME testapp_fypp
+  fortuno_example_serial_fypp_testapp PROPERTIES
+  OUTPUT_NAME testapp
 )
 
 set(
@@ -35,12 +35,12 @@ fortuno_preprocess(
 )
 
 target_sources(
-  fortuno_example_fypp_testapp PRIVATE
+  fortuno_example_serial_fypp_testapp PRIVATE
   ${fypp-f90-sources}
-  testapp_fypp.f90
+  testapp.f90
 )
 target_link_libraries(
-  fortuno_example_fypp_testapp
+  fortuno_example_serial_fypp_testapp
   PRIVATE
-  fortuno_example_fypp_mylib Fortuno::fortuno_serial
+  fortuno_example_serial_fypp_mylib Fortuno::fortuno_serial
 )

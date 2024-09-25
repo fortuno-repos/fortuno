@@ -1,4 +1,4 @@
-name = "fortuno-test-export"
+name = "fortuno-mpi-test-export"
 version = "0.0.0"
 license = "BSD-2-Clause-Patent"
 author = "Fortuno authors"
@@ -15,12 +15,13 @@ module-naming = false
 library = false
 
 [fortran]
-implicit-typing = false
-implicit-external = false
+implicit-typing = true
+implicit-external = true
 source-form = "free"
 
 [dependencies]
-fortuno = { path = "../../" }
+fortuno-mpi = { path = "../../../" }
+mpi = "*"
 
 [[executable]]
 name = "testapp"

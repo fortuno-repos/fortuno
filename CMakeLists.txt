@@ -31,8 +31,14 @@ option(FORTUNO_BUILD_SHARED_LIBS "Fortuno: Build as shared library" ${PROJECT_IS
 
 option(
   FORTUNO_BUILD_SERIAL_INTERFACE
-  "Fortuno: whether serial interface should be built (or only core library)"
+  "Fortuno: whether serial interface should be built"
   ON
+)
+
+option(
+  FORTUNO_BUILD_MPI_INTERFACE
+  "Fortuno: whether MPI interface should be built"
+  OFF
 )
 
 cmake_dependent_option(
@@ -79,6 +85,13 @@ find_program(FYPP fypp)
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 fortuno_setup_build_type("RelWithDebInfo")
 
+if (FORTUNO_BUILD_MPI_INTERFACE)
+  find_package(MPI REQUIRED)
+  if(NOT MPI_FORTRAN_FOUND)
+    message(FATAL_ERROR "Failed to detect MPI-framework for Fortran")
+  endif()
+endif ()
+
 #[=================================================================================================[
 #                                 Main definition                                                 #
 ]=================================================================================================]
@@ -107,6 +120,15 @@ if (FORTUNO_INSTALL)
     configure_file(cmake/fortuno-serial.pc.in fortuno-serial.pc @ONLY)
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-serial.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      COMPONENT Fortuno_development
+    )
+  endif ()
+
+  if (FORTUNO_BUILD_MPI_INTERFACE)
+    configure_file(cmake/fortuno-mpi.pc.in fortuno-mpi.pc @ONLY)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-mpi.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
       COMPONENT Fortuno_development
     )

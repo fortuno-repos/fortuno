@@ -57,6 +57,35 @@ if (FORTUNO_BUILD_SERIAL_INTERFACE)
 
 endif ()
 
+
+if (FORTUNO_BUILD_MPI_INTERFACE)
+
+  add_library(fortuno_mpi)
+  set_target_properties(
+    fortuno_mpi PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    EXPORT_NAME fortuno_mpi
+    OUTPUT_NAME fortuno-mpi
+    Fortran_MODULE_DIRECTORY "${moduledir}"
+  )
+  target_link_libraries(fortuno_mpi PRIVATE MPI::MPI_Fortran)
+  target_link_libraries(fortuno_mpi PUBLIC Fortuno::fortuno)
+  target_include_directories(
+    fortuno_mpi PUBLIC
+    $<BUILD_INTERFACE:${moduledir}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/${FORTUNO_INSTALL_MODULEDIR}>
+  )
+  target_sources(fortuno_mpi PRIVATE fortuno_mpi.f90)
+  add_subdirectory(fortuno_mpi)
+
+  add_library(Fortuno::fortuno_mpi ALIAS fortuno_mpi)
+  list(APPEND _installed_targets "fortuno_mpi")
+
+endif ()
+
+
 if (FORTUNO_INSTALL)
   install(
     TARGETS ${_installed_targets}

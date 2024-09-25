@@ -11,3 +11,8 @@ fortuno_serial_sources += files(
   'fortuno_serial.f90'
 )
 subdir('fortuno_serial')
+
+fortuno_mpi_sources += files(
+  'fortuno_mpi.f90'
+)
+subdir('fortuno_mpi')
