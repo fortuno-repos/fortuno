@@ -126,27 +126,27 @@ jobs:
       - name: Setup serial interface options
         if: ${{ contains(matrix.interface, 'serial') }}
         run: |
-          echo "CMAKE_OPTIONS=-DFORTUNO_BUILD_SERIAL_INTERFACE=ON" >> ${GITHUB_ENV}
+          echo "CMAKE_OPTIONS=-DFORTUNO_WITH_SERIAL=ON" >> ${GITHUB_ENV}
           echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
-          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:build_serial_interface=true" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:with_serial=true" >> ${GITHUB_ENV}
           echo "INTERFACE=serial" >> ${GITHUB_ENV}
           echo "RUN_PREFIX=" >> ${GITHUB_ENV}
 
       - name: Setup mpi interface options
         if: ${{ contains(matrix.interface, 'mpi') }}
         run: |
-          echo "CMAKE_OPTIONS=-DFORTUNO_BUILD_MPI_INTERFACE=ON" >> ${GITHUB_ENV}
+          echo "CMAKE_OPTIONS=-DFORTUNO_WITH_MPI=ON" >> ${GITHUB_ENV}
           echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
-          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:build_mpi_interface=true" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:with_mpi=true" >> ${GITHUB_ENV}
           echo "INTERFACE=mpi" >> ${GITHUB_ENV}
           echo "RUN_PREFIX=mpirun -n 2" >> ${GITHUB_ENV}
 
       - name: Setup coarray interface options
         if: ${{ contains(matrix.interface, 'coarray') }}
         run: |
-          echo "CMAKE_OPTIONS=-DFORTUNO_BUILD_COARRAY_INTERFACE=ON -DFORTUNO_COARRAY_COMPILE_FLAGS='-coarray' -DFORTUNO_COARRAY_LINK_FLAGS='-coarray'" >> ${GITHUB_ENV}
-          echo "MESON_OPTIONS_NOFALLBACK=-Dcoarray_compile_flags=-coarray -Dcoarray_link_flags=-coarray" >> ${GITHUB_ENV}
-          echo "MESON_OPTIONS_FALLBACK=-Dcoarray_compile_flags=-coarray -Dcoarray_link_flags=-coarray -Dfortuno:build_coarray_interface=true -Dfortuno:coarray_compile_flags=-coarray -Dfortuno:coarray_link_flags=-coarray" >> ${GITHUB_ENV}
+          echo "CMAKE_OPTIONS=-DFORTUNO_WITH_COARRAY=ON -DFORTUNO_FFLAGS_COARRAY='-coarray' -DFORTUNO_LDFLAGS_COARRAY='-coarray'" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=-Dfflags_coarray=-coarray -Dldflags_coarray=-coarray" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfflags_coarray=-coarray -Dldflags_coarray=-coarray -Dfortuno:with_coarray=true -Dfortuno:fflags_coarray=-coarray -Dfortuno:ldflags_coarray=-coarray" >> ${GITHUB_ENV}
           echo "FPM_FFLAGS=${FPM_FFLAGS} -coarray" >> ${GITHUB_ENV}
           echo "FPM_LDFLAGS=${FPM_LDFLAGS} -coarray" >> ${GITHUB_ENV}
           echo "INTERFACE=coarray" >> ${GITHUB_ENV}

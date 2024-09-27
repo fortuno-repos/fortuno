@@ -2,14 +2,14 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-if build_serial_interface
+if with_serial
   subdir('serial')
 endif
 
-if build_mpi_interface
+if with_mpi
   subdir('mpi')
 endif
 
-if build_coarray_interface
+if with_coarray
   subdir('coarray')
 endif

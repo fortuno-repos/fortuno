@@ -28,14 +28,14 @@ endfunction()
 function (fortuno_create_thread_safe_build_target)
 
   if (NOT TARGET ThreadSafeBuild)
-    if (FORTUNO_THREAD_SAFE_COMPILE_FLAGS)
-      set(_compiler_flags "${FORTUNO_THREAD_SAFE_COMPILE_FLAGS}")
+    if (FORTUNO_FFLAGS_THREADSAFE)
+      set(_compiler_flags "${FORTUNO_FFLAGS_THREADSAFE}")
     elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
       set(_compiler_flags "-thread_safe")
     endif ()
 
-    if (FORTUNO_THREAD_SAFE_LINK_FLAGS)
-      set(_linker_flags "${FORTUNO_THREAD_SAFE_LINK_FLAGS}")
+    if (FORTUNO_LDFLAGS_THREADSAFE)
+      set(_linker_flags "${FORTUNO_LDFLAGS_THREADSAFE}")
     elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
       set(_linker_flags "-thread_safe")
     endif ()
@@ -105,11 +105,11 @@ function (fortuno_create_coarray_build_target)
     add_library(CoarrayBuildInterface INTERFACE)
     target_compile_options(
       CoarrayBuildInterface INTERFACE
-      ${FORTUNO_COARRAY_COMPILE_FLAGS}
+      ${FORTUNO_FFLAGS_COARRAY}
     )
     target_link_options(
       CoarrayBuildInterface INTERFACE
-      ${FORTUNO_COARRAY_LINK_FLAGS}
+      ${FORTUNO_LDFLAGS_COARRAY}
     )
   endif ()
 

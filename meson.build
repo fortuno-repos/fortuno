@@ -8,10 +8,10 @@ project(
   version: '0.1.0',
 )
 
-build_serial_interface = get_option('build_serial_interface')
-build_mpi_interface = get_option('build_mpi_interface')
-build_coarray_interface = get_option('build_coarray_interface')
-build_examples = get_option('build_examples')
+with_serial = get_option('with_serial')
+with_mpi = get_option('with_mpi')
+with_coarray = get_option('with_coarray')
+with_examples = get_option('with_examples')
 
 fortuno_sources = []
 fortuno_serial_sources = []
@@ -19,24 +19,24 @@ fortuno_mpi_sources = []
 fortuno_coarray_sources = []
 subdir('src')
 
-thread_safe_compile_flags = get_option('thread_safe_compile_flags')
-thread_safe_link_flags = get_option('thread_safe_link_flags')
-coarray_compile_flags = get_option('coarray_compile_flags')
-coarray_link_flags = get_option('coarray_link_flags')
+fflags_threadsafe = get_option('fflags_threadsafe')
+ldflags_threadsafe = get_option('ldflags_threadsafe')
+fflags_coarray = get_option('fflags_coarray')
+ldflags_coarray = get_option('ldflags_coarray')
 
 fortuno_lib = library(
   'fortuno',
   version: meson.project_version(),
   sources: fortuno_sources,
-  fortran_args: thread_safe_compile_flags,
-  link_args: thread_safe_link_flags,
+  fortran_args: fflags_threadsafe,
+  link_args: ldflags_threadsafe,
 )
 
 fortuno_dep = declare_dependency(
   link_with: fortuno_lib,
 )
 
-if build_serial_interface
+if with_serial
 
   fortuno_serial_deps = [fortuno_dep]
 
@@ -54,7 +54,7 @@ if build_serial_interface
 
 endif
 
-if build_mpi_interface
+if with_mpi
 
   fortuno_mpi_deps = [fortuno_dep]
 
@@ -75,11 +75,11 @@ if build_mpi_interface
 
 endif
 
-if build_coarray_interface
+if with_coarray
   fortuno_coarray_deps = [fortuno_dep]
 
   # Disabling coarray detection as it seems to be fragile. Make sure to pass the right coarray
-  # compiler and linker arguments via the "coarray_compile_flags" and "coarray_link_flags" build variables.
+  # compiler and linker arguments via the "fflags_coarray" and "ldflags_coarray" build variables.
   # coarray_dep = dependency('coarray')
   # fortuno_coarray_deps += coarray_dep
 
@@ -88,8 +88,8 @@ if build_coarray_interface
     version: meson.project_version(),
     sources: fortuno_coarray_sources,
     dependencies: fortuno_coarray_deps,
-    fortran_args: coarray_compile_flags,
-    link_args: coarray_link_flags,
+    fortran_args: fflags_coarray,
+    link_args: ldflags_coarray,
   )
 
   fortuno_coarray_dep = declare_dependency(
@@ -99,6 +99,6 @@ if build_coarray_interface
 
 endif
 
-if build_examples
+if with_examples
   subdir('example')
 endif

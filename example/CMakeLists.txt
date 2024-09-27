@@ -4,21 +4,21 @@
 
 list(APPEND CMAKE_MESSAGE_CONTEXT Example)
 
-if (FORTUNO_BUILD_SERIAL_INTERFACE)
+if (FORTUNO_WITH_SERIAL)
   add_subdirectory(serial)
   if (FYPP)
     add_subdirectory(serial-fypp)
   endif ()
 endif ()
 
-if (FORTUNO_BUILD_MPI_INTERFACE)
+if (FORTUNO_WITH_MPI)
   add_subdirectory(mpi)
   if (FYPP)
     add_subdirectory(mpi-fypp)
   endif ()
 endif ()
 
-if (FORTUNO_BUILD_COARRAY_INTERFACE)
+if (FORTUNO_WITH_COARRAY)
   add_subdirectory(coarray)
   # if (FYPP)
   #   add_subdirectory(mpi-fypp)

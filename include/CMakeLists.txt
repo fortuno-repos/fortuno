@@ -17,14 +17,14 @@ if (FORTUNO_INSTALL)
     TARGETS fortuno_include_dir
     EXPORT FortunoTargets
   )
-  if (FORTUNO_BUILD_SERIAL_INTERFACE)
+  if (FORTUNO_WITH_SERIAL)
     install(
       FILES fortuno_serial.fypp
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
       COMPONENT Fortuno_development
     )
   endif ()
-  if (FORTUNO_BUILD_MPI_INTERFACE)
+  if (FORTUNO_WITH_MPI)
     install(
       FILES fortuno_mpi.fypp
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"

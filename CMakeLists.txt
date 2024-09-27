@@ -29,33 +29,15 @@ include(CMakeDependentOption)
 
 option(FORTUNO_BUILD_SHARED_LIBS "Fortuno: Build as shared library" ${PROJECT_IS_TOP_LEVEL})
 
-option(
-  FORTUNO_BUILD_SERIAL_INTERFACE
-  "Fortuno: whether serial interface should be built"
-  ON
-)
+option(FORTUNO_WITH_SERIAL "Fortuno: whether the library with serial interface should be built" ON)
 
-option(
-  FORTUNO_BUILD_MPI_INTERFACE
-  "Fortuno: whether MPI interface should be built"
-  OFF
-)
+option(FORTUNO_WITH_MPI "Fortuno: whether the library with MPI interface should be built" OFF)
 
-option(
-  FORTUNO_BUILD_COARRAY_INTERFACE
-  "Fortuno: whether the coarray interface should be built"
-  OFF
-)
+option(FORTUNO_WITH_COARRAY "Fortuno: whether library with coarray interface should be built" OFF)
 
-cmake_dependent_option(
-  FORTUNO_BUILD_TESTS "Fortuno: Build test suite" ${PROJECT_IS_TOP_LEVEL}
-  "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
-)
+option(FORTUNO_WITH_TESTS "Fortuno: whether to build test suite" ${PROJECT_IS_TOP_LEVEL})
 
-cmake_dependent_option(
-  FORTUNO_BUILD_EXAMPLES "Fortuno: Build example apps" ${PROJECT_IS_TOP_LEVEL}
-  "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
-)
+option(FORTUNO_WITH_EXAMPLES "Fortuno: whether to build example apps" ${PROJECT_IS_TOP_LEVEL})
 
 option(FORTUNO_INSTALL "Fortuno: Install project" ${PROJECT_IS_TOP_LEVEL})
 
@@ -65,22 +47,22 @@ set(
 )
 
 set(
-  FORTUNO_THREAD_SAFE_COMPILE_FLAGS "" CACHE STRING
+  FORTUNO_FFLAGS_THREADSAFE "" CACHE STRING
   "Fortuno: Flags needed to enforce thread-safe build during compilation"
 )
 
 set(
-  FORTUNO_THREAD_SAFE_LINK_FLAGS "" CACHE STRING
+  FORTUNO_LDFLAGS_THREADSAFE "" CACHE STRING
   "Fortuno: Flags neeeded to enforce thread-safe build during linking"
 )
 
 set(
-  FORTUNO_COARRAY_COMPILE_FLAGS "" CACHE STRING
+  FORTUNO_FFLAGS_COARRAY "" CACHE STRING
   "Fortuno: Flags needed for coarray features when compling"
 )
 
 set(
-  FORTUNO_COARRAY_LINK_FLAGS "" CACHE STRING
+  FORTUNO_LDFLAGS_COARRAY "" CACHE STRING
   "Fortuno: Flags neeeded for coarray features when linking"
 )
 
@@ -102,7 +84,7 @@ find_program(FYPP fypp)
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 fortuno_setup_build_type("RelWithDebInfo")
 
-if (FORTUNO_BUILD_MPI_INTERFACE)
+if (FORTUNO_WITH_MPI)
   find_package(MPI REQUIRED)
   if(NOT MPI_FORTRAN_FOUND)
     message(FATAL_ERROR "Failed to detect MPI-framework for Fortran")
@@ -115,7 +97,7 @@ endif ()
 
 add_subdirectory(include)
 add_subdirectory(src)
-if (FORTUNO_BUILD_EXAMPLES)
+if (FORTUNO_WITH_EXAMPLES)
   add_subdirectory(example)
 endif ()
 
@@ -133,7 +115,7 @@ if (FORTUNO_INSTALL)
     COMPONENT Fortuno_development
   )
 
-  if (FORTUNO_BUILD_SERIAL_INTERFACE)
+  if (FORTUNO_WITH_SERIAL)
     configure_file(cmake/fortuno-serial.pc.in fortuno-serial.pc @ONLY)
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-serial.pc
@@ -142,7 +124,7 @@ if (FORTUNO_INSTALL)
     )
   endif ()
 
-  if (FORTUNO_BUILD_MPI_INTERFACE)
+  if (FORTUNO_WITH_MPI)
     configure_file(cmake/fortuno-mpi.pc.in fortuno-mpi.pc @ONLY)
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-mpi.pc
@@ -151,7 +133,7 @@ if (FORTUNO_INSTALL)
     )
   endif ()
 
-  if (FORTUNO_BUILD_COARRAY_INTERFACE)
+  if (FORTUNO_WITH_COARRAY)
     configure_file(cmake/fortuno-coarray.pc.in fortuno-coarray.pc @ONLY)
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-coarray.pc

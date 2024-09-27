@@ -30,7 +30,7 @@ add_subdirectory(fortuno)
 add_library(Fortuno::fortuno ALIAS fortuno)
 list(APPEND _installed_targets "fortuno")
 
-if (FORTUNO_BUILD_SERIAL_INTERFACE)
+if (FORTUNO_WITH_SERIAL)
 
   add_library(fortuno_serial)
   set_target_properties(
@@ -58,7 +58,7 @@ if (FORTUNO_BUILD_SERIAL_INTERFACE)
 endif ()
 
 
-if (FORTUNO_BUILD_MPI_INTERFACE)
+if (FORTUNO_WITH_MPI)
 
   add_library(fortuno_mpi)
   set_target_properties(
@@ -86,7 +86,7 @@ if (FORTUNO_BUILD_MPI_INTERFACE)
 endif ()
 
 
-if (FORTUNO_BUILD_COARRAY_INTERFACE)
+if (FORTUNO_WITH_COARRAY)
 
   add_library(fortuno_coarray)
   set_target_properties(

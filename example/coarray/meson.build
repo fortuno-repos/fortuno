@@ -6,8 +6,8 @@ example_mylib_lib = library(
   'mylib',
   sources: ['mylib.f90'],
   install: false,
-  fortran_args: coarray_compile_flags,
-  link_args: coarray_link_flags,
+  fortran_args: fflags_coarray,
+  link_args: ldflags_coarray,
 )
 example_mylib_dep = declare_dependency(
   link_with: example_mylib_lib,
@@ -21,6 +21,6 @@ example_testapp_exe = executable(
   ],
   dependencies: [example_mylib_dep, fortuno_coarray_dep],
   install: false,
-  fortran_args: coarray_compile_flags,
-  link_args: coarray_link_flags,
+  fortran_args: fflags_coarray,
+  link_args: ldflags_coarray,
 )
