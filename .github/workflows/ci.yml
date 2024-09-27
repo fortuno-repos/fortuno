@@ -173,7 +173,7 @@ jobs:
 
       - name: Test fpm export
         run: |
-          ./devel/fpm-export/fpm-export.sh ${INTERFACE} ${FPM_EXPORT_DIR}
+          ./devel/fpm-repo/export-fpm-repo.sh ${INTERFACE} ${FPM_EXPORT_DIR}
           fpm run -C ${FPM_EXPORT_DIR}/test/export/${INTERFACE} testapp
           rm -rf ${FPM_EXPORT_DIR}
 

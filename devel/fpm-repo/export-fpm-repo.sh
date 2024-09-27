@@ -12,8 +12,8 @@ fi
 
 rsync \
   -av \
-  --exclude-from=${SCRIPT_DIR}/${configdir}/rsync.ignore \
-  --include-from=${SCRIPT_DIR}/${configdir}/rsync.include \
+  --exclude-from=${SCRIPT_DIR}/${configdir}/repo.ignore \
+  --include-from=${SCRIPT_DIR}/${configdir}/repo.include \
   --exclude='*' \
   ${SCRIPT_DIR}/../../ ${destdir}
-cp ${SCRIPT_DIR}/${configdir}/fpm.toml ${destdir}
+rsync -av ${SCRIPT_DIR}/${configdir}/addons/ ${destdir}
