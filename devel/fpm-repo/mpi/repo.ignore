@@ -2,4 +2,6 @@
 *.mod
 *.a
 *.o
-
+CMakeLists.txt
+meson.build
+meson.options

@@ -134,7 +134,7 @@ contains
     class(console_logger), intent(inout) :: this
 
     if (.not. this%is_active()) return
-    write(stdout, "(a)") "=== Fortuno - extensible unit testing framework for Fortran ==="
+    write(stdout, "(a)") "=== Fortuno - flextensible unit testing framework for Fortran ==="
 
   end subroutine console_logger_start_drive
 

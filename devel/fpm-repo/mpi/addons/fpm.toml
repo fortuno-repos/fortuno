@@ -12,3 +12,5 @@ implicit-typing = true
 implicit-external = true
 source-form = "free"
 
+[dependencies]
+mpi = "*"

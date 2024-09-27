@@ -1,8 +1,8 @@
-*******************************************************
-Fortuno – extensible unit testing framework for Fortran
-*******************************************************
+*********************************************************
+Fortuno – flextensible unit testing framework for Fortran
+*********************************************************
 
-The **Fortuno** (Fortran Unit Testing Objects) project offers a flexible,
+The **Fortuno** (Fortran Unit Testing Objects) project offers a flexible &
 extensible, object oriented unit testing framework for the Fortran language. It
 puts strong emphasis on the simplicity of the user interface by minimizing the
 amount of boiler plate code when writing unit tests, as well as to modularity
@@ -58,7 +58,11 @@ project's build process. The actual steps depend on your build system:
   lines to your ``fpm.toml`` file::
 
     [dev-dependencies]
-    fortuno = { git = "https://github.com/fortuno-repos/fortuno" }
+    fortuno = { git = "https://github.com/fortuno-repos/fortuno-fpm-serial.git" }
+
+  Note: as fpm does not support conditional compiling (yet), you need to specify
+  the automatically deployed repository containg the source code for the
+  serial interface of Fortuno.
 
 * **CMake:** Add the following snippet to the ``CMakeLists.txt`` file in the
   root folder of your project::
@@ -217,7 +221,7 @@ The result is communicated via the testapp's exit code to the build framework
 (zero for success, and non-zero for failure). Additionally, Fortuno logs details
 to the console::
 
-  === Fortuno - extensible unit testing framework for Fortran ===
+  === Fortuno - flextensible unit testing framework for Fortran ===
 
   # Executing test items
   ..
@@ -239,7 +243,7 @@ detailed explanations, further features and use cases.
 Compiler compatibility
 ======================
 
-In order to offer a simple user interface and to allow for maximal reusability
+In order to offer a simple user interface and to allow for maximal flexibility
 and extensibility, Fortuno uses modern Fortran constructs extensively. Building
 Fortuno requires a compiler with Fortran 2018 support. The following table gives
 an overview over the compilers which were successfully tested for building
@@ -248,7 +252,7 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
-| Intel 2024.1           | * OK (serial, mpi, coarray)                         |
+| Intel 2024.{0,1,2}     | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
 | NAG 7.2 (build 7202)   | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+

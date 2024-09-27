@@ -16,7 +16,7 @@ list(APPEND CMAKE_MESSAGE_CONTEXT Fortuno)
 project(
   Fortuno
   VERSION 0.1.0
-  DESCRIPTION "Extensible unit testing framework for Fortran"
+  DESCRIPTION "Flextensible unit testing framework for Fortran"
   HOMEPAGE_URL "https://github.com/fortuno-repos/fortuno"
   LANGUAGES Fortran
 )

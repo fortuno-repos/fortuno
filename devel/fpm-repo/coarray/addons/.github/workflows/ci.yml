@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  INTERFACE: coarray
+
+jobs:
+
+  #
+  # Test Fortuno in various system configurations
+  #
+  fortuno-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check-out code
+        uses: actions/checkout@v4
+
+      - name: Setup Intel compiler
+        uses: rscohn2/setup-oneapi@v0
+        with:
+          components: |
+            ifx
+
+      - name: Setup Intel environment
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> ${GITHUB_ENV}
+          echo "FPM_FC=ifx" >> ${GITHUB_ENV}
+          echo "FPM_FFLAGS=-coarray" >> ${GITHUB_ENV}
+          echo "FPM_LDFLAGS=-coarray" >> ${GITHUB_ENV}
+
+      - name: Setup build tools
+        run: |
+          pip install fpm
+
+      - name: Test fpm export
+        run: |
+          fpm run -C test/export/${INTERFACE} testapp

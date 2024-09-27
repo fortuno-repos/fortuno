@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -202,3 +202,56 @@ jobs:
           ninja -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           rm -rf subprojects ${BUILD_DIR}
+
+  deploy-fpm:
+    needs: fortuno-test
+    if: github.repository == 'fortuno/fortuno' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check-out code
+        uses: actions/checkout@v4
+
+      - name: Export serial repository content
+        run: ./devel/fpm-repo/export-fpm-repo.sh serial _fpm_serial
+
+      - name: Push to serial repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_SERIAL }}
+        with:
+            source-directory: _fpm_serial
+            destination-github-username: 'aradi'
+            destination-repository-name: 'fortuno-fpm-serial'
+            user-email: aradi@uni-bremen.de
+            target-branch: main
+
+      - name: Export mpi repository content
+        run: ./devel/fpm-repo/export-fpm-repo.sh mpi _fpm_mpi
+
+      - name: Push to mpi repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_MPI }}
+        with:
+            source-directory: _fpm_mpi
+            destination-github-username: 'aradi'
+            destination-repository-name: 'fortuno-fpm-mpi'
+            user-email: aradi@uni-bremen.de
+            target-branch: main
+
+      - name: Export coarray repository content
+        run: ./devel/fpm-repo/export-fpm-repo.sh coarray _fpm_coarray
+
+      - name: Push to coarray repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_COARRAY }}
+        with:
+            source-directory: _fpm_coarray
+            destination-github-username: 'aradi'
+            destination-repository-name: 'fortuno-fpm-coarray'
+            user-email: aradi@uni-bremen.de
+            target-branch: main
