@@ -22,49 +22,10 @@ project(
 )
 
 #[=================================================================================================[
-#                                 Options                                                         #
+#                           Build configuration options                                           #
 ]=================================================================================================]
 
-include(CMakeDependentOption)
-
-option(FORTUNO_BUILD_SHARED_LIBS "Fortuno: Build as shared library" ${PROJECT_IS_TOP_LEVEL})
-
-option(FORTUNO_WITH_SERIAL "Fortuno: whether the library with serial interface should be built" ON)
-
-option(FORTUNO_WITH_MPI "Fortuno: whether the library with MPI interface should be built" OFF)
-
-option(FORTUNO_WITH_COARRAY "Fortuno: whether library with coarray interface should be built" OFF)
-
-option(FORTUNO_WITH_TESTS "Fortuno: whether to build test suite" ${PROJECT_IS_TOP_LEVEL})
-
-option(FORTUNO_WITH_EXAMPLES "Fortuno: whether to build example apps" ${PROJECT_IS_TOP_LEVEL})
-
-option(FORTUNO_INSTALL "Fortuno: Install project" ${PROJECT_IS_TOP_LEVEL})
-
-set(
-  FORTUNO_INSTALL_MODULEDIR "modules" CACHE STRING
-  "Fortuno: Sub-directory for installed Fortran module files (relative to CMAKE_INSTALL_LIBDIR)"
-)
-
-set(
-  FORTUNO_FFLAGS_THREADSAFE "" CACHE STRING
-  "Fortuno: Flags needed to enforce thread-safe build during compilation"
-)
-
-set(
-  FORTUNO_LDFLAGS_THREADSAFE "" CACHE STRING
-  "Fortuno: Flags neeeded to enforce thread-safe build during linking"
-)
-
-set(
-  FORTUNO_FFLAGS_COARRAY "" CACHE STRING
-  "Fortuno: Flags needed for coarray features when compling"
-)
-
-set(
-  FORTUNO_LDFLAGS_COARRAY "" CACHE STRING
-  "Fortuno: Flags neeeded for coarray features when linking"
-)
+include(config.cmake)
 
 
 #[=================================================================================================[
@@ -92,7 +53,7 @@ if (FORTUNO_WITH_MPI)
 endif ()
 
 #[=================================================================================================[
-#                                 Main definition                                                 #
+#                                 Build definitions                                               #
 ]=================================================================================================]
 
 add_subdirectory(include)

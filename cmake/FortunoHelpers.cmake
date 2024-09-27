@@ -24,25 +24,13 @@ function (fortuno_setup_build_type default_build_type)
 endfunction()
 
 
-# Defines the ThreadSafeBuild target for the thread-safe parts
-function (fortuno_create_thread_safe_build_target)
+# Defines the _thread_safe_build target for the thread-safe parts
+function (_fortuno_create_thread_safe_build_target)
 
-  if (NOT TARGET ThreadSafeBuild)
-    if (FORTUNO_FFLAGS_THREADSAFE)
-      set(_compiler_flags "${FORTUNO_FFLAGS_THREADSAFE}")
-    elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
-      set(_compiler_flags "-thread_safe")
-    endif ()
-
-    if (FORTUNO_LDFLAGS_THREADSAFE)
-      set(_linker_flags "${FORTUNO_LDFLAGS_THREADSAFE}")
-    elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
-      set(_linker_flags "-thread_safe")
-    endif ()
-
-    add_library(ThreadSafeBuild INTERFACE)
-    target_compile_options(ThreadSafeBuild INTERFACE ${_compiler_flags})
-    target_link_options(ThreadSafeBuild INTERFACE ${_linker_flags})
+  if (NOT TARGET _thread_safe_build)
+    add_library(_thread_safe_build INTERFACE)
+    target_compile_options(_thread_safe_build INTERFACE "${FORTUNO_FFLAGS_THREADSAFE}")
+    target_link_options(_thread_safe_build INTERFACE "${FORTUNO_LDFLAGS_THREADSAFE}")
   endif ()
 
 endfunction ()
@@ -51,20 +39,20 @@ endfunction ()
 # Applies thread safe build flags to a target
 function (fortuno_add_thread_safe_build_flags target)
 
-  fortuno_create_thread_safe_build_target()
+  _fortuno_create_thread_safe_build_target()
 
   # TODO: Delete first branch once cmake minimum version is 3.26 or above
   if (CMAKE_VERSION VERSION_LESS 3.26)
-    get_target_property(_compile_flags ThreadSafeBuild INTERFACE_COMPILE_OPTIONS)
+    get_target_property(_compile_flags _thread_safe_build INTERFACE_COMPILE_OPTIONS)
     if (_compile_flags)
       target_compile_options(${target} PRIVATE ${_compile_flags})
     endif ()
-    get_target_property(_link_flags ThreadSafeBuild INTERFACE_LINK_OPTIONS)
+    get_target_property(_link_flags _thread_safe_build INTERFACE_LINK_OPTIONS)
     if (_link_flags)
       target_link_options(${target} PRIVATE ${_link_flags})
     endif ()
   else ()
-    target_link_libraries(${target} PRIVATE $<BUILD_LOCAL_INTERFACE:ThreadSafeBuild>)
+    target_link_libraries(${target} PRIVATE $<BUILD_LOCAL_INTERFACE:_thread_safe_build>)
   endif ()
 
 endfunction ()
