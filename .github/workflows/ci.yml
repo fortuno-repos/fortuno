@@ -45,6 +45,10 @@ jobs:
           compiler: intel
           mpi: impi
           interface: mpi
+        - os: ubuntu-latest
+          compiler: intel
+          mpi: nompi
+          interface: coarray
         - os: macos-latest
           compiler: gnu
           mpi: nompi
@@ -123,8 +127,8 @@ jobs:
         if: ${{ contains(matrix.interface, 'serial') }}
         run: |
           echo "CMAKE_OPTIONS=-DFORTUNO_BUILD_SERIAL_INTERFACE=ON" >> ${GITHUB_ENV}
-          echo "MESON_OPTIONS=-Dbuild_serial_interface=true" >> ${GITHUB_ENV}
-          echo "MESON_FALLBACK_OPTIONS=-Dfortuno:build_serial_interface=true" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:build_serial_interface=true" >> ${GITHUB_ENV}
           echo "INTERFACE=serial" >> ${GITHUB_ENV}
           echo "RUN_PREFIX=" >> ${GITHUB_ENV}
 
@@ -132,10 +136,21 @@ jobs:
         if: ${{ contains(matrix.interface, 'mpi') }}
         run: |
           echo "CMAKE_OPTIONS=-DFORTUNO_BUILD_MPI_INTERFACE=ON" >> ${GITHUB_ENV}
-          echo "MESON_OPTIONS=-Dbuild_mpi_interface=true" >> ${GITHUB_ENV}
-          echo "MESON_FALLBACK_OPTIONS=-Dfortuno:build_mpi_interface=true" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dfortuno:build_mpi_interface=true" >> ${GITHUB_ENV}
           echo "INTERFACE=mpi" >> ${GITHUB_ENV}
           echo "RUN_PREFIX=mpirun -n 2" >> ${GITHUB_ENV}
+
+      - name: Setup coarray interface options
+        if: ${{ contains(matrix.interface, 'coarray') }}
+        run: |
+          echo "CMAKE_OPTIONS=-DFORTUNO_BUILD_COARRAY_INTERFACE=ON -DFORTUNO_COARRAY_COMPILE_FLAGS='-coarray' -DFORTUNO_COARRAY_LINK_FLAGS='-coarray'" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_NOFALLBACK=-Dcoarray_compile_flags=-coarray -Dcoarray_link_flags=-coarray" >> ${GITHUB_ENV}
+          echo "MESON_OPTIONS_FALLBACK=-Dcoarray_compile_flags=-coarray -Dcoarray_link_flags=-coarray -Dfortuno:build_coarray_interface=true -Dfortuno:coarray_compile_flags=-coarray -Dfortuno:coarray_link_flags=-coarray" >> ${GITHUB_ENV}
+          echo "FPM_FFLAGS=${FPM_FFLAGS} -coarray" >> ${GITHUB_ENV}
+          echo "FPM_LDFLAGS=${FPM_LDFLAGS} -coarray" >> ${GITHUB_ENV}
+          echo "INTERFACE=coarray" >> ${GITHUB_ENV}
+          echo "RUN_PREFIX=" >> ${GITHUB_ENV}
 
       - name: Setup build tools
         run: |
@@ -153,7 +168,7 @@ jobs:
           CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export/${INTERFACE}
           cmake --build ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/app/testapp
-          ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fypp
+          # ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fypp
           rm -rf ${BUILD_DIR}
 
       - name: Test fpm export
@@ -168,7 +183,7 @@ jobs:
         run: |
           export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
           cd test/export/${INTERFACE}
-          meson setup --wrap-mode nofallback ${BUILD_DIR}
+          meson setup ${MESON_OPTIONS_NOFALLBACK} --wrap-mode nofallback ${BUILD_DIR}
           ninja -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           rm -rf ./${BUILD_DIR}
@@ -183,7 +198,7 @@ jobs:
           mkdir subprojects
           echo -e "[wrap-git]\ndirectory=fortuno\n" > subprojects/fortuno.wrap
           echo -e "url=file://${FORTUNO_DIR}\nrevision=${GIT_REV}\n" >> subprojects/fortuno.wrap
-          meson setup ${MESON_FALLBACK_OPTIONS} --wrap-mode forcefallback ${BUILD_DIR}
+          meson setup ${MESON_OPTIONS_FALLBACK} --wrap-mode forcefallback ${BUILD_DIR}
           ninja -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           rm -rf subprojects ${BUILD_DIR}

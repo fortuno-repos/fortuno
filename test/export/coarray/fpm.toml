@@ -1,0 +1,27 @@
+name = "fortuno-coarray-test-export"
+version = "0.0.0"
+license = "BSD-2-Clause-Patent"
+author = "Fortuno authors"
+maintainer = "aradi@uni-bremen.de"
+copyright = "Copyright 2024, Fortuno authors"
+
+[build]
+auto-executables = false
+auto-tests = false
+auto-examples = false
+module-naming = false
+
+[install]
+library = false
+
+[fortran]
+implicit-typing = true
+implicit-external = true
+source-form = "free"
+
+[dependencies]
+fortuno-coarray = { path = "../../../" }
+
+[[executable]]
+name = "testapp"
+main = "testapp.f90"

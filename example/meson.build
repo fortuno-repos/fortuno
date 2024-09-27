@@ -9,3 +9,7 @@ endif
 if build_mpi_interface
   subdir('mpi')
 endif
+
+if build_coarray_interface
+  subdir('coarray')
+endif

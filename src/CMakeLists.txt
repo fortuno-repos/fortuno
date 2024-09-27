@@ -86,6 +86,34 @@ if (FORTUNO_BUILD_MPI_INTERFACE)
 endif ()
 
 
+if (FORTUNO_BUILD_COARRAY_INTERFACE)
+
+  add_library(fortuno_coarray)
+  set_target_properties(
+    fortuno_coarray PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    EXPORT_NAME fortuno_coarray
+    OUTPUT_NAME fortuno-coarray
+    Fortran_MODULE_DIRECTORY "${moduledir}"
+  )
+  fortuno_add_coarray_build_flags(fortuno_coarray)
+  target_link_libraries(fortuno_coarray PUBLIC Fortuno::fortuno)
+  target_include_directories(
+    fortuno_coarray PUBLIC
+    $<BUILD_INTERFACE:${moduledir}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/${FORTUNO_INSTALL_MODULEDIR}>
+  )
+  target_sources(fortuno_coarray PRIVATE fortuno_coarray.f90)
+  add_subdirectory(fortuno_coarray)
+
+  add_library(Fortuno::fortuno_coarray ALIAS fortuno_coarray)
+  list(APPEND _installed_targets "fortuno_coarray")
+
+endif ()
+
+
 if (FORTUNO_INSTALL)
   install(
     TARGETS ${_installed_targets}

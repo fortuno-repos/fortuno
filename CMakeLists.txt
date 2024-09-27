@@ -41,6 +41,12 @@ option(
   OFF
 )
 
+option(
+  FORTUNO_BUILD_COARRAY_INTERFACE
+  "Fortuno: whether the coarray interface should be built"
+  OFF
+)
+
 cmake_dependent_option(
   FORTUNO_BUILD_TESTS "Fortuno: Build test suite" ${PROJECT_IS_TOP_LEVEL}
   "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
@@ -67,6 +73,17 @@ set(
   FORTUNO_THREAD_SAFE_LINK_FLAGS "" CACHE STRING
   "Fortuno: Flags neeeded to enforce thread-safe build during linking"
 )
+
+set(
+  FORTUNO_COARRAY_COMPILE_FLAGS "" CACHE STRING
+  "Fortuno: Flags needed for coarray features when compling"
+)
+
+set(
+  FORTUNO_COARRAY_LINK_FLAGS "" CACHE STRING
+  "Fortuno: Flags neeeded for coarray features when linking"
+)
+
 
 #[=================================================================================================[
 #                            Project configuration                                                #
@@ -129,6 +146,15 @@ if (FORTUNO_INSTALL)
     configure_file(cmake/fortuno-mpi.pc.in fortuno-mpi.pc @ONLY)
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-mpi.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      COMPONENT Fortuno_development
+    )
+  endif ()
+
+  if (FORTUNO_BUILD_COARRAY_INTERFACE)
+    configure_file(cmake/fortuno-coarray.pc.in fortuno-coarray.pc @ONLY)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-coarray.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
       COMPONENT Fortuno_development
     )

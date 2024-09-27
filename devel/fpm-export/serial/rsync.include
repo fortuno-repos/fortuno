@@ -1,4 +1,3 @@
-fpm.serial.toml
 LICENSE
 src/
 src/fortuno.f90
@@ -11,4 +10,3 @@ test/
 test/export/
 test/export/serial/
 test/export/serial/**
-

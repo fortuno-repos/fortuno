@@ -16,3 +16,8 @@ fortuno_mpi_sources += files(
   'fortuno_mpi.f90'
 )
 subdir('fortuno_mpi')
+
+fortuno_coarray_sources += files(
+  'fortuno_coarray.f90'
+)
+subdir('fortuno_coarray')
