@@ -2,16 +2,30 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-option('build_serial_interface', type: 'boolean', value: true, description: 'Build serial interface')
+option('with_serial', type: 'boolean', value: true, description: 'Build serial interface')
 
-option('build_examples', type: 'boolean', value: false, description: 'Build examples')
+option('with_mpi', type: 'boolean', value: false, description: 'Build MPI interface')
+
+option('with_coarray', type: 'boolean', value: false, description: 'Build coarray interface')
+
+option('with_examples', type: 'boolean', value: false, description: 'Build examples')
 
 option(
-  'thread_safe_compile_flags', type: 'array', value: [],
+  'fflags_threadsafe', type: 'array', value: [],
   description: 'Fortran compiler arguments to use when compiling thread-safe sources'
 )
 
 option(
-  'thread_safe_link_flags', type: 'array', value: [],
+  'ldflags_threadsafe', type: 'array', value: [],
   description: 'Linker arguments to use when linking thread-safe sources'
+)
+
+option(
+  'fflags_coarray', type: 'array', value: [],
+  description: 'Fortran compiler arguments to use when compiling coarray sources'
+)
+
+option(
+  'ldflags_coarray', type: 'array', value: [],
+  description: 'Fortran linker arguments to use when linking coarray object files'
 )

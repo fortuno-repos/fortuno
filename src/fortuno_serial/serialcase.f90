@@ -42,7 +42,7 @@ contains
     procedure(serial_case_proc) :: proc
     type(test_item) :: testitem
 
-    testitem%item = serial_case(name=name, proc=proc)
+    call testitem%init(serial_case(name=name, proc=proc))
 
   end function serial_case_item
 

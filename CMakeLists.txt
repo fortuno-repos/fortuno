@@ -16,51 +16,16 @@ list(APPEND CMAKE_MESSAGE_CONTEXT Fortuno)
 project(
   Fortuno
   VERSION 0.1.0
-  DESCRIPTION "Extensible unit testing framework for Fortran"
+  DESCRIPTION "Flextensible unit testing framework for Fortran"
   HOMEPAGE_URL "https://github.com/fortuno-repos/fortuno"
   LANGUAGES Fortran
 )
 
 #[=================================================================================================[
-#                                 Options                                                         #
+#                           Build configuration options                                           #
 ]=================================================================================================]
 
-include(CMakeDependentOption)
-
-option(FORTUNO_BUILD_SHARED_LIBS "Fortuno: Build as shared library" ${PROJECT_IS_TOP_LEVEL})
-
-option(
-  FORTUNO_BUILD_SERIAL_INTERFACE
-  "Fortuno: whether serial interface should be built (or only core library)"
-  ON
-)
-
-cmake_dependent_option(
-  FORTUNO_BUILD_TESTS "Fortuno: Build test suite" ${PROJECT_IS_TOP_LEVEL}
-  "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
-)
-
-cmake_dependent_option(
-  FORTUNO_BUILD_EXAMPLES "Fortuno: Build example apps" ${PROJECT_IS_TOP_LEVEL}
-  "FORTUNO_BUILD_SERIAL_INTERFACE" OFF
-)
-
-option(FORTUNO_INSTALL "Fortuno: Install project" ${PROJECT_IS_TOP_LEVEL})
-
-set(
-  FORTUNO_INSTALL_MODULEDIR "modules" CACHE STRING
-  "Fortuno: Sub-directory for installed Fortran module files (relative to CMAKE_INSTALL_LIBDIR)"
-)
-
-set(
-  FORTUNO_THREAD_SAFE_COMPILE_FLAGS "" CACHE STRING
-  "Fortuno: Flags needed to enforce thread-safe build during compilation"
-)
-
-set(
-  FORTUNO_THREAD_SAFE_LINK_FLAGS "" CACHE STRING
-  "Fortuno: Flags neeeded to enforce thread-safe build during linking"
-)
+include(config.cmake)
 
 #[=================================================================================================[
 #                            Project configuration                                                #
@@ -79,13 +44,20 @@ find_program(FYPP fypp)
 set(BUILD_SHARED_LIBS ${FORTUNO_BUILD_SHARED_LIBS})
 fortuno_setup_build_type("RelWithDebInfo")
 
+if (FORTUNO_WITH_MPI)
+  find_package(MPI REQUIRED)
+  if(NOT MPI_FORTRAN_FOUND)
+    message(FATAL_ERROR "Failed to detect MPI-framework for Fortran")
+  endif()
+endif ()
+
 #[=================================================================================================[
-#                                 Main definition                                                 #
+#                                 Build definitions                                               #
 ]=================================================================================================]
 
 add_subdirectory(include)
 add_subdirectory(src)
-if (FORTUNO_BUILD_EXAMPLES)
+if (FORTUNO_WITH_EXAMPLES)
   add_subdirectory(example)
 endif ()
 
@@ -103,10 +75,28 @@ if (FORTUNO_INSTALL)
     COMPONENT Fortuno_development
   )
 
-  if (FORTUNO_BUILD_SERIAL_INTERFACE)
+  if (FORTUNO_WITH_SERIAL)
     configure_file(cmake/fortuno-serial.pc.in fortuno-serial.pc @ONLY)
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-serial.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      COMPONENT Fortuno_development
+    )
+  endif ()
+
+  if (FORTUNO_WITH_MPI)
+    configure_file(cmake/fortuno-mpi.pc.in fortuno-mpi.pc @ONLY)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-mpi.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+      COMPONENT Fortuno_development
+    )
+  endif ()
+
+  if (FORTUNO_WITH_COARRAY)
+    configure_file(cmake/fortuno-coarray.pc.in fortuno-coarray.pc @ONLY)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-coarray.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
       COMPONENT Fortuno_development
     )

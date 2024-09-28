@@ -1,0 +1,13 @@
+# This file is part of Fortuno.
+# Licensed under the BSD-2-Clause Plus Patent license.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+
+option(
+  'fflags_coarray', type: 'array', value: [],
+  description: 'Fortran compiler arguments to use when compiling coarray sources'
+)
+
+option(
+  'ldflags_coarray', type: 'array', value: [],
+  description: 'Fortran linker arguments to use when linking coarray sources'
+)

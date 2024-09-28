@@ -1,13 +1,13 @@
-*******************************************************
-Fortuno – extensible unit testing framework for Fortran
-*******************************************************
+*********************************************************
+Fortuno – flextensible unit testing framework for Fortran
+*********************************************************
 
-The **Fortuno** (Fortran Unit Testing Objects) project offers a flexible,
-extensible, object oriented unit testing framework for the Fortran language. It
-puts strong emphasis on the simplicity of the user interface by minimizing the
-amount of boiler plate code when writing unit tests, as well as to modularity
-and extensibility by offering building blocks for customized unit testing
-systems.
+**Fortuno** (Fortran Unit Testing Objects) is a flexible & extensible,
+object-oriented unit testing framework designed for the Fortran programming
+language. It emphasizes ease of use by minimizing boiler plate code when writing
+tests, while also prioratizing modularity and extensibility. Fortuno provides
+the essential building blocks to help developers create customized unit testing
+solutions.
 
 **Fortuno** provides
 
@@ -35,10 +35,10 @@ The development can be followed and joined at the `Fortuno project
 Quickstart
 ==========
 
-If you want to start a new project utilizing the Fortuno unit testing framework,
-use the `Cookiecutter-Fortran-project
+The easiest way to start a new project utilizing the Fortuno unit testing
+framework is to use the `Cookiecutter-Fortran-project
 <https://github.com/fortuno-repos/cookiecutter-fortran-project>`_ template
-generator to obtain a minimal, ready to build, test and install project with
+generator. It provides a minimal, ready to build, test and install project with
 selectable build system (CMake, Fpm or Meson) and Fortuno integration.
 
 If you wish to add Fortuno unit tests to an already existing project, follow the
@@ -58,7 +58,11 @@ project's build process. The actual steps depend on your build system:
   lines to your ``fpm.toml`` file::
 
     [dev-dependencies]
-    fortuno = { git = "https://github.com/fortuno-repos/fortuno" }
+    fortuno = { git = "https://github.com/fortuno-repos/fortuno-fpm-serial.git" }
+
+  Note: as fpm does not support conditional compiling (yet), you need to specify
+  the automatically deployed repository containg the source code for the
+  serial interface of Fortuno.
 
 * **CMake:** Add the following snippet to the ``CMakeLists.txt`` file in the
   root folder of your project::
@@ -100,23 +104,24 @@ could look as follows::
 
   ! file: testapp.f90
 
-  !> Test app driving Fortuno unit tests.
-  program testapp
+  !> Module containing the tests
+  module testapp_tests
     use mylib, only : factorial
-    use fortuno_serial, only : execute_serial_cmd_app, is_equal, test => serial_case_item,&
-        & check => serial_check
+    use fortuno_serial, only : is_equal, test => serial_case_item, check => serial_check, test_list
     implicit none
 
-    ! Register tests by providing name and subroutine to run for each test.
-    ! Note: this routine does not return but stops the program with the right exit code.
-    call execute_serial_cmd_app(&
-        testitems=[&
-            test("factorial_0", test_factorial_0),&
-            test("factorial_1", test_factorial_1)&
-        ]&
-    )
-
   contains
+
+    !> Returns the tests in this module
+    function tests()
+      type(test_list) :: tests
+
+      tests = test_list([&
+          test("factorial_0", test_factorial_0),&
+          test("factorial_1", test_factorial_1)&
+      ])
+
+    end function tests
 
     ! Test: 0! = 1
     subroutine test_factorial_0()
@@ -129,6 +134,19 @@ could look as follows::
     subroutine test_factorial_1()
       call check(is_equal(factorial(1), 1))
     end subroutine test_factorial_1
+
+  end module testapp_tests
+
+
+  !> Test app driving Fortuno unit tests.
+  program testapp
+    use fortuno_serial, only : execute_serial_cmd_app
+    use testapp_tests, only : tests
+    implicit none
+
+    ! Register tests by providing name and subroutine to run for each test.
+    ! Note: this routine does not return but stops the program with the right exit code.
+    call execute_serial_cmd_app(tests())
 
   end program testapp
 
@@ -203,7 +221,7 @@ The result is communicated via the testapp's exit code to the build framework
 (zero for success, and non-zero for failure). Additionally, Fortuno logs details
 to the console::
 
-  === Fortuno - extensible unit testing framework for Fortran ===
+  === Fortuno - flextensible unit testing framework for Fortran ===
 
   # Executing test items
   ..
@@ -225,7 +243,7 @@ detailed explanations, further features and use cases.
 Compiler compatibility
 ======================
 
-In order to offer a simple user interface and to allow for maximal reusability
+In order to offer a simple user interface and to allow for maximal flexibility
 and extensibility, Fortuno uses modern Fortran constructs extensively. Building
 Fortuno requires a compiler with Fortran 2018 support. The following table gives
 an overview over the compilers which were successfully tested for building
@@ -234,7 +252,7 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 +------------------------+-----------------------------------------------------+
 | Compiler               | Status                                              |
 +========================+=====================================================+
-| Intel 2024.0 [1]       | * OK (serial, mpi, coarray)                         |
+| Intel 2024.{0,1,2}     | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
 | NAG 7.2 (build 7202)   | * OK (serial, mpi, coarray)                         |
 +------------------------+-----------------------------------------------------+
@@ -244,15 +262,6 @@ Fortuno. We recommend to use those compilers or any newer versions of them.
 
 If you are aware of any other compilers being able to build Fortuno, please,
 open a pull request to update the table.
-
-Notes
------
-
-1. Please ensure you are using Intel 2024.0, as newer versions (2024.1 and
-   2024.2) have a confirmed compiler bug that creates an incorrect binary,
-   leading to segmentation faults due to the loss of pointer association status.
-   For more details, refer to the `Intel community discussion
-   <https://community.intel.com/t5/Intel-Fortran-Compiler/Compiler-bug-Procedure-pointer-association-status-gets-lost/m-p/1612121>`_.
 
 
 License

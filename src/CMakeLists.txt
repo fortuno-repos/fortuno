@@ -30,7 +30,7 @@ add_subdirectory(fortuno)
 add_library(Fortuno::fortuno ALIAS fortuno)
 list(APPEND _installed_targets "fortuno")
 
-if (FORTUNO_BUILD_SERIAL_INTERFACE)
+if (FORTUNO_WITH_SERIAL)
 
   add_library(fortuno_serial)
   set_target_properties(
@@ -56,6 +56,63 @@ if (FORTUNO_BUILD_SERIAL_INTERFACE)
   list(APPEND _installed_targets "fortuno_serial")
 
 endif ()
+
+
+if (FORTUNO_WITH_MPI)
+
+  add_library(fortuno_mpi)
+  set_target_properties(
+    fortuno_mpi PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    EXPORT_NAME fortuno_mpi
+    OUTPUT_NAME fortuno-mpi
+    Fortran_MODULE_DIRECTORY "${moduledir}"
+  )
+  target_link_libraries(fortuno_mpi PRIVATE MPI::MPI_Fortran)
+  target_link_libraries(fortuno_mpi PUBLIC Fortuno::fortuno)
+  target_include_directories(
+    fortuno_mpi PUBLIC
+    $<BUILD_INTERFACE:${moduledir}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/${FORTUNO_INSTALL_MODULEDIR}>
+  )
+  target_sources(fortuno_mpi PRIVATE fortuno_mpi.f90)
+  add_subdirectory(fortuno_mpi)
+
+  add_library(Fortuno::fortuno_mpi ALIAS fortuno_mpi)
+  list(APPEND _installed_targets "fortuno_mpi")
+
+endif ()
+
+
+if (FORTUNO_WITH_COARRAY)
+
+  add_library(fortuno_coarray)
+  set_target_properties(
+    fortuno_coarray PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    EXPORT_NAME fortuno_coarray
+    OUTPUT_NAME fortuno-coarray
+    Fortran_MODULE_DIRECTORY "${moduledir}"
+  )
+  fortuno_add_coarray_build_flags(fortuno_coarray)
+  target_link_libraries(fortuno_coarray PUBLIC Fortuno::fortuno)
+  target_include_directories(
+    fortuno_coarray PUBLIC
+    $<BUILD_INTERFACE:${moduledir}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/${FORTUNO_INSTALL_MODULEDIR}>
+  )
+  target_sources(fortuno_coarray PRIVATE fortuno_coarray.f90)
+  add_subdirectory(fortuno_coarray)
+
+  add_library(Fortuno::fortuno_coarray ALIAS fortuno_coarray)
+  list(APPEND _installed_targets "fortuno_coarray")
+
+endif ()
+
 
 if (FORTUNO_INSTALL)
   install(

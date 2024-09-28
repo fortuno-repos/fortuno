@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  INTERFACE: mpi
+
+jobs:
+
+  #
+  # Test Fortuno in various system configurations
+  #
+  fortuno-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check-out code
+        uses: actions/checkout@v4
+
+      - name: Setup Intel compiler
+        uses: rscohn2/setup-oneapi@v0
+        with:
+          components: |
+            ifx
+            icx
+            impi
+
+      - name: Setup Intel environment
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> ${GITHUB_ENV}
+          echo "FPM_FC=ifx" >> ${GITHUB_ENV}
+          # Overriding default FPM_FFLAGS as default setting contains '-standard-semantics'
+          # which is incompatible with intel MPI.
+          echo "FPM_FFLAGS='-warn all -check all,nouninit -error-limit 1 -O0 -g -stand f18 -traceback'" >> ${GITHUB_ENV}
+
+      - name: Setup build tools
+        run: |
+          pip install fpm
+
+      - name: Test fpm export
+        run: |
+          fpm run -C test/export/${INTERFACE} --runner 'mpirun -n 2' testapp

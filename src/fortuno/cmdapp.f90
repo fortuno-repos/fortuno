@@ -6,7 +6,7 @@
 module fortuno_cmdapp
   use fortuno_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
       & init_argument_parser
-  use fortuno_basetypes, only : test_item
+  use fortuno_basetypes, only : test_list
   use fortuno_utils, only : string
   use fortuno_testdriver, only : test_driver, test_selection
   use fortuno_testlogger, only : test_logger
@@ -34,20 +34,20 @@ module fortuno_cmdapp
 contains
 
   !> Runs the command line interface app (calls parse_args(), register_tests() and run_tests())
-  subroutine cmd_app_run(this, testitems, exitcode)
+  subroutine cmd_app_run(this, tests, exitcode)
 
     !> Instance
     class(cmd_app), intent(inout) :: this
 
     !> Test items to be considered by the app
-    type(test_item), intent(in) :: testitems(:)
+    type(test_list), intent(in) :: tests
 
     !> Exit code of the run
     integer, intent(out) :: exitcode
 
     call this%parse_args(exitcode)
     if (exitcode >= 0) return
-    call this%register_tests(testitems, exitcode)
+    call this%register_tests(tests, exitcode)
     if (exitcode >= 0) return
     call this%run_tests(exitcode)
 
@@ -81,7 +81,7 @@ contains
     class(cmd_app), intent(inout) :: this
 
     !> Items to be considered by the app
-    type(test_item), intent(in) :: testitems(:)
+    type(test_list), intent(in) :: testitems
 
     !> Exit code (-1, if processing can continue, >= 0 otherwise)
     integer, intent(out) :: exitcode
@@ -161,17 +161,29 @@ contains
     !> Argument defintions
     type(argument_def), allocatable :: argdefs(:)
 
-    argdefs = [&
-        & &
-        & argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
-        & helpmsg="show list of tests to run and exit"),&
-        & &
-        & argument_def("tests", argtypes%stringlist,&
+    ! Workaround:gfortran:14.1 (bug 116679)
+    ! Omit array expression to avoid memory leak
+    ! {-
+    ! argdefs = [&
+    !     & &
+    !     & argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
+    !     & helpmsg="show list of tests to run and exit"),&
+    !     & &
+    !     & argument_def("tests", argtypes%stringlist,&
+    !     & helpmsg="list of tests and suites to include or to exclude when prefixed with '~' (e.g.&
+    !     & 'somesuite ~somesuite/avoidedtest' would run all tests except 'avoidedtest' in the test&
+    !     & suite 'somesuite')")&
+    !     & &
+    !     & ]
+    ! -}{+
+    allocate(argdefs(2))
+    argdefs(1) =  argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
+        & helpmsg="show list of tests to run and exit")
+    argdefs(2) = argument_def("tests", argtypes%stringlist,&
         & helpmsg="list of tests and suites to include or to exclude when prefixed with '~' (e.g.&
         & 'somesuite ~somesuite/avoidedtest' would run all tests except 'avoidedtest' in the test&
-        & suite 'somesuite')")&
-        & &
-        & ]
+        & suite 'somesuite')")
+    ! +}
 
   end function default_argument_defs
 

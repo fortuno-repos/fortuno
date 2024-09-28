@@ -4,7 +4,7 @@
 
 !> Implements a generic test driver
 module fortuno_testdriver
-  use fortuno_basetypes, only : test_base, test_case_base, test_item, test_suite_base
+  use fortuno_basetypes, only : test_base, test_case_base, test_list, test_suite_base
   use fortuno_chartypes, only : char_rep
   use fortuno_testcontext, only : context_factory, test_context
   use fortuno_testinfo, only : drive_result, init_drive_result, test_result, teststatus
@@ -97,14 +97,25 @@ module fortuno_testdriver
   end type test_data
 
 
+  !! Wrapper type around test data (for efficiency and to circumvent GFortran compiler bugs)
+  type :: test_data_ptr
+    type(test_data), pointer :: ptr => null()
+  contains
+    final :: final_test_data_ptr
+  end type test_data_ptr
+
+
   !! Minimalistic automatically growing array of test_data items.
   type :: test_data_container
-    private
-    type(test_data), pointer, public :: testdata(:) => null()
-    type(test_data), pointer :: storage_(:) => null()
+
+    !! nr. of stored items
+    integer :: nitems = 0
+
+    !! the actual items, containing valid entries only for 1:nitems
+    type(test_data_ptr), allocatable :: items(:)
+
   contains
-    procedure :: append => test_data_container_append
-    final :: final_test_data_container
+    procedure :: add => test_data_container_add
   end type test_data_container
 
 
@@ -121,20 +132,21 @@ module fortuno_testdriver
   !> App for driving serial tests through command line app
   type :: test_driver
     private
+
     !> Result of a test drive, after run_tests() had been invoked
     type(drive_result), public :: driveresult
 
     class(test_runner), allocatable :: runner
     class(context_factory), allocatable :: ctxfactory
     class(test_logger), allocatable :: logger
-    type(test_item), allocatable :: testitems(:)
-    type(test_data_container) :: testdatacont
-    type(test_data_container) :: suitedatacont
+    type(test_list) :: testlist
+    type(test_data_container) :: suitedatacont, testdatacont
     type(reversible_mapping) :: suiteselection, testselection
   contains
     procedure :: register_tests => test_driver_register_tests
     procedure :: run_tests => test_driver_run_tests
     procedure :: get_test_names => test_driver_get_test_names
+    final :: final_test_driver
   end type test_driver
 
 
@@ -170,25 +182,34 @@ contains
   end subroutine init_test_driver
 
 
+  !> Finalizes the test driver (by freeing the allocated pointers in the test list)
+  subroutine final_test_driver(this)
+    type(test_driver), intent(inout) :: this
+
+    call this%testlist%free()
+
+  end subroutine final_test_driver
+
+
   !> Registers tests to consider
-  subroutine test_driver_register_tests(this, testitems, selections)
+  subroutine test_driver_register_tests(this, testlist, selections)
 
     !> Instance
     class(test_driver), intent(inout) :: this
 
     !> Items to be considered by the app
-    type(test_item), intent(in) :: testitems(:)
+    type(test_list), intent(in) :: testlist
 
     !> Selection rule to constrain the testing only to a subset of the test items
     type(test_selection), optional, intent(in) :: selections(:)
 
-    this%testitems = testitems
+    this%testlist = testlist
     call init_test_data_container(this%suitedatacont, 100)
     call init_test_data_container(this%testdatacont, 5000)
-    call build_test_data_(this%testitems, "", [integer ::], [integer ::], this%testdatacont,&
+    call build_test_data_(this%testlist, "", [integer ::], [integer ::], this%testdatacont,&
         & this%suitedatacont)
-    call get_selected_suites_and_tests_(this%suitedatacont%testdata, this%testdatacont%testdata,&
-        & this%suiteselection, this%testselection, selections)
+    call get_selected_suites_and_tests_(this%suitedatacont, this%testdatacont, this%suiteselection,&
+        & this%testselection, selections)
 
   end subroutine test_driver_register_tests
 
@@ -207,12 +228,12 @@ contains
 
     call logger%start_drive()
     call logger%start_tests()
-    call run_suite_initializers_finalizers_(.true., this%testitems, this%suitedatacont%testdata,&
+    call run_suite_initializers_finalizers_(.true., this%testlist, this%suitedatacont,&
         & this%suiteselection, this%driveresult%suiteresults, this%ctxfactory, this%runner, logger)
-    call run_tests_(this%testitems, this%suiteselection, this%driveresult%suiteresults(1, :),&
-        & this%testdatacont%testdata, this%testselection, this%driveresult%testresults,&
+    call run_tests_(this%testlist, this%suiteselection, this%driveresult%suiteresults(1, :),&
+        & this%testdatacont, this%testselection, this%driveresult%testresults,&
         & this%ctxfactory, this%runner, logger)
-    call run_suite_initializers_finalizers_(.false., this%testitems, this%suitedatacont%testdata,&
+    call run_suite_initializers_finalizers_(.false., this%testlist, this%suitedatacont,&
         this%suiteselection, this%driveresult%suiteresults, this%ctxfactory, this%runner, logger)
     call logger%end_tests()
     call this%driveresult%calculate_stats()
@@ -236,17 +257,18 @@ contains
     nselect = size(this%testselection%fwd)
     allocate(testnames(nselect))
     do iselect = 1, nselect
-      testnames(iselect)%content = this%testdatacont%testdata(this%testselection%fwd(iselect))%name
+      testnames(iselect)%content = this%testdatacont%items(this%testselection%fwd(iselect))%ptr%name
     end do
 
   end subroutine test_driver_get_test_names
 
 
-  subroutine run_suite_initializers_finalizers_(initializer, testitems, suitedatas, suiteselection,&
-      & suiteresults, ctxfactory, runner, logger)
+  !! Runs the initializer or finalizer of each test suite
+  subroutine run_suite_initializers_finalizers_(initializer, testlist, suitedatacont,&
+      & suiteselection, suiteresults, ctxfactory, runner, logger)
     logical, intent(in) :: initializer
-    type(test_item), intent(inout) :: testitems(:)
-    type(test_data), intent(inout) :: suitedatas(:)
+    type(test_list), intent(inout) :: testlist
+    type(test_data_container), intent(inout) :: suitedatacont
     type(reversible_mapping), intent(in) :: suiteselection
     type(test_result), intent(inout) :: suiteresults(:,:)
     class(context_factory), intent(inout) :: ctxfactory
@@ -265,7 +287,7 @@ contains
 
     do iselect = 1, size(suiteselection%fwd)
       idata = suiteselection%fwd(iselect)
-      associate (suitedata => suitedatas(idata), suiteresult => suiteresults(:, iselect))
+      associate (suitedata => suitedatacont%items(idata)%ptr, suiteresult => suiteresults(:, iselect))
         suiteresult(iresult)%name = suitedata%name
         ! Dependencies in result should point to entries in suite result array
         suiteresult(iresult)%dependencies = suiteselection%rev(suitedata%dependencies)
@@ -284,7 +306,7 @@ contains
 
         if (depstatus == teststatus%succeeded) then
           call ctxfactory%create_context(ctx)
-          call initialize_finalize_suite_(testitems, suitedata%identifier, initializer, ctx,&
+          call initialize_finalize_suite_(testlist, suitedata%identifier, initializer, ctx,&
               & runner, repr)
           suiteresult(iresult)%status = ctx%status()
           call ctx%pop_failure_info(suiteresult(iresult)%failureinfo)
@@ -307,12 +329,13 @@ contains
   end subroutine run_suite_initializers_finalizers_
 
 
-  subroutine run_tests_(testitems, suiteselection, suiteinitresults, testdatas, testselection,&
+  !! Runs all tests
+  subroutine run_tests_(testlist, suiteselection, suiteinitresults, testdatacont, testselection,&
       & testresults, ctxfactory, runner, logger)
-    type(test_item), intent(inout) :: testitems(:)
+    type(test_list), intent(inout) :: testlist
     type(reversible_mapping), intent(in) :: suiteselection
     type(test_result), intent(in) :: suiteinitresults(:)
-    type(test_data), intent(inout) :: testdatas(:)
+    type(test_data_container), intent(inout) :: testdatacont
     type(reversible_mapping), intent(in) :: testselection
     type(test_result), intent(inout) :: testresults(:)
     class(context_factory), intent(inout) :: ctxfactory
@@ -325,7 +348,7 @@ contains
 
     do iselect = 1, size(testselection%fwd)
       idata = testselection%fwd(iselect)
-      associate (testdata => testdatas(idata), testresult => testresults(iselect))
+      associate (testdata => testdatacont%items(idata)%ptr, testresult => testresults(iselect))
         testresult%name = testdata%name
         ! Dependencies in results should point to entries in suite result array
         testresult%dependencies = suiteselection%rev(testdata%dependencies)
@@ -337,7 +360,7 @@ contains
         end if
         if (depstatus == teststatus%succeeded) then
           call ctxfactory%create_context(ctx)
-          call run_test_(testitems, testdata%identifier, ctx, runner, repr)
+          call run_test_(testlist, testdata%identifier, ctx, runner, repr)
           testresult%status = ctx%status()
           call ctx%pop_failure_info(testresult%failureinfo)
           deallocate(ctx)
@@ -362,39 +385,41 @@ contains
   !! Building up containers containing test object names and unique integer tuple identifiers.
   recursive subroutine build_test_data_(items, name, identifier, dependencies, testdatacont,&
       & suitedatacont)
-    type(test_item), intent(in) :: items(:)
+    type(test_list), intent(in) :: items
     character(*), intent(in) :: name
     integer, intent(in) :: identifier(:)
     integer, intent(in) :: dependencies(:)
     type(test_data_container), intent(inout) :: testdatacont
     type(test_data_container), intent(inout) :: suitedatacont
 
+    type(test_data) :: testdata
+    class(test_base), pointer :: item
     integer :: ii
     character(:), allocatable :: newname
     integer, allocatable :: newidentifier(:), newdependencies(:)
 
-    do ii = 1, size(items)
+    do ii = 1, items%size()
       newidentifier = [identifier, ii]
-      associate (item => items(ii)%item)
-        if (len(name) > 0) then
-          newname = name // "/" // item%name
-        else
-          newname = item%name
-        end if
-        select type (item)
-        class is (test_suite_base)
-          call suitedatacont%append(test_data(newidentifier, newname, dependencies))
-          ! The last element of the suitedata container is the current suite, the new dependency.
-          newdependencies = [size(suitedatacont%testdata), dependencies]
-          call build_test_data_(item%items, newname, newidentifier, newdependencies, testdatacont,&
-              & suitedatacont)
-        class is (test_case_base)
-          call testdatacont%append(test_data(newidentifier, newname, dependencies))
-        class default
-          error stop  "Invalid test type obtained for test item '" // newname //&
-              & "' (expected serial_suite_base or serial_case_base)"
-        end select
-      end associate
+      item => items%view(ii)
+      if (len(name) > 0) then
+        newname = name // "/" // item%name
+      else
+        newname = item%name
+      end if
+      testdata = test_data(newidentifier, newname, dependencies)
+      select type (item)
+      class is (test_suite_base)
+        call suitedatacont%add(testdata)
+        ! The last element of the suitedata container is the current suite, the new dependency.
+        newdependencies = [suitedatacont%nitems, dependencies]
+        call build_test_data_(item%tests, newname, newidentifier, newdependencies, testdatacont,&
+            & suitedatacont)
+      class is (test_case_base)
+        call testdatacont%add(testdata)
+      class default
+        error stop  "Invalid test type obtained for test item '" // newname //&
+            & "' (expected serial_suite_base or serial_case_base)"
+      end select
     end do
   end subroutine build_test_data_
 
@@ -408,59 +433,57 @@ contains
     !> Initial container size
     integer, intent(in) :: initsize
 
-    allocate(this%storage_(initsize))
-    ! Setting testdata pointer up, so that it has size 0.
-    this%testdata => this%storage_(1:0)
+    allocate(this%items(initsize))
+    this%nitems = 0
 
   end subroutine init_test_data_container
 
 
-  !! Finalizes a test data container-
-  subroutine final_test_data_container(this)
-    type(test_data_container), intent(inout) :: this
+  !! Finalizes a test data pointer
+  elemental subroutine final_test_data_ptr(this)
+    type(test_data_ptr), intent(inout) :: this
 
-    if (associated(this%storage_)) deallocate(this%storage_)
+    if (associated(this%ptr)) deallocate(this%ptr)
 
-  end subroutine final_test_data_container
+  end subroutine final_test_data_ptr
 
 
-  !! Append an item to the container and update the data pointer accordingly.
-  subroutine test_data_container_append(this, testdata)
+  !! Appends an item to the container.
+  subroutine test_data_container_add(this, testdata)
     class(test_data_container), intent(inout) :: this
     type(test_data), intent(in) :: testdata
 
     integer :: newsize
-    type(test_data), pointer :: buffer(:)
+    type(test_data_ptr), allocatable :: buffer(:)
 
-    if (size(this%storage_) == size(this%testdata)) then
-      newsize = max(int(size(this%storage_) * 1.4), size(this%storage_) + 2)
-      allocate(buffer(newsize))
-      buffer(1 : size(this%storage_)) = this%storage_
-      deallocate(this%storage_)
-      this%storage_ => buffer
-      this%testdata => this%storage_(1 : size(this%testdata))
+    if (size(this%items) == this%nitems) then
+      call move_alloc(this%items, buffer)
+      newsize = max(int(this%nitems * 1.3), this%nitems + 10)
+      allocate(this%items(newsize))
+      this%items(1 : this%nitems) = buffer
     end if
-    this%storage_(size(this%testdata) + 1) = testdata
-    this%testdata => this%storage_(1 : size(this%testdata) + 1)
+    allocate(this%items(this%nitems + 1)%ptr, source=testdata)
+    this%nitems = this%nitems + 1
 
-  end subroutine test_data_container_append
+  end subroutine test_data_container_add
 
 
-  !! Run a test with a given identifier.
-  recursive subroutine run_test_(testitems, identifier, ctx, runner, repr)
-    type(test_item), target, intent(inout) :: testitems(:)
+  !! Runs a test with a given identifier.
+  recursive subroutine run_test_(testlist, identifier, ctx, runner, repr)
+    type(test_list), intent(inout) :: testlist
     integer, intent(in) :: identifier(:)
     class(test_context), target, intent(inout) :: ctx
     class(test_runner), intent(inout) :: runner
     character(:), allocatable, intent(out) :: repr
 
-    class(test_base), pointer :: scopeptr
+    class(test_base), pointer :: scopeptr, item
     class(char_rep), allocatable :: state
 
-    scopeptr => testitems(identifier(1))%item
+    scopeptr => testlist%view(identifier(1))
     call ctx%push_scope_ptr(scopeptr)
     if (size(identifier) == 1) then
-      select type (item => testitems(identifier(1))%item)
+      item => testlist%view(identifier(1))
+      select type (item)
       class is (test_case_base)
         call runner%run_test(item, ctx)
         call ctx%pop_state(state)
@@ -469,9 +492,10 @@ contains
         error stop "Internal error, unexpected test type in run_test_"
       end select
     else
-      select type (item => testitems(identifier(1))%item)
+      item => testlist%view(identifier(1))
+      select type (item)
       class is (test_suite_base)
-        call run_test_(item%items, identifier(2:), ctx, runner, repr)
+        call run_test_(item%tests, identifier(2:), ctx, runner, repr)
       class default
         error stop "Internal error, unexpected test type in run_test_"
       end select
@@ -481,20 +505,21 @@ contains
 
 
   !! Initialize of finalize a test suite with a given identifier.
-  recursive subroutine initialize_finalize_suite_(testitems, identifier, init, ctx, runner, repr)
-    type(test_item), target, intent(inout) :: testitems(:)
+  recursive subroutine initialize_finalize_suite_(testlist, identifier, init, ctx, runner, repr)
+    type(test_list), intent(inout) :: testlist
     integer, intent(in) :: identifier(:)
     logical, intent(in) :: init
     class(test_context), target, intent(inout) :: ctx
     class(test_runner), intent(inout) :: runner
     character(:), allocatable, intent(out) :: repr
 
-    class(test_base), pointer :: scopeptr
+    class(test_base), pointer :: scopeptr, item
     class(char_rep), allocatable :: state
 
-    scopeptr => testitems(identifier(1))%item
+    scopeptr => testlist%view(identifier(1))
     call ctx%push_scope_ptr(scopeptr)
-    select type (item => testitems(identifier(1))%item)
+    item => testlist%view(identifier(1))
+    select type (item)
     class is (test_suite_base)
       if (size(identifier) == 1) then
         if (init) then
@@ -505,7 +530,7 @@ contains
           call runner%tear_down_suite(item, ctx)
         end if
       else
-        call initialize_finalize_suite_(item%items, identifier(2:), init, ctx, runner, repr)
+        call initialize_finalize_suite_(item%tests, identifier(2:), init, ctx, runner, repr)
       end if
     class default
       error stop "Internal error, unexpected test type in initialize_finalize_suite_"
@@ -544,9 +569,9 @@ contains
 
 
   !! Returns indices of selected suites and tests.
-  subroutine get_selected_suites_and_tests_(suitedata, testdata, suiteselection, testselection,&
-        & selections)
-    type(test_data), intent(in) :: suitedata(:), testdata(:)
+  subroutine get_selected_suites_and_tests_(suitedatacont, testdatacont, suiteselection,&
+        & testselection, selections)
+    type(test_data_container), intent(in) :: suitedatacont, testdatacont
     type(reversible_mapping), intent(out) :: suiteselection, testselection
     type(test_selection), optional, intent(in) :: selections(:)
 
@@ -559,22 +584,22 @@ contains
     hasselection = present(selections)
     if (hasselection) hasselection = size(selections) > 0
     if (.not. hasselection) then
-      suiteselection%fwd = [(ii, ii = 1, size(suitedata))]
+      suiteselection%fwd = [(ii, ii = 1, suitedatacont%nitems)]
       suiteselection%rev = suiteselection%fwd
-      testselection%fwd = [(ii, ii = 1, size(testdata))]
+      testselection%fwd = [(ii, ii = 1, testdatacont%nitems)]
       testselection%rev = testselection%fwd
       return
     end if
 
-    allocate(testmask(size(testdata)))
+    allocate(testmask(testdatacont%nitems))
     ! If first option is an exclusion, include all tests by default otherwise exclude them.
     testmask(:) = selections(1)%selectiontype == "-"
     do iselect = 1, size(selections)
       associate(selection => selections(iselect))
         isincluded = selection%selectiontype == "+"
         selectnamelen = len(selection%name)
-        do itest = 1, size(testdata)
-          associate (testdata => testdata(itest))
+        do itest = 1, testdatacont%nitems
+          associate (testdata => testdatacont%items(itest)%ptr)
             if (len(testdata%name) == selectnamelen) then
               selected = testdata%name == selection%name
             else if (len(testdata%name) > selectnamelen) then
@@ -589,9 +614,9 @@ contains
       end associate
     end do
 
-    allocate(suitemask(size(suitedata)), source=.false.)
-    do itest = 1, size(testdata)
-      if (testmask(itest)) suitemask(testdata(itest)%dependencies) = .true.
+    allocate(suitemask(suitedatacont%nitems), source=.false.)
+    do itest = 1, testdatacont%nitems
+      if (testmask(itest)) suitemask(testdatacont%items(itest)%ptr%dependencies) = .true.
     end do
 
     call get_rev_map_from_mask_(suitemask, suiteselection)
@@ -600,6 +625,7 @@ contains
   end subroutine get_selected_suites_and_tests_
 
 
+  !! Creates a forward/backward map based on a (selection) mask.
   subroutine get_rev_map_from_mask_(mask, mapping)
     logical, intent(in) :: mask(:)
     type(reversible_mapping), intent(out) :: mapping

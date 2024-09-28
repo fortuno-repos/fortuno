@@ -1,0 +1,11 @@
+name = "fortuno-coarray"
+version = "0.1.0"
+license = "BSD-2-Clause-Patent"
+author = "Fortuno authors"
+maintainer = "aradi@uni-bremen.de"
+copyright = "Copyright 2024, Fortuno authors"
+
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"
