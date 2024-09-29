@@ -47,8 +47,8 @@ factorial of integers. You can adjust these names to match your actual library
 and function names.
 
 
-Obtaining Fortuno
------------------
+Obtaining Fortuno during your build process
+-------------------------------------------
 
 The simplest way to integrate Fortuno into your project is by downloading and
 building it as part of your project's build process. The steps vary depending on
@@ -112,6 +112,10 @@ the build system you're using:
     ``FORTUNO_FFLAGS_COARRAY`` and ``FORTUNO_LDFLAGS_COARRAY`` with the
     appropriate compiler and linker flags for coarray parallelism.
 
+    *Note*: If Fortuno is already installed on your system, the settings
+    described above will automatically use the installed version rather than
+    downloading and building it during your project's build process.
+
 * **Meson**: Create a ``fortuno.wrap`` file in the subprojects/ directory
   (create it if it doesn’t already exist) with the following content::
 
@@ -153,6 +157,42 @@ the build system you're using:
     The variables ``fflags_coarray`` and ``ldflags_coarray`` should be defined
     in your project to contain the flags required to compile and link
     coarray-parallel code.
+
+    *Note*: If Fortuno is already installed on your system, the settings
+    described above will automatically use the installed version rather than
+    downloading and building it during your project's build process.
+
+
+Installing Fortuno on your system
+---------------------------------
+
+You can install Fortuno directly on your system and use the installed version in
+your project. To install Fortuno, follow the standard CMake workflow:
+
+* Review the ``config.cmake`` file for variables that allow you to customize the
+  build.
+
+* Configure Fortuno::
+
+    mkdir build
+    FC=gfortran cmake -DCMAKE_INSTALL_PREFIX=~/opt/fortuno -B build
+
+  Ensure CMake selects the correct Fortran compiler by explicitly setting the
+  ``FC`` environment variable. You should also customize the installation
+  directory by setting the ``CMAKE_INSTALL_PREFIX`` variable.
+
+* Build the library::
+
+    cmake --build build
+
+* Install Fortuno::
+
+    cmake --install build
+
+The installed library includes export files for both CMake and Meson. Make sure
+to adjust the ``CMAKE_PREFIX_PATH`` and ``PKG_CONFIG_PATH`` environment
+variables according to your installation location, so that your build system can
+locate the installed library.
 
 
 Writing unit tests
