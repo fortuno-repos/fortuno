@@ -166,8 +166,13 @@ the build system you're using:
 Installing Fortuno on your system
 ---------------------------------
 
-You can install Fortuno directly on your system and use the installed version in
-your project. To install Fortuno, follow the standard CMake workflow:
+As an alternative to downloading and building Fortuno on-the-fly during your
+project's build process, it is also possible to install the library directly on
+your system and use the installed version during the build. This can be useful
+for avoiding repeated downloads as well as for using Fortuno with other build
+systems (e.g. Make).
+
+To install Fortuno, follow the standard CMake workflow:
 
 * Review the ``config.cmake`` file for variables that allow you to customize the
   build.
@@ -179,7 +184,7 @@ your project. To install Fortuno, follow the standard CMake workflow:
 
   Ensure CMake selects the correct Fortran compiler by explicitly setting the
   ``FC`` environment variable. You should also customize the installation
-  directory by setting the ``CMAKE_INSTALL_PREFIX`` variable.
+  directory by setting the ``CMAKE_INSTALL_PREFIX`` variable accordingly.
 
 * Build the library::
 
@@ -189,10 +194,12 @@ your project. To install Fortuno, follow the standard CMake workflow:
 
     cmake --install build
 
-The installed library includes export files for both CMake and Meson. Make sure
-to adjust the ``CMAKE_PREFIX_PATH`` and ``PKG_CONFIG_PATH`` environment
-variables according to your installation location, so that your build system can
-locate the installed library.
+The installed library includes package configuration files for both CMake and
+Meson. The settings to invoke Fortuno into CMake and Meson built projects are
+the same as described in the previous section. Just make sure to adjust the
+``CMAKE_PREFIX_PATH`` and ``PKG_CONFIG_PATH`` environment variables according to
+Fortuno's installation location, so that the build system can locate the
+installed library.
 
 
 Writing unit tests
