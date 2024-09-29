@@ -50,9 +50,9 @@ and function names.
 Obtaining Fortuno during your build process
 -------------------------------------------
 
-The simplest way to integrate Fortuno into your project is by downloading and
-building it as part of your project's build process. The steps vary depending on
-the build system you're using:
+If you project is built with Fpm, CMake or Meson, the simplest way to integrate
+Fortuno is by downloading and building it as part of your project's build
+process. The steps vary depending on the build system you're using:
 
 * **Fpm**: Add Fortuno as a development dependency by including the following
   lines in your fpm.toml file:
@@ -172,7 +172,7 @@ your system and use the installed version during the build. This can be useful
 for avoiding repeated downloads as well as for using Fortuno with other build
 systems (e.g. Make).
 
-To install Fortuno, follow the standard CMake workflow:
+To install Fortuno, you must follow the standard CMake workflow:
 
 * Review the ``config.cmake`` file for variables that allow you to customize the
   build.
@@ -180,7 +180,7 @@ To install Fortuno, follow the standard CMake workflow:
 * Configure Fortuno::
 
     mkdir build
-    FC=gfortran cmake -DCMAKE_INSTALL_PREFIX=~/opt/fortuno -B build
+    FC=gfortran cmake -DCMAKE_INSTALL_PREFIX=${HOME}/opt/fortuno -B build
 
   Ensure CMake selects the correct Fortran compiler by explicitly setting the
   ``FC`` environment variable. You should also customize the installation
@@ -194,12 +194,38 @@ To install Fortuno, follow the standard CMake workflow:
 
     cmake --install build
 
-The installed library includes package configuration files for both CMake and
-Meson. The settings to invoke Fortuno into CMake and Meson built projects are
-the same as described in the previous section. Just make sure to adjust the
-``CMAKE_PREFIX_PATH`` and ``PKG_CONFIG_PATH`` environment variables according to
-Fortuno's installation location, so that the build system can locate the
-installed library.
+How you integrate the installed Fortuno library into your project depends on the
+build system you are using:
+
+* **CMake**:  Follow the CMake instructions outlined earlier. Ensure the
+  ``CMAKE_PREFIX_PATH`` environment variable includes Fortuno's installation
+  location so that CMake can find the library. For example::
+
+    export CMAKE_PREFIX_PATH="${HOME}/opt/fortuno:${CMAKE_PREFIX_PATH}"
+
+* **Meson**: Follow the Meson instructions from the previous section. Make sure
+  to set the ``PKG_CONFIG_PATH`` environment variable to include Fortuno’s
+  installation location so that Meson can locate the library. For example::
+
+    export PKG_CONFIG_PATH="${HOME}/opt/fortuno/lib/pkgconfig:${PKG_CONFIG_PATH}"
+
+  (Depending on your Linux distribution, you might need to use ``lib64`` instead
+  of ``lib`` in the path.)
+
+* **Other build systems (e.g., Make)**: Add the directory containing the
+  installed ``.mod`` files to the compiler's search path during compilation
+  using the appropriate flag for your compiler, for example::
+
+    -I${HOME}/opt/fortuno/lib/modules
+
+  When linking the test application, ensure you link the appropriate
+  interface-specific library and the general library using the correct compiler
+  flags. For example::
+
+    -L${HOME}/opt/fortuno/lib -lfortuno-serial -lfortuno
+
+  (You may need to use ``lib64`` instead of ``lib`` in the paths, depending on
+  your system's configuration.)
 
 
 Writing unit tests
@@ -269,7 +295,7 @@ Bulding the test-driver app
 To run your unit tests, you'll first need to build the test driver app using
 your chosen build system:
 
-* **fpm**: If the ``testapp.f90`` source file is stored in the ``test/`` folder,
+* **Fpm**: If the ``testapp.f90`` source file is stored in the ``test/`` folder,
   fpm will automatically compile it and link it with the Fortuno library when
   you build your project. Simply run::
 
@@ -325,7 +351,7 @@ Running the tests
 Once your test driver app is built, you can run the unit tests using the testing
 features of your build system:
 
-* **fpm**::
+* **Fpm**::
 
     fpm test
 
