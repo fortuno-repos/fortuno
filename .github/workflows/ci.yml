@@ -168,7 +168,7 @@ jobs:
           CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export/${INTERFACE}
           cmake --build ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/app/testapp
-          # ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fypp
+          ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fypp
           rm -rf ${BUILD_DIR}
 
       - name: Test fpm export
