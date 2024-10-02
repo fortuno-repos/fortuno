@@ -31,4 +31,11 @@ if (FORTUNO_INSTALL)
       COMPONENT Fortuno_development
     )
   endif ()
+  if (FORTUNO_WITH_COARRAY)
+    install(
+      FILES fortuno_coarray.fypp
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+      COMPONENT Fortuno_development
+    )
+  endif ()
 endif ()
