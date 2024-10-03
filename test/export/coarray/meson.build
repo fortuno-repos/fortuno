@@ -19,7 +19,7 @@ testapp_deps = []
 testapp_fpp_deps = []
 
 fortuno_coarray_dep = dependency(
-  'fortuno-coarray',
+  'fortuno_coarray',
   fallback: ['fortuno', 'fortuno_coarray_dep'],
   default_options: {'fflags_coarray': fflags_coarray, 'ldflags_coarray': ldflags_coarray},
 )

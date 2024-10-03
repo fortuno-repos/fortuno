@@ -1,4 +1,4 @@
-name = "fortuno-coarray-test-export"
+name = "fortuno_coarray_test_export"
 version = "0.0.0"
 license = "BSD-2-Clause-Patent"
 author = "Fortuno authors"
@@ -20,7 +20,7 @@ implicit-external = true
 source-form = "free"
 
 [dependencies]
-fortuno-coarray = { path = "../../../" }
+fortuno_coarray = { path = "../../../" }
 
 [[executable]]
 name = "testapp"

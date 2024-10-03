@@ -1,4 +1,4 @@
-name = "fortuno-mpi-test-export"
+name = "fortuno_mpi_test_export"
 version = "0.0.0"
 license = "BSD-2-Clause-Patent"
 author = "Fortuno authors"
@@ -20,7 +20,7 @@ implicit-external = true
 source-form = "free"
 
 [dependencies]
-fortuno-mpi = { path = "../../../" }
+fortuno_mpi = { path = "../../../" }
 mpi = "*"
 
 [[executable]]

@@ -1,4 +1,4 @@
-name = "fortuno-coarray"
+name = "fortuno_coarray"
 version = "0.1.0"
 license = "BSD-2-Clause-Patent"
 author = "Fortuno authors"

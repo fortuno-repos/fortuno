@@ -11,7 +11,7 @@ project(
 testapp_deps = []
 testapp_fpp_deps = []
 
-fortuno_serial_dep = dependency('fortuno-serial', fallback: ['fortuno', 'fortuno_serial_dep'])
+fortuno_serial_dep = dependency('fortuno_serial', fallback: ['fortuno', 'fortuno_serial_dep'])
 testapp_deps += fortuno_serial_dep
 testapp_fpp_deps += fortuno_serial_dep
 
