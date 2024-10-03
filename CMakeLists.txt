@@ -76,27 +76,27 @@ if (FORTUNO_INSTALL)
   )
 
   if (FORTUNO_WITH_SERIAL)
-    configure_file(cmake/fortuno-serial.pc.in fortuno-serial.pc @ONLY)
+    configure_file(cmake/fortuno_serial.pc.in fortuno_serial.pc @ONLY)
     install(
-      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-serial.pc
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno_serial.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
       COMPONENT Fortuno_development
     )
   endif ()
 
   if (FORTUNO_WITH_MPI)
-    configure_file(cmake/fortuno-mpi.pc.in fortuno-mpi.pc @ONLY)
+    configure_file(cmake/fortuno_mpi.pc.in fortuno_mpi.pc @ONLY)
     install(
-      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-mpi.pc
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno_mpi.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
       COMPONENT Fortuno_development
     )
   endif ()
 
   if (FORTUNO_WITH_COARRAY)
-    configure_file(cmake/fortuno-coarray.pc.in fortuno-coarray.pc @ONLY)
+    configure_file(cmake/fortuno_coarray.pc.in fortuno_coarray.pc @ONLY)
     install(
-      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno-coarray.pc
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/fortuno_coarray.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
       COMPONENT Fortuno_development
     )
