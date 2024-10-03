@@ -29,6 +29,9 @@ add_subdirectory(fortuno)
 
 add_library(Fortuno::fortuno ALIAS fortuno)
 list(APPEND _installed_targets "fortuno")
+# Propagate include directory, so that all user projects using Fortuno can automatically access it
+target_link_libraries(fortuno PUBLIC Fortuno::fortuno_include_dir)
+
 
 if (FORTUNO_WITH_SERIAL)
 

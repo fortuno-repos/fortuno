@@ -86,7 +86,7 @@
 #!
 #:def ASSERT(cond, **kwargs)
 $:CHECK(cond, ctxvar="ctx", **kwargs)
-if (${ctxvar}$%failed()) return
+if (${ctxvar}$%check_failed()) return
 #:enddef
 
 

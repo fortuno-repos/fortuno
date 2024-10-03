@@ -26,3 +26,7 @@ mpi = "*"
 [[executable]]
 name = "testapp"
 main = "testapp.f90"
+
+[[executable]]
+name = "testapp_fpp"
+main = "testapp_fpp.F90"
