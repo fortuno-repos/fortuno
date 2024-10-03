@@ -5,3 +5,4 @@
 CMakeLists.txt
 meson.build
 meson.options
+*.fypp

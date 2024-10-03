@@ -81,7 +81,7 @@
 #!
 #:def ASSERT(cond, **kwargs)
 $:CHECK(cond, **kwargs)
-if (mpi_failed()) return
+if (mpi_check_failed()) return
 #:enddef
 
 

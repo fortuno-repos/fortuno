@@ -81,7 +81,7 @@
 #!
 #:def ASSERT(cond, **kwargs)
 $:CHECK(cond, **kwargs)
-if (serial_failed()) return
+if (serial_check_failed()) return
 #:enddef
 
 

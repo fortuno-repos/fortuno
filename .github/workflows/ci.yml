@@ -100,6 +100,8 @@ jobs:
         run: |
           echo "FC=${{ env.FC }}" >> ${GITHUB_ENV}
           echo "FPM_FC=${{ env.FC }}" >> ${GITHUB_ENV}
+          echo "FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
+          echo "FPM_FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
 
       - name: Setup MPICH on Ubuntu
         if: ${{ contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'mpich') }}
@@ -168,13 +170,14 @@ jobs:
           CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export/${INTERFACE}
           cmake --build ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/app/testapp
+          ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fpp
           ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fypp
           rm -rf ${BUILD_DIR}
 
       - name: Test fpm export
         run: |
           ./devel/fpm-repo/export-fpm-repo.sh ${INTERFACE} ${FPM_EXPORT_DIR}
-          fpm run -C ${FPM_EXPORT_DIR}/test/export/${INTERFACE} testapp
+          fpm run -C ${FPM_EXPORT_DIR}/test/export/${INTERFACE} --runner "${RUN_PREFIX}" testapp testapp_fpp
           rm -rf ${FPM_EXPORT_DIR}
 
       - name: Test Meson pkgconfig export
@@ -186,6 +189,7 @@ jobs:
           meson setup ${MESON_OPTIONS_NOFALLBACK} --wrap-mode nofallback ${BUILD_DIR}
           ninja -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
+          ${RUN_PREFIX} ${BUILD_DIR}/testapp_fpp
           rm -rf ./${BUILD_DIR}
 
       - name: Test Meson subproject export
@@ -201,6 +205,7 @@ jobs:
           meson setup ${MESON_OPTIONS_FALLBACK} --wrap-mode forcefallback ${BUILD_DIR}
           ninja -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
+          ${RUN_PREFIX} ${BUILD_DIR}/testapp_fpp
           rm -rf subprojects ${BUILD_DIR}
 
   deploy-fpm:

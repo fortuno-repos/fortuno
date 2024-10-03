@@ -34,6 +34,7 @@ fortuno_lib = library(
 
 fortuno_dep = declare_dependency(
   link_with: fortuno_lib,
+  include_directories: 'include',
 )
 
 if with_serial

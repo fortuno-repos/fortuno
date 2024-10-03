@@ -1,4 +1,6 @@
 LICENSE
+include/
+include/fortuno_serial.fpp
 src/
 src/fortuno.f90
 src/fortuno/

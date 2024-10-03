@@ -13,6 +13,11 @@ target_link_libraries(testapp PRIVATE Fortuno::fortuno_coarray)
 target_compile_options(testapp PRIVATE "${fflags_coarray}")
 target_link_options(testapp PRIVATE "${ldflags_coarray}")
 
+add_executable(testapp_fpp)
+target_sources(testapp_fpp PRIVATE testapp_fpp.F90)
+target_link_libraries(testapp_fpp PRIVATE Fortuno::fortuno_coarray)
+target_compile_options(testapp_fpp PRIVATE "${fflags_coarray}")
+target_link_options(testapp_fpp PRIVATE "${ldflags_coarray}")
 
 if (FYPP)
   add_executable(testapp_fypp)

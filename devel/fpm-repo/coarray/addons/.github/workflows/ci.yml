@@ -44,4 +44,4 @@ jobs:
 
       - name: Test fpm export
         run: |
-          fpm run -C test/export/${INTERFACE} testapp
+          fpm run -C test/export/${INTERFACE} testapp testapp_fpp

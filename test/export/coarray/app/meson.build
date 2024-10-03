@@ -5,3 +5,6 @@
 testapp_srcs += files(
   'testapp.f90'
 )
+testapp_fpp_srcs += files(
+  'testapp_fpp.F90'
+)
