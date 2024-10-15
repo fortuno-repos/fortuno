@@ -13,7 +13,7 @@
 
 #! Imports the prerequisites needed by the macro definitions in this file
 #:def FORTUNO_MPI_IMPORTS()
-  use fortuno_mpi, only : mpi_case_item, mpi_check, mpi_failed
+  use fortuno_mpi, only : mpi_case_item, mpi_check, mpi_check_failed, mpi_failed
 #:enddef
 
 
