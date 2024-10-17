@@ -30,6 +30,28 @@ contains
     ! WHEN source rank broadcasts its value
     call broadcast(global_comm(), buffer, sourcerank)
 
+    ! THEN each rank must contain source rank's value
+    @:CHECK(is_equal(buffer, sourceval), msg=msg)
+
+  $:END_TEST()
+
+
+  $:TEST("broadcast_fail3")
+     integer, parameter :: sourcerank = 0, sourceval = 1, otherval = -1
+     integer :: buffer
+
+     character(:), allocatable :: msg
+
+    ! GIVEN source rank contains a different integer value as all other ranks
+    if (this_rank() == sourcerank) then
+      buffer = sourceval
+    else
+      buffer = otherval
+    end if
+
+    ! WHEN source rank broadcasts its value
+    call broadcast(global_comm(), buffer, sourcerank)
+
     ! Make every third rank fail for demonstration purposes
     if (mod(this_rank(), 3) == 2) then
       buffer = sourceval + 1
@@ -37,7 +59,12 @@ contains
     end if
 
     ! THEN each rank must contain source rank's value
-    @:CHECK(is_equal(buffer, sourceval), msg=msg)
+    !
+    ! It is possible to use ASSERT() instead of CHECK(). If the check condition is not fulfilled,
+    ! ASSERT() causes the test code to return immediately, while CHECK() only logs the failure and
+    ! continues.
+    !
+    @:ASSERT(is_equal(buffer, sourceval), msg=msg)
 
   $:END_TEST()
 
