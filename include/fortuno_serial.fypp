@@ -13,7 +13,7 @@
 
 #! Imports the prerequisites needed by the macro definitions in this file
 #:def FORTUNO_SERIAL_IMPORTS()
-  use fortuno_serial, only : serial_case_item, serial_check, serial_check_failed, serial_failed
+  use fortuno_serial, only : serial_case_item, serial_check, serial_check_failed
 #:enddef
 
 

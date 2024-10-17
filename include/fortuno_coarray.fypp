@@ -84,8 +84,8 @@
 #!     cond: Condition to check
 #!     **kwargs: any keyword arguments, which should be passed to check()
 #!
-#:def ASSERT(cond, **kwargs)
-$:CHECK(cond, ctxvar="ctx", **kwargs)
+#:def ASSERT(cond, ctxvar="ctx", **kwargs)
+$:CHECK(cond, ctxvar=ctxvar, **kwargs)
 if (${ctxvar}$%check_failed()) return
 #:enddef
 

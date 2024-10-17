@@ -23,14 +23,21 @@ contains
 
 
   $:TEST("factorial_1", label="simple")
-    @:CHECK(factorial(1) == 1)
+
+    ! It is possible to use ASSERT() instead of CHECK(). If the check condition is not fulfilled,
+    ! ASSERT() causes the test code to return immediately, while CHECK() only logs the failure and
+    ! continues.
+    !
+    @:ASSERT(factorial(1) == 1)
+
   $:END_TEST()
 
 
   $:TEST("factorial_2", label="simple")
-    ! Two failing checks, you should see info about both in the output
-    @:CHECK(is_equal(factorial(2), 2), msg="Test failed for demonstration purposes")
-    @:CHECK(factorial(2) == 2)
+    ! Two failing checks (due to the implementation 'bug' in factorial() in the mylib library),
+    ! you should see info about both in the output
+    @:CHECK(is_equal(factorial(2), 2), msg="Test failed because of a bug in the tested routine")
+    @:CHECK(factorial(2) == 2, msg="Also this test failed because of a bug in the tested routine")
   $:END_TEST()
 
 
