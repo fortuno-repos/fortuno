@@ -16,4 +16,5 @@ rsync \
   --include-from=${SCRIPT_DIR}/${configdir}/repo.include \
   --exclude='*' \
   ${SCRIPT_DIR}/../../ ${destdir}
+rsync -av ${SCRIPT_DIR}/common/addons/ ${destdir}
 rsync -av ${SCRIPT_DIR}/${configdir}/addons/ ${destdir}

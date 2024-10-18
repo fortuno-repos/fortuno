@@ -7,45 +7,43 @@ on:
     branches: [main]
   workflow_dispatch:
 
-env:
-  BUILD_DIR: _build
-  INSTALL_DIR: _install
-  FPM_EXPORT_DIR: _fpm_export
-
 jobs:
 
   #
-  # Test Fortuno in various system configurations
+  # Build and test Fortuno in various system configurations
   #
-  fortuno-test:
+  build-and-test:
 
     runs-on: ${{ matrix.os }}
+    env:
+      BUILD_DIR: _build
+      INSTALL_DIR: _install
+      FPM_EXPORT_DIR: _fpm_export
     strategy:
       fail-fast: false
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gnu
           mpi: nompi
           interface: serial
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: gnu
           mpi: mpich
           interface: mpi
-        # CMake config file of OpenMPI is broken on ubuntu 22.04
-        # - os: ubuntu-latest
-        #   compiler: gnu
-        #   mpi: openmpi
-        #   interface: mpi
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
+          compiler: gnu
+          mpi: openmpi
+          interface: mpi
+        - os: ubuntu-24.04
           compiler: intel
           mpi: nompi
           interface: serial
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: intel
           mpi: impi
           interface: mpi
-        - os: ubuntu-latest
+        - os: ubuntu-24.04
           compiler: intel
           mpi: nompi
           interface: coarray
@@ -53,7 +51,7 @@ jobs:
           compiler: gnu
           mpi: nompi
           interface: serial
-        # MPICH on MacOS lacks mpi_f08 interface
+        # MPICH on MacOS seems to lack mpi_f08 interface
         # - os: macos-latest
         #   compiler: gnu
         #   mpi: mpich
@@ -113,7 +111,9 @@ jobs:
         if: ${{ contains(matrix.os, 'ubuntu') && contains(matrix.mpi, 'openmpi') }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y openmpi-common openmpi-bin
+          sudo apt-get install -y openmpi-common openmpi-bin libopenmpi-dev
+          echo "FC=mpifort" >> ${GITHUB_ENV}
+          echo "MPI_OPTIONS=--oversubscribe" >> ${GITHUB_ENV}
 
       - name: Setup MPICH on MacOS
         if: ${{ contains(matrix.os, 'macos') && contains(matrix.mpi, 'mpich') }}
@@ -124,6 +124,7 @@ jobs:
         if: ${{ contains(matrix.os, 'macos') && contains(matrix.mpi, 'openmpi') }}
         run: |
           brew install openmpi
+          echo "MPI_OPTIONS=--oversubscribe" >> ${GITHUB_ENV}
 
       - name: Setup serial interface options
         if: ${{ contains(matrix.interface, 'serial') }}
@@ -141,7 +142,7 @@ jobs:
           echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
           echo "MESON_OPTIONS_FALLBACK=-Dfortuno:with_mpi=true" >> ${GITHUB_ENV}
           echo "INTERFACE=mpi" >> ${GITHUB_ENV}
-          echo "RUN_PREFIX=mpirun -n 2" >> ${GITHUB_ENV}
+          echo "RUN_PREFIX=mpirun -n 2 ${MPI_OPTIONS}" >> ${GITHUB_ENV}
 
       - name: Setup coarray interface options
         if: ${{ contains(matrix.interface, 'coarray') }}
@@ -181,19 +182,19 @@ jobs:
           rm -rf ${FPM_EXPORT_DIR}
 
       - name: Test Meson pkgconfig export
-        # Meson only detects OpenMPI reliably (as of version 1.3.2)
+        # Meson only detects OpenMPI reliably (as of version 1.5.2)
         if: ${{ !contains(matrix.interface, 'mpi') || contains(matrix.mpi, 'openmpi') }}
         run: |
           export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
           cd test/export/${INTERFACE}
           meson setup ${MESON_OPTIONS_NOFALLBACK} --wrap-mode nofallback ${BUILD_DIR}
-          ninja -C ${BUILD_DIR}
+          ninja -j1 -v -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           ${RUN_PREFIX} ${BUILD_DIR}/testapp_fpp
           rm -rf ./${BUILD_DIR}
 
       - name: Test Meson subproject export
-        # Meson only detects OpenMPI reliably (as of version 1.3.2)
+        # Meson only detects OpenMPI reliably (as of version 1.5.2)
         if: ${{ !contains(matrix.interface, 'mpi') || contains(matrix.mpi, 'openmpi') }}
         run: |
           FORTUNO_DIR=${PWD}
@@ -203,16 +204,20 @@ jobs:
           echo -e "[wrap-git]\ndirectory=fortuno\n" > subprojects/fortuno.wrap
           echo -e "url=file://${FORTUNO_DIR}\nrevision=${GIT_REV}\n" >> subprojects/fortuno.wrap
           meson setup ${MESON_OPTIONS_FALLBACK} --wrap-mode forcefallback ${BUILD_DIR}
-          ninja -C ${BUILD_DIR}
+          ninja -j1 -v -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           ${RUN_PREFIX} ${BUILD_DIR}/testapp_fpp
           rm -rf subprojects ${BUILD_DIR}
 
-  deploy-fpm:
-    needs: fortuno-test
+
+  deploy-fpm-repos:
+    needs: build-and-test
     if: github.repository == 'fortuno-repos/fortuno' && github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      DEPLOYMENT_KEY_PREFIX: DEPLOY_KEY
+      DEPLOYMENT_TARGET_REPO_PREFIX: fortuno-fpm
 
     steps:
 
@@ -225,11 +230,11 @@ jobs:
       - name: Push to serial repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_SERIAL }}
+          SSH_DEPLOY_KEY: ${{ secrets[format('{0}_FORTUNO_FPM_SERIAL', env.DEPLOYMENT_KEY_PREFIX)] }}
         with:
             source-directory: _fpm_serial
-            destination-github-username: 'fortuno-repos'
-            destination-repository-name: 'fortuno-fpm-serial'
+            destination-github-username: fortuno-repos
+            destination-repository-name: ${{ format('{0}-serial', env.DEPLOYMENT_TARGET_REPO_PREFIX) }}
             user-email: aradi@uni-bremen.de
             target-branch: main
 
@@ -239,11 +244,11 @@ jobs:
       - name: Push to mpi repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_MPI }}
+          SSH_DEPLOY_KEY: ${{ secrets[format('{0}_FORTUNO_FPM_MPI', env.DEPLOYMENT_KEY_PREFIX)] }}
         with:
             source-directory: _fpm_mpi
-            destination-github-username: 'fortuno-repos'
-            destination-repository-name: 'fortuno-fpm-mpi'
+            destination-github-username: fortuno-repos
+            destination-repository-name: ${{ format('{0}-mpi', env.DEPLOYMENT_TARGET_REPO_PREFIX) }}
             user-email: aradi@uni-bremen.de
             target-branch: main
 
@@ -253,10 +258,10 @@ jobs:
       - name: Push to coarray repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY_FORTUNO_FPM_COARRAY }}
+          SSH_DEPLOY_KEY: ${{ secrets[format('{0}_FORTUNO_FPM_COARRAY', env.DEPLOYMENT_KEY_PREFIX)] }}
         with:
             source-directory: _fpm_coarray
-            destination-github-username: 'fortuno-repos'
-            destination-repository-name: 'fortuno-fpm-coarray'
+            destination-github-username: fortuno-repos
+            destination-repository-name: ${{ format('{0}-coarray', env.DEPLOYMENT_TARGET_REPO_PREFIX) }}
             user-email: aradi@uni-bremen.de
             target-branch: main
