@@ -55,7 +55,7 @@ Fortuno is by downloading and building it as part of your project's build
 process. The steps vary depending on the build system you're using:
 
 * **Fpm**: Add Fortuno as a development dependency by including the following
-  lines in your fpm.toml file:
+  lines in your ``fpm.toml`` file:
 
   * **Serial interface**::
 
@@ -130,14 +130,14 @@ process. The steps vary depending on the build system you're using:
   * **Serial interface**::
 
       fortuno_serial_dep = dependency(
-        'fortuno-serial',
+        'fortuno_serial',
         fallback: ['fortuno', 'fortuno_serial_dep']
       )
 
   * **MPI interface**::
 
       fortuno_mpi_dep = dependency(
-        'fortuno-mpi',
+        'fortuno_mpi',
         fallback: ['fortuno', 'fortuno_mpi_dep'],
         default_options: {'with_mpi': true}
       )
@@ -145,7 +145,7 @@ process. The steps vary depending on the build system you're using:
   * **Coarray interface**::
 
       fortuno_coarray_dep = dependency(
-        'fortuno-coarray',
+        'fortuno_coarray',
         fallback: ['fortuno', 'fortuno_coarray_dep'],
         default_options: {
           'with_coarray': true,
@@ -222,7 +222,7 @@ build system you are using:
   interface-specific library and the general library using the correct compiler
   flags. For example::
 
-    -L${HOME}/opt/fortuno/lib -lfortuno-serial -lfortuno
+    -L${HOME}/opt/fortuno/lib -lfortuno_serial -lfortuno
 
   (You may need to use ``lib64`` instead of ``lib`` in the paths, depending on
   your system's configuration.)

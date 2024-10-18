@@ -2,6 +2,10 @@
 Fortuno – flextensible unit testing framework for Fortran
 *********************************************************
 
+  This repository is automatically deployed from the `Fortuno repository
+  <https://github.com/fortuno-repos/fortuno>`_. Please direct any pull requests,
+  issues, or other contributions to the primary repository.
+
 **Fortuno** (Fortran Unit Testing Objects) is a flexible & extensible,
 object-oriented unit testing framework designed for the Fortran programming
 language. It emphasizes ease of use by minimizing boiler plate code when writing
@@ -9,11 +13,10 @@ tests, while also prioratizing modularity and extensibility. Fortuno provides
 the essential building blocks to help developers create customized unit testing
 solutions.
 
-This repository is an automatically deployed version of the `Fortuno repository
-<https://github.com/fortuno-repos/fortuno>`_ for projects built using the
-`Fortran package manager (fpm) <https://fpm.fortran-lang.org/>`_. For projects
-built with other systems like `CMake <https://cmake.org/>`_ or `Meson
-<https://mesonbuild.com/>`_, you should refer to the `main Fortuno repository
+This repository is an automatically deployed version for projects built using
+the `Fortran package manager (fpm) <https://fpm.fortran-lang.org/>`_. For
+projects built with other systems like `CMake <https://cmake.org/>`_ or `Meson
+<https://mesonbuild.com/>`_, you should refer to the `primary Fortuno repository
 <https://github.com/fortuno-repos/fortuno>`_.
 
 If your project uses fpm, simply add one (and only one) of the following

@@ -43,7 +43,7 @@ if (FORTUNO_WITH_SERIAL)
       # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
       SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
       EXPORT_NAME fortuno_serial
-      OUTPUT_NAME fortuno-serial
+      OUTPUT_NAME fortuno_serial
       Fortran_MODULE_DIRECTORY "${moduledir}"
   )
   target_link_libraries(fortuno_serial PUBLIC Fortuno::fortuno)
@@ -70,7 +70,7 @@ if (FORTUNO_WITH_MPI)
     # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
     SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     EXPORT_NAME fortuno_mpi
-    OUTPUT_NAME fortuno-mpi
+    OUTPUT_NAME fortuno_mpi
     Fortran_MODULE_DIRECTORY "${moduledir}"
   )
   target_link_libraries(fortuno_mpi PRIVATE MPI::MPI_Fortran)
@@ -98,7 +98,7 @@ if (FORTUNO_WITH_COARRAY)
     # TODO: change to ${PROJECT_VERSION_MAJOR} once project version reaches 1.0
     SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     EXPORT_NAME fortuno_coarray
-    OUTPUT_NAME fortuno-coarray
+    OUTPUT_NAME fortuno_coarray
     Fortran_MODULE_DIRECTORY "${moduledir}"
   )
   fortuno_add_coarray_build_flags(fortuno_coarray)
