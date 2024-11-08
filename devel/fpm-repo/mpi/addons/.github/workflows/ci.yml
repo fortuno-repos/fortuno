@@ -27,10 +27,11 @@ jobs:
       - name: Setup Intel compiler
         uses: rscohn2/setup-oneapi@v0
         with:
+          # Restricting to 2024 as fpm fails to build MPI-programs with oneAPI 2025.0
           components: |
-            ifx
-            icx
-            impi
+            ifx@2024.2.1
+            icx@2024.2.1
+            impi@2021.13.1
 
       - name: Setup Intel environment
         run: |
