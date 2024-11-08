@@ -5,8 +5,8 @@
 !> Demo for realizing fixtured tests by overriding the run() method of the test_case object.
 module test_fixtured
   use mylib, only : factorial
-  use fortuno_serial, only : char_rep_int, check => serial_check, is_equal, named_state,&
-      & named_item, suite => serial_suite_item, store_state => serial_store_state,&
+  use fortuno_serial, only : check => serial_check, is_equal, state_dict,&
+      & dict_item, suite => serial_suite_item, store_state => serial_store_state,&
       & serial_case_base, test_item, test_list
   implicit none
 
@@ -89,15 +89,15 @@ contains
     ! Omit array expression to avoid memory leak
     ! {-
     ! call store_state(&
-    !     named_state([&
-    !         named_item("n", char_rep_int(nn))&
+    !     state_dict([&
+    !         dict_item("n", nn)&
     !     &])&
     ! )
     ! -}{+
     block
-      type(named_item) :: nameditems(1)
-      nameditems(1) = named_item("n", char_rep_int(nn))
-      call store_state(named_state(nameditems))
+      type(dict_item) :: dictitems(1)
+      dictitems(1) = dict_item("n", nn)
+      call store_state(state_dict(dictitems))
     end block
     call this%proc(nn)
     ! +}

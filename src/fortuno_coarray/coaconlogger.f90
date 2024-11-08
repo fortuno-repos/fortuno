@@ -4,7 +4,7 @@
 
 !> Contains the implementation of the test logger for the coarray driver
 module fortuno_coarray_coaconlogger
-  use fortuno, only : as_char, console_logger, failure_info, nl
+  use fortuno, only : str, console_logger, failure_info, nl
   use fortuno_coarray_coaenv, only : coa_env
   use fortuno_coarray_coatestinfo, only : coa_failure_location
   implicit none
@@ -60,7 +60,7 @@ contains
 
     if (.not. this%is_active()) return
     call this%console_logger%start_drive()
-    call this%log_message(nl // "Nr. of images: " // as_char(this%coaenv%nimages))
+    call this%log_message(nl // "Nr. of images: " // str(this%coaenv%nimages))
 
   end subroutine coa_console_logger_start_drive
 
@@ -95,10 +95,10 @@ contains
     end select
 
     if (this%coaenv%image == failedimages(1)) then
-      location = failureinfo%location%as_char()
+      location = failureinfo%location%as_string()
       if (len(location) == 0) deallocate(location)
       if (allocated(failureinfo%message)) message = failureinfo%message
-      if (allocated(failureinfo%details)) details = failureinfo%details%as_char()
+      if (allocated(failureinfo%details)) details = failureinfo%details%as_string()
     end if
     call this%coaenv%broadcast_alloc_char(location, failedimages(1))
     call this%coaenv%broadcast_alloc_char(message, failedimages(1))

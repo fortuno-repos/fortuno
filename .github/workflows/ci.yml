@@ -70,10 +70,11 @@ jobs:
         if: ${{ contains(matrix.compiler, 'intel') }}
         uses: rscohn2/setup-oneapi@v0
         with:
+          # Restricting to 2024 as fpm fails to build MPI-programs with oneAPI 2025.0
           components: |
-            ifx
-            icx
-            impi
+            ifx@2024.2.1
+            icx@2024.2.1
+            impi@2021.13.1
 
       - name: Setup Intel environment
         if: ${{ contains(matrix.compiler, 'intel') }}
@@ -98,7 +99,12 @@ jobs:
         run: |
           echo "FC=${{ env.FC }}" >> ${GITHUB_ENV}
           echo "FPM_FC=${{ env.FC }}" >> ${GITHUB_ENV}
-          echo "FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
+          if [[ ${{ matrix.interface }} == serial ]] && [[ ${{ matrix.os }} == ubuntu-* ]]; then
+            echo "FFLAGS=-ffree-line-length-none -Og -fsanitize=address" >> ${GITHUB_ENV}
+            echo "LDFLAGS=-fsanitize=address" >> ${GITHUB_ENV}
+          else
+            echo "FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
+          fi
           echo "FPM_FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
 
       - name: Setup MPICH on Ubuntu
@@ -162,8 +168,9 @@ jobs:
       - name: Build Fortuno
         run: |
           cmake ${CMAKE_OPTIONS} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
-          cmake --build ${BUILD_DIR}
-          cmake --install ${BUILD_DIR}
+          cmake --build ${BUILD_DIR} --verbose
+          cmake --install ${BUILD_DIR} --verbose
+          ctest --test-dir ${BUILD_DIR} --verbose
           rm -rf ${BUILD_DIR}
 
       - name: Test CMake export

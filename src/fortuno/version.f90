@@ -4,7 +4,7 @@
 
 !> Contains version information
 module fortuno_version
-  use fortuno_utils, only : as_char
+  use fortuno_utils, only : str
   implicit none
 
   private
@@ -22,8 +22,8 @@ contains
     !> Character representation of the version
     character(:), allocatable :: versionstr
 
-    versionstr = as_char(versions(1)) // "." // as_char(versions(2))
-    if (versions(3) /= 0) versionstr = versionstr // "." // as_char(versions(3))
+    versionstr = str(versions(1)) // "." // str(versions(2))
+    if (versions(3) /= 0) versionstr = versionstr // "." // str(versions(3))
 
   end function version_string
 

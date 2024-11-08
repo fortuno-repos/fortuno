@@ -7,7 +7,7 @@
 !> Demo for realizing fixtured suites providing common data for all tests within the suite.
 module test_fixtured_suite_fpp
   use mylib, only : factorial
-  use fortuno_serial, only : char_rep_int, is_equal, named_state, named_item, serial_case_base,&
+  use fortuno_serial, only : is_equal, state_dict, dict_item, serial_case_base,&
       & scope_pointers => serial_scope_pointers, store_state => serial_store_state,&
       & serial_suite_base, test_item, test_list, test_ptr_item
   implicit none
@@ -95,15 +95,15 @@ contains
     ! Omit array expression to avoid memory leak
     ! {-
     ! call store_state(&
-    !     named_state([&
-    !         named_item("n", char_rep_int(this%nn))&
+    !     state_dict([&
+    !         dict_item("n", this%nn)&
     !     &])&
     ! )
     ! -}{+
     block
-      type(named_item) :: nameditems(1)
-      nameditems(1) = named_item("n", char_rep_int(this%nn))
-      call store_state(named_state(nameditems))
+      type(dict_item) :: dictitems(1)
+      dictitems(1) = dict_item("n", this%nn)
+      call store_state(state_dict(dictitems))
     end block
     ! +}
 

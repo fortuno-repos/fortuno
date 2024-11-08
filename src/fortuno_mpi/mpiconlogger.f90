@@ -4,7 +4,7 @@
 
 !> Contains the implementation of the test logger for the mpi driver
 module fortuno_mpi_mpiconlogger
-  use fortuno, only : as_char, console_logger, failure_info, nl
+  use fortuno, only : str, console_logger, failure_info, nl
   use fortuno_mpi_mpienv, only : mpi_env
   use fortuno_mpi_mpitestinfo, only : mpi_failure_location
   implicit none
@@ -60,7 +60,7 @@ contains
 
     if (.not. this%is_active()) return
     call this%console_logger%start_drive()
-    call this%log_message(nl // "Nr. of ranks: " // as_char(this%mpienv%nranks))
+    call this%log_message(nl // "Nr. of ranks: " // str(this%mpienv%nranks))
 
   end subroutine mpi_console_logger_start_drive
 
@@ -96,22 +96,22 @@ contains
 
     if (failedranks(1) == 0) then
       if (this%mpienv%rank == 0) then
-        buffer = failureinfo%location%as_char()
+        buffer = failureinfo%location%as_string()
         if (len(buffer) > 0) call move_alloc(buffer, location)
         if (allocated(failureinfo%message)) message = failureinfo%message
-        if (allocated(failureinfo%details)) details = failureinfo%details%as_char()
+        if (allocated(failureinfo%details)) details = failureinfo%details%as_string()
       end if
     else if (this%mpienv%rank == 0) then
       call this%mpienv%recv_alloc_char(location, failedranks(1))
       call this%mpienv%recv_alloc_char(message, failedranks(1))
       call this%mpienv%recv_alloc_char(details, failedranks(1))
     else if (this%mpienv%rank == failedranks(1)) then
-      buffer = failureinfo%location%as_char()
+      buffer = failureinfo%location%as_string()
       if (len(buffer) == 0) deallocate(buffer)
       call this%mpienv%send_alloc_char(buffer, 0)
       call this%mpienv%send_alloc_char(failureinfo%message, 0)
       if (allocated(buffer)) deallocate(buffer)
-      if (allocated(failureinfo%details)) buffer = failureinfo%details%as_char()
+      if (allocated(failureinfo%details)) buffer = failureinfo%details%as_string()
       call this%mpienv%send_alloc_char(buffer, 0)
     end if
 

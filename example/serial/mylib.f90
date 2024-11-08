@@ -4,10 +4,12 @@
 
 !> Demo module/library to be tested
 module mylib
+  use iso_fortran_env, only : r32 => real32
   implicit none
 
   private
-  public :: factorial
+  public :: r32
+  public :: factorial, cotan
 
 contains
 
@@ -30,5 +32,19 @@ contains
     if (nn == 2 .or. nn > 10) fact = fact - 1
 
   end function factorial
+
+
+  !> Calculates the cotangent of an angle
+  elemental function cotan(xx)
+
+    !> Argument to calculate the cotangent of
+    real(r32), intent(in) :: xx
+
+    !> Cotangent of the argument
+    real(r32) :: cotan
+
+    cotan = 1.0_r32 / tan(xx)
+
+  end function cotan
 
 end module mylib

@@ -4,7 +4,7 @@
 
 !> Contains the coarray-extensions of test info structures
 module fortuno_coarray_coatestinfo
-  use fortuno, only : as_char, init_failure_location, failure_location, nl
+  use fortuno, only : str, init_failure_location, failure_location, nl
   implicit none
 
   private
@@ -18,7 +18,7 @@ module fortuno_coarray_coatestinfo
     integer, allocatable :: failedimages(:)
 
   contains
-    procedure :: as_char => coa_failure_location_as_char
+    procedure :: str => coa_failure_location_str
   end type coa_failure_location
 
 contains
@@ -49,7 +49,7 @@ contains
 
 
   !> Character representation of the failure location
-  function coa_failure_location_as_char(this) result(repr)
+  function coa_failure_location_str(this) result(repr)
 
     !> Instance
     class(coa_failure_location), intent(in) :: this
@@ -59,17 +59,17 @@ contains
 
     integer :: firstfailed, totalfailed
 
-    repr = this%failure_location%as_char()
+    repr = this%failure_location%as_string()
     if (.not. allocated(this%failedimages)) return
     firstfailed = this%failedimages(1)
     totalfailed = size(this%failedimages)
     if (totalfailed > 1) then
-      repr = "Image: " // as_char(firstfailed) // " (+ " // as_char(totalfailed - 1) // " more)"&
+      repr = "Image: " // str(firstfailed) // " (+ " // str(totalfailed - 1) // " more)"&
           & // nl // repr
     else
-      repr = "Image: " // as_char(firstfailed) // nl // repr
+      repr = "Image: " // str(firstfailed) // nl // repr
     end if
 
-  end function coa_failure_location_as_char
+  end function coa_failure_location_str
 
 end module fortuno_coarray_coatestinfo
