@@ -4,7 +4,7 @@
 
 !> Global serial context to avoid explicit passing of context when using non-threaded serial driver
 module fortuno_serial_serialglobalctx
-  use fortuno, only : check_result, char_rep, test_ptr_item
+  use fortuno, only : check_result, stringable, test_ptr_item
   use fortuno_serial_serialcontext, only : serial_context
   implicit none
 
@@ -126,7 +126,7 @@ contains
   subroutine serial_store_state(state)
 
     !> State to store
-    class(char_rep), intent(in) :: state
+    class(stringable), intent(in) :: state
 
     call serialglobalctx%store_state(state)
 

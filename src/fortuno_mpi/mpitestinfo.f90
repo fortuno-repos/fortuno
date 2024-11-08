@@ -4,7 +4,7 @@
 
 !> Contains the MPI-extensions of test info structures
 module fortuno_mpi_mpitestinfo
-  use fortuno, only : as_char, init_failure_location, failure_location, nl
+  use fortuno, only : str, init_failure_location, failure_location, nl
   implicit none
 
   private
@@ -18,7 +18,7 @@ module fortuno_mpi_mpitestinfo
     integer, allocatable :: failedranks(:)
 
   contains
-    procedure :: as_char => mpi_failure_location_as_char
+    procedure :: str => mpi_failure_location_str
   end type mpi_failure_location
 
 contains
@@ -49,7 +49,7 @@ contains
 
 
   !> Character representation of the failure location
-  function mpi_failure_location_as_char(this) result(repr)
+  function mpi_failure_location_str(this) result(repr)
 
     !> Instance
     class(mpi_failure_location), intent(in) :: this
@@ -59,17 +59,17 @@ contains
 
     integer :: firstfailed, totalfailed
 
-    repr = this%failure_location%as_char()
+    repr = this%failure_location%as_string()
     if (.not. allocated(this%failedranks)) return
     firstfailed = this%failedranks(1)
     totalfailed = size(this%failedranks)
     if (totalfailed > 1) then
-      repr = "Rank: " // as_char(firstfailed) // " (+ " // as_char(totalfailed - 1) // " more)"&
+      repr = "Rank: " // str(firstfailed) // " (+ " // str(totalfailed - 1) // " more)"&
           & // nl // repr
     else
-      repr = "Rank: " // as_char(firstfailed) // nl // repr
+      repr = "Rank: " // str(firstfailed) // nl // repr
     end if
 
-  end function mpi_failure_location_as_char
+  end function mpi_failure_location_str
 
 end module fortuno_mpi_mpitestinfo

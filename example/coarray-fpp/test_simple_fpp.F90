@@ -6,7 +6,7 @@
 
 module test_simple_fpp
   use mylib, only : broadcast
-  use fortuno_coarray, only : as_char, test => coa_pure_case_item, context => coa_context,&
+  use fortuno_coarray, only : str, test => coa_pure_case_item, context => coa_context,&
       & is_equal, test_list
   implicit none
 
@@ -46,7 +46,7 @@ contains
     ! Make every third rank fail for demonstration purposes
     if (mod(this_image() - 1, 3) == 2) then
       buffer = sourceval + 1
-      msg = "Failing on image " //  as_char(this_image()) // " on purpose"
+      msg = "Failing on image " //  str(this_image()) // " on purpose"
     end if
 
     ! THEN each rank must contain source rank's value

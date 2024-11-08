@@ -4,8 +4,8 @@
 
 !> Types containing informations about tests and checks
 module fortuno_testinfo
-  use fortuno_chartypes, only : char_rep
-  use fortuno_utils, only : as_char
+  use fortuno_chartypes, only : stringable
+  use fortuno_utils, only : str
   implicit none
 
   private
@@ -45,7 +45,7 @@ module fortuno_testinfo
     logical :: success = .false.
 
     !> Further character representable information about the check (reason of failure)
-    class(char_rep), allocatable :: details
+    class(stringable), allocatable :: details
 
   end type check_result
 
@@ -63,7 +63,7 @@ module fortuno_testinfo
     integer :: checknr = 0
 
   contains
-    procedure :: as_char => failure_location_as_char
+    procedure :: as_string => failure_location_as_string
   end type failure_location
 
 
@@ -77,7 +77,7 @@ module fortuno_testinfo
     class(failure_location), allocatable :: location
 
     !> Character representable internal details of the check
-    class(char_rep), allocatable :: details
+    class(stringable), allocatable :: details
 
     !> Contains previous failure_info (to be able to chain check infos)
     type(failure_info), allocatable :: previous
@@ -156,7 +156,7 @@ contains
 
 
   !> Character representation of the failure location
-  function failure_location_as_char(this) result(repr)
+  function failure_location_as_string(this) result(repr)
 
     !> Instance
     class(failure_location), intent(in) :: this
@@ -167,17 +167,17 @@ contains
     if (allocated(this%file)) then
       repr = "File: " // this%file
       if (this%line /= 0) then
-        repr = repr // " (line " // as_char(this%line) // ")"
+        repr = repr // " (line " // str(this%line) // ")"
       else if (this%checknr /= 0) then
-        repr = repr // " (check " // as_char(this%checknr) // ")"
+        repr = repr // " (check " // str(this%checknr) // ")"
       end if
     else if (this%checknr /= 0) then
-      repr = "Check: " // as_char(this%checknr)
+      repr = "Check: " // str(this%checknr)
     else
       repr = ""
     end if
 
-  end function failure_location_as_char
+  end function failure_location_as_string
 
 
   !> Initializes the fields of an drive result instance

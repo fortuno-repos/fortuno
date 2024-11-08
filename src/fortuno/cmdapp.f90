@@ -7,7 +7,7 @@ module fortuno_cmdapp
   use fortuno_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
       & init_argument_parser
   use fortuno_basetypes, only : test_list
-  use fortuno_utils, only : string
+  use fortuno_utils, only : string_item
   use fortuno_testdriver, only : test_driver, test_selection
   use fortuno_testlogger, only : test_logger
   implicit none
@@ -87,7 +87,7 @@ contains
     integer, intent(out) :: exitcode
 
     type(test_selection), allocatable :: selections(:)
-    type(string), allocatable :: selectors(:), testnames(:)
+    type(string_item), allocatable :: selectors(:), testnames(:)
     integer :: itest
 
     exitcode = -1
@@ -100,7 +100,7 @@ contains
     if (this%argvals%has("list")) then
       call this%driver%get_test_names(testnames)
       do itest = 1, size(testnames)
-        call this%logger%log_message(testnames(itest)%content)
+        call this%logger%log_message(testnames(itest)%value)
       end do
       exitcode = 0
       return
@@ -132,7 +132,7 @@ contains
   subroutine get_selections(selectors, selections)
 
     !> Selector expressions
-    type(string), intent(in) :: selectors(:)
+    type(string_item), intent(in) :: selectors(:)
 
     !> Array of selections on exit
     type(test_selection), allocatable, intent(out) :: selections(:)
@@ -141,7 +141,7 @@ contains
 
     allocate(selections(size(selectors)))
     do ii = 1, size(selectors)
-      associate(selector => selectors(ii)%content, selection => selections(ii))
+      associate(selector => selectors(ii)%value, selection => selections(ii))
         if (selector(1:1) == "~") then
           selection%name = selector(2:)
           selection%selectiontype = "-"

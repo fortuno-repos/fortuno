@@ -5,11 +5,11 @@
 !> Implements a generic test driver
 module fortuno_testdriver
   use fortuno_basetypes, only : test_base, test_case_base, test_list, test_suite_base
-  use fortuno_chartypes, only : char_rep
+  use fortuno_chartypes, only : stringable
   use fortuno_testcontext, only : context_factory, test_context
   use fortuno_testinfo, only : drive_result, init_drive_result, test_result, teststatus
   use fortuno_testlogger, only : test_logger, testtypes
-  use fortuno_utils, only : basename, string
+  use fortuno_utils, only : basename, string_item
   implicit none
 
   private
@@ -250,14 +250,14 @@ contains
     class(test_driver), intent(in) :: this
 
     !> Name of all tests
-    type(string), allocatable :: testnames(:)
+    type(string_item), allocatable :: testnames(:)
 
     integer :: nselect, iselect
 
     nselect = size(this%testselection%fwd)
     allocate(testnames(nselect))
     do iselect = 1, nselect
-      testnames(iselect)%content = this%testdatacont%items(this%testselection%fwd(iselect))%ptr%name
+      testnames(iselect)%value = this%testdatacont%items(this%testselection%fwd(iselect))%ptr%name
     end do
 
   end subroutine test_driver_get_test_names
@@ -477,7 +477,7 @@ contains
     character(:), allocatable, intent(out) :: repr
 
     class(test_base), pointer :: scopeptr, item
-    class(char_rep), allocatable :: state
+    class(stringable), allocatable :: state
 
     scopeptr => testlist%view(identifier(1))
     call ctx%push_scope_ptr(scopeptr)
@@ -487,7 +487,7 @@ contains
       class is (test_case_base)
         call runner%run_test(item, ctx)
         call ctx%pop_state(state)
-        if (allocated(state)) repr = state%as_char()
+        if (allocated(state)) repr = state%as_string()
       class default
         error stop "Internal error, unexpected test type in run_test_"
       end select
@@ -514,7 +514,7 @@ contains
     character(:), allocatable, intent(out) :: repr
 
     class(test_base), pointer :: scopeptr, item
-    class(char_rep), allocatable :: state
+    class(stringable), allocatable :: state
 
     scopeptr => testlist%view(identifier(1))
     call ctx%push_scope_ptr(scopeptr)
@@ -525,7 +525,7 @@ contains
         if (init) then
           call runner%set_up_suite(item, ctx)
           call ctx%pop_state(state)
-          if (allocated(state)) repr = state%as_char()
+          if (allocated(state)) repr = state%as_string()
         else
           call runner%tear_down_suite(item, ctx)
         end if
@@ -557,7 +557,7 @@ contains
 
     associate (testresult => testresults(ind))
       name = basename(testresult%name)
-      if (allocated(repr)) name = name // "{" // repr // "}"
+      if (allocated(repr)) name = name // " {" // repr // "}"
       if (size(testresult%dependencies) > 0) then
         testresult%reprname = depresults(testresult%dependencies(1))%reprname // "/" // name
       else

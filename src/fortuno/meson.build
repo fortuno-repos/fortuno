@@ -7,8 +7,10 @@ fortuno_sources += files(
   'basetypes.f90',
   'chartypes.f90',
   'checkers.f90',
+  'checkfuncs.f90',
   'cmdapp.f90',
   'consolelogger.f90',
+  'env.f90',
   'testcontext.f90',
   'testdriver.f90',
   'testinfo.f90',
@@ -16,3 +18,5 @@ fortuno_sources += files(
   'utils.f90',
   'version.f90',
 )
+
+subdir('checkers')

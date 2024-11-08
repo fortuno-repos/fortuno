@@ -5,7 +5,7 @@
 !> Demonstrates a possible realization of parametrized tests.
 module test_parametrized
   use mylib, only : factorial
-  use fortuno_serial, only : as_char, is_equal, serial_case_base, check => serial_check,&
+  use fortuno_serial, only : str, is_equal, serial_case_base, check => serial_check,&
       & suite => serial_suite_item, test_item, test_list
   implicit none
 
@@ -57,7 +57,7 @@ contains
 
     character(:), allocatable :: name
 
-    name = prefix // "_" // as_char(argres%arg)
+    name = prefix // "_" // str(argres%arg)
     testitem = test_item(parametrized_test_case(name=name, argres=argres))
 
   end function parametrized_test

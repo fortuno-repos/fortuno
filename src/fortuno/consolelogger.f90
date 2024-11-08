@@ -4,9 +4,10 @@
 
 !> Contains the implementation of the test logger for logging on the console
 module fortuno_consolelogger
+  use fortuno_env, only : ansicolors, stderr, stdout
   use fortuno_testinfo, only : drive_result, failure_info, test_result, teststatus
   use fortuno_testlogger, only : test_logger
-  use fortuno_utils, only : ansicolors, as_char, stderr, stdout
+  use fortuno_utils, only : str
   implicit none
 
   private
@@ -90,9 +91,9 @@ contains
     !> Details string (unallocated if not available or not relevant)
     character(:), allocatable, intent(out) :: details
 
-    location = failureinfo%location%as_char()
+    location = failureinfo%location%as_string()
     if (allocated(failureinfo%message)) message = failureinfo%message
-    if (allocated(failureinfo%details)) details = failureinfo%details%as_char()
+    if (allocated(failureinfo%details)) details = failureinfo%details%as_string()
 
   end subroutine console_logger_get_failure_info_repr
 
@@ -206,7 +207,7 @@ contains
     if (.not. this%is_active()) return
 
     maxitems = maxval([sum(driveresult%suitestats, dim=1), sum(driveresult%teststats)])
-    numfieldwidth = len(as_char(maxitems))
+    numfieldwidth = len(str(maxitems))
     call log_summary_("# Suite set-ups", driveresult%suiteresults(1, :),&
         & driveresult%suitestats(:, 1), numfieldwidth)
     call log_summary_("# Suite tear-downs", driveresult%suiteresults(2, :),&
@@ -358,7 +359,7 @@ contains
     if (this%is_active()) then
       if (allocated(location)) write(stdout, "(a)") location
       if (allocated(message)) write(stdout, "(2a)") "Msg: ", message
-      if (allocated(details)) write(stdout, "(a, /, a)") "::", details
+      if (allocated(details)) write(stdout, "(a)") details
     end if
 
   end subroutine write_failure_info_
@@ -383,7 +384,7 @@ contains
     nignored = teststats(teststatus%ignored)
     ntotal2 = ntotal - nskipped
 
-    numfieldwidthstr = as_char(numfieldwidth)
+    numfieldwidthstr = str(numfieldwidth)
     formatstr1 = "(a, 2x, i" //  numfieldwidthstr // ")"
     formatstr2 = "(a, 2x, i" //  numfieldwidthstr // ", 1x, a, f5.1, a)"
 

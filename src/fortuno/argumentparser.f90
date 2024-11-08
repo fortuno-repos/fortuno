@@ -4,8 +4,9 @@
 
 !> Implements a simple command line argument parser
 module fortuno_argumentparser
+  use fortuno_env, only : nl
   use fortuno_testlogger, only : test_logger
-  use fortuno_utils, only : basename, nl, string, string_list
+  use fortuno_utils, only : basename, string_item, string_item_list
   implicit none
 
   private
@@ -125,7 +126,7 @@ contains
     !> Exit code (-1, if processing can continue, >= 0 if processing should stop)
     integer, intent(out) :: exitcode
 
-    type(string), allocatable :: cmdargs(:), posargs(:)
+    type(string_item), allocatable :: cmdargs(:), posargs(:)
     logical, allocatable :: processed(:)
     character(:), allocatable :: argname
     integer :: nargs, nargdefs, iarg, iargdef
@@ -146,13 +147,13 @@ contains
     iarg = 0
     argloop: do while (iarg < nargs)
       iarg = iarg + 1
-      associate (arg => cmdargs(iarg)%content)
+      associate (arg => cmdargs(iarg)%value)
         if (arg == "--") then
           optionsallowed = .false.
           cycle
         end if
         if (.not. optionsallowed .or. arg(1:1) /= "-") then
-          posargs =  [posargs, string(arg)]
+          posargs =  [posargs, string_item(arg)]
           cycle
         end if
         islong = arg(1:min(len(arg), 2)) == "--"
@@ -161,12 +162,12 @@ contains
         else if (len(arg) == 2) then
           argname = arg(2:2)
         else
-          call logger%log_error("Invalid short option '" // cmdargs(iarg)%content // "'")
+          call logger%log_error("Invalid short option '" // cmdargs(iarg)%value // "'")
           exitcode = 1
           return
         end if
         if ((islong .and. argname == "help") .or. (.not. islong .and.  argname == "h")) then
-          call print_help_(logger, cmdargs(0)%content, this%description, this%argdefs)
+          call print_help_(logger, cmdargs(0)%value, this%description, this%argdefs)
           exitcode = 0
           return
         end if
@@ -228,7 +229,7 @@ contains
           nn = size(argumentvalues%argvals)
           allocate(argvalbuffer(nn + 1))
           argvalbuffer(1 : nn) = argumentvalues%argvals
-          argvalbuffer(nn + 1) = argument_value(argdef%name, argval=string_list(posargs))
+          argvalbuffer(nn + 1) = argument_value(argdef%name, argval=string_item_list(posargs))
           call move_alloc(argvalbuffer, argumentvalues%argvals)
         end block
         ! +}
@@ -276,7 +277,7 @@ contains
     character(*), intent(in) :: name
 
     !> Value on exit
-    type(string), allocatable, intent(out) :: val(:)
+    type(string_item), allocatable, intent(out) :: val(:)
 
     logical :: found
     integer :: iargval
@@ -288,7 +289,7 @@ contains
     end do
     if (found) then
       select type (argval => this%argvals(iargval)%argval)
-      type is (string_list)
+      type is (string_item_list)
         val = argval%items
       class default
         error stop "Invalid argument type for argument '" // name // "'"
@@ -316,7 +317,7 @@ contains
 
   !! Returns the command line arguments as an array of strings.
   subroutine get_command_line_args_(cmdargs)
-    type(string), allocatable :: cmdargs(:)
+    type(string_item), allocatable :: cmdargs(:)
 
     integer :: nargs, iarg, arglen
 
@@ -324,8 +325,8 @@ contains
     allocate(cmdargs(0:nargs))
     do iarg = 0, nargs
       call get_command_argument(iarg, length=arglen)
-      allocate(character(arglen) :: cmdargs(iarg)%content)
-      call get_command_argument(iarg, value=cmdargs(iarg)%content)
+      allocate(character(arglen) :: cmdargs(iarg)%value)
+      call get_command_argument(iarg, value=cmdargs(iarg)%value)
     end do
 
   end subroutine get_command_line_args_

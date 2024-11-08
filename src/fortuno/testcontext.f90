@@ -5,7 +5,7 @@
 !> Contains the base context definition
 module fortuno_testcontext
   use fortuno_basetypes, only : test_base, test_ptr_item
-  use fortuno_chartypes, only : char_rep
+  use fortuno_chartypes, only : stringable
   use fortuno_testinfo, only : check_result, failure_info, failure_location, init_failure_location,&
       & teststatus
   implicit none
@@ -25,7 +25,7 @@ module fortuno_testcontext
     type(failure_info), allocatable :: failureinfo_
 
     !> Info about the internal state of the test
-    class(char_rep), allocatable :: state_
+    class(stringable), allocatable :: state_
 
     !> Status of the context
     integer :: status_ = teststatus%succeeded
@@ -325,7 +325,7 @@ contains
     class(test_context), intent(inout) :: this
 
     !> Arbitrary (character representable) state object
-    class(char_rep), intent(in) :: state
+    class(stringable), intent(in) :: state
 
     this%state_ = state
 
@@ -339,7 +339,7 @@ contains
     class(test_context), intent(inout) :: this
 
     !> Popped state object
-    class(char_rep), allocatable, intent(out) :: state
+    class(stringable), allocatable, intent(out) :: state
 
     if (allocated(this%state_)) call move_alloc(this%state_, state)
 
