@@ -17,10 +17,10 @@ contains
   !> Broadcast test with collective communication
   !!
   !! Note: as coarray parallelism might be implemented via threads, coarray tests must be "pure" and
-  !! use the passed context object to signalize test events. The Fypp macros automaticaly handle
-  !! this (using "ctx" as name for the context instance).
+  !! use a passed context object to signalize test events. The Fypp macros below automaticaly handle
+  !! this (using the configurable name "ctx" for the context instance).
   !!
-  $:TEST("broadcast")
+  $:PURE_TEST("broadcast")
     integer, parameter :: sourceimg = 1, sourceval = 100, otherval = -1
     integer :: buffer
 
@@ -38,16 +38,16 @@ contains
 
     ! THEN each image must contain source image's value
     !
-    ! Note: CHECK() and ASSERT() calls are collective calls, all images must call them with their
-    ! local result synchronously.
+    ! Note: PURE_CHECK() and PURE_ASSERT() calls are collective calls, all images must call them
+    ! with their local result synchronously.
     !
-    @:CHECK(is_equal(buffer, sourceval), msg=msg)
+    @:PURE_CHECK(is_equal(buffer, sourceval), msg=msg)
 
-  $:END_TEST()
+  $:END_PURE_TEST()
 
 
   !> Broadcast test with collective communication
-  $:TEST("broadcast_fail3")
+  $:PURE_TEST("broadcast_fail3")
     integer, parameter :: sourceimg = 1, sourceval = 100, otherval = -1
     integer :: buffer
 
@@ -75,9 +75,9 @@ contains
     ! ASSERT() causes the test code to return immediately, while CHECK() only logs the failure and
     ! continues.
     !
-    @:ASSERT(is_equal(buffer, sourceval), msg=msg)
+    @:PURE_ASSERT(is_equal(buffer, sourceval), msg=msg)
 
-  $:END_TEST()
+  $:END_PURE_TEST()
 
 
   ! Returns the test items from this module

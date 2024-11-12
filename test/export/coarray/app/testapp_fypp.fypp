@@ -13,16 +13,16 @@ module testapp_coa_fypp_tests
 contains
 
 
-  $:TEST("success")
+  $:PURE_TEST("success")
 
     integer :: buffer
 
     buffer = 0
     if (this_image() == 1) buffer = 1
     call co_broadcast(buffer, 1)
-    @:CHECK(is_equal(buffer, 1))
+    @:PURE_CHECK(is_equal(buffer, 1))
 
-  $:END_TEST()
+  $:END_PURE_TEST()
 
 
   function tests()
