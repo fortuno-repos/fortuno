@@ -5,9 +5,9 @@
 !> Demo for realizing fixtured tests by overriding the run() method of the test_case object.
 module test_fixtured
   use mylib, only : factorial
-  use fortuno_serial, only : check => serial_check, is_equal, state_dict,&
-      & dict_item, suite => serial_suite_item, store_state => serial_store_state,&
-      & serial_case_base, test_item, test_list
+  use fortuno_serial, only : check => serial_check, is_equal, state_dict, dict_item,&
+      & suite => serial_suite_item, store_state => serial_store_state, serial_case_base,&
+      & test_item, test_list
   implicit none
 
   private
@@ -17,7 +17,7 @@ module test_fixtured
   ! Fixtured test case creating a random number before running a test procedure.
   type, extends(serial_case_base) :: random_test_case
 
-  ! Test procedure to be called after fixture setup had finished.
+    ! Test procedure to be called after fixture setup had finished.
     procedure(test_recursion_down), pointer, nopass :: proc
 
   contains

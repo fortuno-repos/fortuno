@@ -11,6 +11,9 @@ program testapp
   use test_fixtured_suite, only : fixtured_suite_tests => tests
   implicit none
 
+  ! Creating and executing a command line app with the tests to be included.
+  ! Note: this function does not return but stops the code with the right exit code.
+  ! (0 on success, non-zero otherwise)
   call execute_serial_cmd_app(test_list([&
       simple_tests(),&
       parametrized_tests(),&

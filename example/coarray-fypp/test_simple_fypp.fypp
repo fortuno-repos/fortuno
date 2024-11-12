@@ -15,6 +15,11 @@ contains
 
 
   !> Broadcast test with collective communication
+  !!
+  !! Note: as coarray parallelism might be implemented via threads, coarray tests must be "pure" and
+  !! use the passed context object to signalize test events. The Fypp macros automaticaly handle
+  !! this (using "ctx" as name for the context instance).
+  !!
   $:TEST("broadcast")
     integer, parameter :: sourceimg = 1, sourceval = 100, otherval = -1
     integer :: buffer
@@ -32,6 +37,10 @@ contains
     call broadcast(buffer, sourceimg)
 
     ! THEN each image must contain source image's value
+    !
+    ! Note: CHECK() and ASSERT() calls are collective calls, all images must call them with their
+    ! local result synchronously.
+    !
     @:CHECK(is_equal(buffer, sourceval), msg=msg)
 
   $:END_TEST()

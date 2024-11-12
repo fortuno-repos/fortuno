@@ -64,6 +64,9 @@ contains
     ! ASSERT() causes the test code to return immediately, while CHECK() only logs the failure and
     ! continues.
     !
+    ! Also note: CHECK() and ASSERT() calls are collective calls, all processes must call them with
+    ! their local result synchronously.
+    !
     @:ASSERT(is_equal(buffer, sourceval), msg=msg)
 
   $:END_TEST()

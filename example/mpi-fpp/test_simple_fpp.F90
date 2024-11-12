@@ -48,6 +48,10 @@ contains
     end if
 
     ! THEN each rank must contain source rank's value
+    !
+    ! Note: "CHECK()" and "CHECK_MSG()" calls are collective calls, all processes must call them
+    ! with their local result synchronously.
+    !
     CHECK_MSG(is_equal(buffer, sourceval), msg)
 
   end subroutine test_broadcast
