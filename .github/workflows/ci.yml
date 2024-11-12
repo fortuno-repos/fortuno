@@ -81,7 +81,8 @@ jobs:
         run: |
           source /opt/intel/oneapi/setvars.sh
           printenv >> ${GITHUB_ENV}
-          echo "FC=ifx" >> ${GITHUB_ENV}
+          echo "CMAKE_FC=ifx" >> ${GITHUB_ENV}
+          echo "MESON_FC=ifx" >> ${GITHUB_ENV}
           echo "FPM_FC=ifx" >> ${GITHUB_ENV}
           # Overriding default FPM_FFLAGS as default setting contains '-standard-semantics'
           # which is incompatible with intel MPI.
@@ -97,14 +98,17 @@ jobs:
       - name: Setup GNU environment
         if: ${{ contains(matrix.compiler, 'gnu') }}
         run: |
-          echo "FC=${{ env.FC }}" >> ${GITHUB_ENV}
-          echo "FPM_FC=${{ env.FC }}" >> ${GITHUB_ENV}
+          echo "CMAKE_FC=${{ env.FC }}" >> ${GITHUB_ENV}
+          echo "MESON_FC=${{ env.FC }}" >> ${GITHUB_ENV}
           if [[ ${{ matrix.interface }} == serial ]] && [[ ${{ matrix.os }} == ubuntu-* ]]; then
-            echo "FFLAGS=-ffree-line-length-none -Og -fsanitize=address" >> ${GITHUB_ENV}
-            echo "LDFLAGS=-fsanitize=address" >> ${GITHUB_ENV}
+            echo "CMAKE_FFLAGS=-Og -fsanitize=address" >> ${GITHUB_ENV}
+            echo "CMAKE_LDFLAGS=-fsanitize=address" >> ${GITHUB_ENV}
+            echo "MESON_FFLAGS=-fsanitize=address -ffree-line-length-none" >> ${GITHUB_ENV}
+            echo "MESON_LDLAGS=-fsanitize=address" >> ${GITHUB_ENV}
           else
-            echo "FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
+            echo "MESON_FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
           fi
+          echo "FPM_FC=${{ env.FC }}" >> ${GITHUB_ENV}
           echo "FPM_FFLAGS=-ffree-line-length-none" >> ${GITHUB_ENV}
 
       - name: Setup MPICH on Ubuntu
@@ -118,8 +122,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y openmpi-common openmpi-bin libopenmpi-dev
-          echo "FC=mpifort" >> ${GITHUB_ENV}
-          echo "MPI_OPTIONS=--oversubscribe" >> ${GITHUB_ENV}
+          echo "CMAKE_FC=mpifort" >> ${GITHUB_ENV}
+          echo "MPI_RUN_OPTIONS=--oversubscribe" >> ${GITHUB_ENV}
 
       - name: Setup MPICH on MacOS
         if: ${{ contains(matrix.os, 'macos') && contains(matrix.mpi, 'mpich') }}
@@ -130,7 +134,7 @@ jobs:
         if: ${{ contains(matrix.os, 'macos') && contains(matrix.mpi, 'openmpi') }}
         run: |
           brew install openmpi
-          echo "MPI_OPTIONS=--oversubscribe" >> ${GITHUB_ENV}
+          echo "MPI_RUN_OPTIONS=--oversubscribe" >> ${GITHUB_ENV}
 
       - name: Setup serial interface options
         if: ${{ contains(matrix.interface, 'serial') }}
@@ -148,7 +152,7 @@ jobs:
           echo "MESON_OPTIONS_NOFALLBACK=" >> ${GITHUB_ENV}
           echo "MESON_OPTIONS_FALLBACK=-Dfortuno:with_mpi=true" >> ${GITHUB_ENV}
           echo "INTERFACE=mpi" >> ${GITHUB_ENV}
-          echo "RUN_PREFIX=mpirun -n 2 ${MPI_OPTIONS}" >> ${GITHUB_ENV}
+          echo "RUN_PREFIX=mpirun -n 2 ${MPI_RUN_OPTIONS}" >> ${GITHUB_ENV}
 
       - name: Setup coarray interface options
         if: ${{ contains(matrix.interface, 'coarray') }}
@@ -167,7 +171,7 @@ jobs:
 
       - name: Build Fortuno
         run: |
-          cmake ${CMAKE_OPTIONS} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
+          FC=${CMAKE_FC} FFLAGS=${CMAKE_FFLAGS} cmake ${CMAKE_OPTIONS} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -B ${BUILD_DIR} -G Ninja
           cmake --build ${BUILD_DIR} --verbose
           cmake --install ${BUILD_DIR} --verbose
           ctest --test-dir ${BUILD_DIR} --verbose
@@ -175,7 +179,7 @@ jobs:
 
       - name: Test CMake export
         run: |
-          CMAKE_PREFIX_PATH=${INSTALL_DIR} cmake -B ${BUILD_DIR} -G Ninja test/export/${INTERFACE}
+          CMAKE_PREFIX_PATH=${INSTALL_DIR} FC=${CMAKE_FC} FFLAGS=${CMAKE_FFLAGS} cmake -B ${BUILD_DIR} -G Ninja test/export/${INTERFACE}
           cmake --build ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/app/testapp
           ${RUN_PREFIX} ${BUILD_DIR}/app/testapp_fpp
@@ -185,7 +189,7 @@ jobs:
       - name: Test fpm export
         run: |
           ./devel/fpm-repo/export-fpm-repo.sh ${INTERFACE} ${FPM_EXPORT_DIR}
-          fpm run -C ${FPM_EXPORT_DIR}/test/export/${INTERFACE} --runner "${RUN_PREFIX}" testapp testapp_fpp
+          FPM_FC=${FPM_FC} FPM_FFLAGS=${FPM_FFLAGS} fpm run -C ${FPM_EXPORT_DIR}/test/export/${INTERFACE} --runner "${RUN_PREFIX}" testapp testapp_fpp
           rm -rf ${FPM_EXPORT_DIR}
 
       - name: Test Meson pkgconfig export
@@ -194,7 +198,7 @@ jobs:
         run: |
           export PKG_CONFIG_PATH="${PWD}/${INSTALL_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
           cd test/export/${INTERFACE}
-          meson setup ${MESON_OPTIONS_NOFALLBACK} --wrap-mode nofallback ${BUILD_DIR}
+          FC=${MESON_FC} FFLAGS=${MESON_FFLAGS} meson setup ${MESON_OPTIONS_NOFALLBACK} --wrap-mode nofallback ${BUILD_DIR}
           ninja -j1 -v -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           ${RUN_PREFIX} ${BUILD_DIR}/testapp_fpp
@@ -210,7 +214,7 @@ jobs:
           mkdir subprojects
           echo -e "[wrap-git]\ndirectory=fortuno\n" > subprojects/fortuno.wrap
           echo -e "url=file://${FORTUNO_DIR}\nrevision=${GIT_REV}\n" >> subprojects/fortuno.wrap
-          meson setup ${MESON_OPTIONS_FALLBACK} --wrap-mode forcefallback ${BUILD_DIR}
+          FC=${MESON_FC} FFLAGS=${MESON_FFLAGS} meson setup ${MESON_OPTIONS_FALLBACK} --wrap-mode forcefallback ${BUILD_DIR}
           ninja -j1 -v -C ${BUILD_DIR}
           ${RUN_PREFIX} ${BUILD_DIR}/testapp
           ${RUN_PREFIX} ${BUILD_DIR}/testapp_fpp

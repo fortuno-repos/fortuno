@@ -18,7 +18,8 @@ set_target_properties(
     OUTPUT_NAME fortuno
     Fortran_MODULE_DIRECTORY "${moduledir}"
 )
-fortuno_add_thread_safe_build_flags(fortuno)
+target_compile_options(fortuno PRIVATE ${FORTUNO_FFLAGS_THREADSAFE})
+target_link_options(fortuno PRIVATE ${FORTUNO_LDFLAGS_THREADSAFE})
 target_include_directories(
   fortuno PUBLIC
   $<BUILD_INTERFACE:${moduledir}>
@@ -101,7 +102,8 @@ if (FORTUNO_WITH_COARRAY)
     OUTPUT_NAME fortuno_coarray
     Fortran_MODULE_DIRECTORY "${moduledir}"
   )
-  fortuno_add_coarray_build_flags(fortuno_coarray)
+  target_compile_options(fortuno_coarray PRIVATE ${FORTUNO_FFLAGS_COARRAY})
+  target_link_options(fortuno_coarray PRIVATE ${FORTUNO_LDFLAGS_COARRAY})
   target_link_libraries(fortuno_coarray PUBLIC Fortuno::fortuno)
   target_include_directories(
     fortuno_coarray PUBLIC

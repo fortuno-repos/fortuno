@@ -37,7 +37,7 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
   )
   set(
     FORTUNO_LDFLAGS_THREADSAFE ""
-    CACHE STRING  "Fortuno: Flags neeeded to enforce thread-safe build during linking"
+    CACHE STRING  "Fortuno: Flags needed to enforce thread-safe build during linking"
   )
   set(
     FORTUNO_FFLAGS_COARRAY "-coarray"
@@ -45,7 +45,12 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
   )
   set(
     FORTUNO_LDFLAGS_COARRAY "-coarray"
-    CACHE STRING "Fortuno: Flags neeeded for coarray features when linking"
+    CACHE STRING "Fortuno: Flags needed for coarray features when linking"
+  )
+  option(FORTUNO_WITH_FPP "Fortuno: whether compiler supports fpp macros" ON)
+  set(
+    FORTUNO_FFLAGS_FPP ""
+    CACHE STRING "Fortuno: Flags needed to process source with fpp macros"
   )
 
 elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
@@ -58,7 +63,7 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
   )
   set(
     FORTUNO_LDFLAGS_THREADSAFE "-thread_safe"
-    CACHE STRING  "Fortuno: Flags neeeded to enforce thread-safe build during linking"
+    CACHE STRING  "Fortuno: Flags needed to enforce thread-safe build during linking"
   )
   set(
     FORTUNO_FFLAGS_COARRAY "-coarray"
@@ -66,7 +71,38 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
   )
   set(
     FORTUNO_LDFLAGS_COARRAY "-coarray"
-    CACHE STRING "Fortuno: Flags neeeded for coarray features when linking"
+    CACHE STRING "Fortuno: Flags needed for coarray features when linking"
+  )
+  option(FORTUNO_WITH_FPP "Fortuno: whether compiler supports fpp macros" ON)
+  set(
+    FORTUNO_FFLAGS_FPP ""
+    CACHE STRING "Fortuno: Flags needed to process source with fpp macros"
+  )
+
+elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+
+  # Default settings for the GNU compiler
+
+  set(
+    FORTUNO_FFLAGS_THREADSAFE ""
+    CACHE STRING "Fortuno: Flags needed to enforce thread-safe build during compilation"
+  )
+  set(
+    FORTUNO_LDFLAGS_THREADSAFE ""
+    CACHE STRING  "Fortuno: Flags needed to enforce thread-safe build during linking"
+  )
+  set(
+    FORTUNO_FFLAGS_COARRAY "-fcoarray=single"
+    CACHE STRING "Fortuno: Flags needed for coarray features when compling"
+  )
+  set(
+    FORTUNO_LDFLAGS_COARRAY "-fcoarray=single"
+    CACHE STRING "Fortuno: Flags needed for coarray features when linking"
+  )
+  option(FORTUNO_WITH_FPP "Fortuno: whether compiler supports fpp macros" ON)
+  set(
+    FORTUNO_FFLAGS_FPP "-ffree-line-length-none"
+    CACHE STRING "Fortuno: Flags needed to process source with fpp macros"
   )
 
 else ()
@@ -79,7 +115,7 @@ else ()
   )
   set(
     FORTUNO_LDFLAGS_THREADSAFE ""
-    CACHE STRING  "Fortuno: Flags neeeded to enforce thread-safe build during linking"
+    CACHE STRING  "Fortuno: Flags needed to enforce thread-safe build during linking"
   )
   set(
     FORTUNO_FFLAGS_COARRAY ""
@@ -87,7 +123,12 @@ else ()
   )
   set(
     FORTUNO_LDFLAGS_COARRAY ""
-    CACHE STRING "Fortuno: Flags neeeded for coarray features when linking"
+    CACHE STRING "Fortuno: Flags needed for coarray features when linking"
+  )
+  option(FORTUNO_WITH_FPP "Fortuno: whether compiler supports fpp macros" OFF)
+  set(
+    FORTUNO_FFLAGS_FPP ""
+    CACHE STRING "Fortuno: Flags needed to process source with fpp macros"
   )
 
 endif ()

@@ -25,6 +25,7 @@ target_sources(
   test_simple_fpp.F90
   testapp.f90
 )
+target_compile_options(fortuno_example_mpi_fpp_testapp PRIVATE ${FORTUNO_FFLAGS_FPP})
 target_link_libraries(
   fortuno_example_mpi_fpp_testapp
   PRIVATE
