@@ -26,7 +26,7 @@
 #!     ctxvar: name of the context dummy argument
 #!     args: Arguments of the test procedure as a list of strings
 #!
-#:def TEST(name, label="", ctxtype="class(coa_context)", ctxvar="ctx", args=None)
+#:def PURE_TEST(name, label="", ctxtype="class(coa_context)", ctxvar="ctx", args=None)
   #:set proc = "test" + ("_" + label if label else "") + "_" + name
   #:set allargs = [ctxvar] if args is None else [ctxvar]+ args
   #:set argstr = ", ".join(allargs)
@@ -37,7 +37,7 @@
 
 
 #! Ends a test procedure
-#:def END_TEST()
+#:def END_PURE_TEST()
   end subroutine
 #:enddef
 
@@ -68,7 +68,7 @@
 #!     ctxvar: Name of the context variable
 #!     **kwargs: any keyword arguments, which should be passed to mpi_check()
 #!
-#:def CHECK(cond, ctxvar="ctx", **kwargs)
+#:def PURE_CHECK(cond, ctxvar="ctx", **kwargs)
 #:if kwargs
   #:set kwargstr = ", ".join([f"{name}={value}" for name, value in kwargs.items()])
   call ${ctxvar}$%check(${cond}$, file="${_FILE_}$", line=${_LINE_}$, ${kwargstr}$)
@@ -84,8 +84,8 @@
 #!     cond: Condition to check
 #!     **kwargs: any keyword arguments, which should be passed to check()
 #!
-#:def ASSERT(cond, ctxvar="ctx", **kwargs)
-$:CHECK(cond, ctxvar=ctxvar, **kwargs)
+#:def PURE_ASSERT(cond, ctxvar="ctx", **kwargs)
+$:PURE_CHECK(cond, ctxvar=ctxvar, **kwargs)
 if (${ctxvar}$%check_failed()) return
 #:enddef
 
