@@ -11,15 +11,18 @@ solutions.
 
 Fortuno provides:
 
+- serial unit testing,
+
+- parallel unit testing for MPI- and coarray-parallel projects,
+
 - simple unit tests,
 
 - fixtured tests,
 
 - parametrized tests,
 
-- serial unit testing,
-
-- parallel unit testing for MPI- and coarray-parallel projects, and
+- automatic test registration (in combination with the `Fypp-preprocessor
+  <https://github.com/aradi/fypp>`_), and
 
 - integration with the `fpm <https://fpm.fortran-lang.org/>`_, `CMake
   <https://cmake.org/>`_ and `Meson <https://mesonbuild.com/>`_ build systems.

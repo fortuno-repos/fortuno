@@ -21,7 +21,8 @@ contains
 
     tests = test_list([&
         ! Best practice is to create at least one suite with the name of the module and put the
-        ! tests in it, like below. You might further structure your test sets by nesting suites...
+        ! tests in it, like below. You might further structure your test sets by nesting further
+        ! suites into the top level one.
         suite("simple", test_list([&
             test("factorial_0", test_factorial_0),&
             test("factorial_1", test_factorial_1),&
@@ -47,11 +48,13 @@ contains
 
   ! Test: 2! = 2 (will fail due to the bug in the implementation of the factorial function)
   subroutine test_factorial_2()
-    ! Two failing checks, you should see info about both in the output
+    ! Both check will fail, you should see info about both in the output
+    ! The file and line information are provided manually. Check the examples in the fpp example
+    ! folders for automatic file name and line number generation.
     call check(is_equal(factorial(2), 2),&
         & msg="Test failed for demonstration purposes",&
         & file="test_simple.f90",&
-        & line=43)
+        & line=51)
     call check(factorial(2) == 2)
   end subroutine test_factorial_2
 

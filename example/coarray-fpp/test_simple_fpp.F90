@@ -25,6 +25,10 @@ contains
 
 
   !> Broadcast test with collective communication
+  !!
+  !! Note: as coarray parallelism might be implemented via threads, coarray tests must be "pure" and
+  !! use the passed context object to signalize test events.
+  !!
   subroutine test_broadcast(ctx)
     class(context), intent(inout) :: ctx
 
@@ -50,6 +54,10 @@ contains
     end if
 
     ! THEN each rank must contain source rank's value
+    !
+    ! Note: "CHECK()" and "CHECK_MSG()" calls are collective calls, all images must call them with
+    ! their local result synchronously.
+    !
     CHECK_MSG(ctx, is_equal(buffer, sourceval), msg)
 
   end subroutine test_broadcast

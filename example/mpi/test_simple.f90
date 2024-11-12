@@ -46,6 +46,10 @@ contains
     end if
 
     ! THEN each rank must contain source rank's value
+    !
+    ! Note: check() calls are collective calls, all processes must call it with their local result
+    ! synchronously.
+    !
     call check(is_equal(buffer, sourceval), msg=msg)
 
   end subroutine test_broadcast
