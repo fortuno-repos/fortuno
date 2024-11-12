@@ -8,6 +8,9 @@ target_link_libraries(testapp PRIVATE Fortuno::fortuno_serial)
 
 add_executable(testapp_fpp)
 target_sources(testapp_fpp PRIVATE testapp_fpp.F90)
+if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(testapp_fpp PRIVATE "-ffree-line-length-none")
+endif ()
 target_link_libraries(testapp_fpp PRIVATE Fortuno::fortuno_serial)
 
 if (FYPP)

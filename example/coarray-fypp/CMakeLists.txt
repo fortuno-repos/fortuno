@@ -13,7 +13,8 @@ target_sources(
   fortuno_example_coarray_fypp_mylib PRIVATE
   mylib.f90
 )
-fortuno_add_coarray_build_flags(fortuno_example_coarray_fypp_mylib)
+target_compile_options(fortuno_example_coarray_fypp_mylib PRIVATE ${FORTUNO_FFLAGS_COARRAY})
+target_link_options(fortuno_example_coarray_fypp_mylib PRIVATE ${FORTUNO_LDFLAGS_COARRAY})
 
 add_executable(fortuno_example_coarray_fypp_testapp)
 set_target_properties(
@@ -47,4 +48,5 @@ target_link_libraries(
   PRIVATE
   fortuno_example_coarray_fypp_mylib Fortuno::fortuno_coarray
 )
-fortuno_add_coarray_build_flags(fortuno_example_coarray_fypp_testapp)
+target_compile_options(fortuno_example_coarray_fypp_testapp PRIVATE ${FORTUNO_FFLAGS_COARRAY})
+target_link_options(fortuno_example_coarray_fypp_testapp PRIVATE ${FORTUNO_LDFLAGS_COARRAY})

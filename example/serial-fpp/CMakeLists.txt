@@ -28,6 +28,7 @@ target_sources(
   test_parametrized_fpp.F90
   test_simple_fpp.F90
 )
+target_compile_options(fortuno_example_serial_fpp_testapp PRIVATE ${FORTUNO_FFLAGS_FPP})
 target_link_libraries(
   fortuno_example_serial_fpp_testapp
   PRIVATE
