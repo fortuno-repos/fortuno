@@ -2,7 +2,7 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-cmake_minimum_required(VERSION 3.22...3.28)
+cmake_minimum_required(VERSION 3.22...3.31)
 
 project(
   FortunoCoarray_Test_Export
@@ -11,12 +11,12 @@ project(
   LANGUAGES Fortran
 )
 
-find_package(Fortuno REQUIRED)
+find_package(Fortuno 0.1.0 EXACT REQUIRED)
 if (NOT TARGET Fortuno::fortuno_coarray)
   message(FATAL_ERROR "Fortuno library was built without the coarray interface")
 endif ()
 
-find_program(FYPP fypp REQUIRED)
+find_program(FYPP fypp)
 if (FYPP)
   get_target_property(
     _fortuno_incdir
