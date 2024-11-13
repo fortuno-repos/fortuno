@@ -57,7 +57,7 @@ visit the `Fortuno repository <https://github.com/fortuno-repos/fortuno>`_.
 License
 =======
 
-Fortuno is licensed under the `BSD-2-Clause Plus Patent License <LICENSE>`_.
+Fortuno is licensed under the `BSD-2-Clause Plus Patent License <LICENSE.txt>`_.
 This `OSI-approved <https://opensource.org/licenses/BSDplusPatent>`_ license
 combines the 2-clause BSD license with an explicit patent grant from
 contributors. The SPDX license identifier for this project is

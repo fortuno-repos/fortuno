@@ -175,7 +175,11 @@ your system and use the installed version during the build. This can be useful
 for avoiding repeated downloads as well as for using Fortuno with other build
 systems (e.g. Make).
 
-To install Fortuno, you must follow the standard CMake workflow:
+
+Installing from source
+.......................
+
+To install Fortuno from the downloaded source, you must follow the standard CMake workflow:
 
 * Review the ``config.cmake`` file for variables that allow you to customize the
   build.
@@ -197,8 +201,12 @@ To install Fortuno, you must follow the standard CMake workflow:
 
     cmake --install build
 
+
+Using the installed library
+...........................
+
 How you integrate the installed Fortuno library into your project depends on the
-build system you are using:
+build system you are using for your project:
 
 * **CMake**:  Follow the CMake instructions outlined earlier. Ensure the
   ``CMAKE_PREFIX_PATH`` environment variable includes Fortuno's installation
@@ -417,7 +425,7 @@ consider opening a pull request to update this table.
 License
 =======
 
-Fortuno is licensed under the `BSD-2-Clause Plus Patent License <LICENSE>`_.
+Fortuno is licensed under the `BSD-2-Clause Plus Patent License <LICENSE.txt>`_.
 This `OSI-approved <https://opensource.org/licenses/BSDplusPatent>`_ license
 combines the 2-clause BSD license with an explicit patent grant from
 contributors. The SPDX license identifier for this project is
