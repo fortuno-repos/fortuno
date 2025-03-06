@@ -5,8 +5,8 @@ Fortuno – flextensible unit testing framework for Fortran
 **Fortuno** (Fortran Unit Testing Objects) is a flexible & extensible,
 object-oriented unit testing framework designed for the Fortran programming
 language. It emphasizes ease of use by minimizing boiler plate code when writing
-tests, while also prioratizing modularity and extensibility. Fortuno provides
-the essential building blocks to help developers create customized unit testing
+tests while prioratizing modularity and extensibility. Fortuno provides the
+essential building blocks to help developers create customized unit testing
 solutions.
 
 Fortuno provides:
@@ -29,36 +29,56 @@ Fortuno provides:
 
 **Documentation** can be found on the `Fortuno documentation site
 <https://fortuno.readthedocs.io>`_. Additionally, you may want to explore the
-examples provided in the `example folder <example/>`_.
+examples provided in the `example <example/>`_ folder.
 
 
-Quickstart
-==========
+Obtaining Fortuno
+=================
 
-The easiest way to begin a new project with the Fortuno unit testing framework
-is by using the `Cookiecutter-Fortran-project
-<https://github.com/fortuno-repos/cookiecutter-fortran-project>`_ template
-generator. This tool creates a minimal project setup that’s ready for building,
-testing, and installation, with options to select your preferred build system
-(CMake, Fpm, or Meson), parallelization method (serial, MPI-parallel, or
-coarray-parallel), and built-in Fortuno integration.
-
-If you'd like to add Fortuno unit tests to an existing project, follow the
-instructions below. In the examples, it’s assumed your library includes a module
-called ``mylib`` that provides a ``factorial()`` function for calculating the
-factorial of integers. You can adjust these names to match your actual library
-and function names.
+You can obtain Fortuno by installing it as a Conda package, downloading it and
+building it during your build process, or manually building and installing it
+from source.
 
 
-Obtaining Fortuno during your build process
--------------------------------------------
+Install Fortuno as a Conda package
+----------------------------------
 
-If you project is built with Fpm, CMake or Meson, the simplest way to integrate
-Fortuno is by downloading and building it as part of your project's build
-process. The steps vary depending on the build system you're using:
+The easiest way to obtain Fortuno is by installing a precompiled version via the
+Conda package management framework from the `conda-forge
+<https://conda-forge.org/>`_ channel. Ensure you are using either a Conda client
+with this channel as default (e.g. `miniforge
+<https://github.com/conda-forge/miniforge>`_) or manually add the channel. If
+you're not familiar with Conda, consult the `miniforge
+<https://github.com/conda-forge/miniforge>`_ project for setup instructions.
 
-* **Fpm**: Add Fortuno as a development dependency by including the following
-  lines in your ``fpm.toml`` file:
+After switching to the desired Conda environment, run ::
+
+  conda install 'fortuno=*=nompi_*'
+
+to obtain Fortuno with serial interface only. If you wish to use Fortuno for
+testing both serial and MPI-parallel routines, run ::
+
+  conda install 'fortuno=*=openmpi_*'
+
+or ::
+
+  conda install 'fortuno=*=mpich_*'
+
+depending on the preferred MPI-framework.
+
+*Note:* The coarray interface is not available through Conda yet. To use the
+coarray interface, build Fortuno during your build process or manually, as
+described below.
+
+
+Building Fortuno as part of your build process
+----------------------------------------------
+
+If your project is built with Fpm, CMake or Meson, you can seamlessly download
+and build Fortuno as part of your project's build process. The setup steps differ
+depending on the build system you are using:
+
+* **Fpm**: Add Fortuno as a development dependency in your ``fpm.toml`` file:
 
   * **Serial interface**::
 
@@ -76,8 +96,7 @@ process. The steps vary depending on the build system you're using:
       fortuno = { git = "https://github.com/fortuno-repos/fortuno-fpm-coarray.git" }
 
 
-* **CMake**: Add the relevant snippet to your project's ``CMakeLists.txt``
-  file:
+* **CMake**: Add the relevant snippet to your ``CMakeLists.txt`` file:
 
   * **Serial interface**::
 
@@ -115,20 +134,19 @@ process. The steps vary depending on the build system you're using:
     ``FORTUNO_FFLAGS_COARRAY`` and ``FORTUNO_LDFLAGS_COARRAY`` with the
     appropriate compiler and linker flags for coarray parallelism.
 
-    *Note*: If Fortuno is already installed on your system, the settings
-    described above will automatically use the installed version rather than
-    downloading and building it during your project's build process.
+    *Note*: If Fortuno is already installed on your system, these settings will
+    automatically use the installed version instead of downloading and building
+    it during your build process.
 
-* **Meson**: Create a ``fortuno.wrap`` file in the subprojects/ directory
-  (create it if it doesn’t already exist) with the following content::
+* **Meson**: Create a ``fortuno.wrap`` file in the ``subprojects/`` directory
+  with the following content::
 
     [wrap-git]
     directory=fortuno
     url=https://github.com/fortuno-repos/fortuno
     revision=main
 
-  Register Fortuno as a subproject by adding the following to your main
-  ``meson.build`` file:
+  Then register Fortuno as a subproject in ``meson.build``:
 
   * **Serial interface**::
 
@@ -157,32 +175,21 @@ process. The steps vary depending on the build system you're using:
         },
       )
 
-    The variables ``fflags_coarray`` and ``ldflags_coarray`` should be defined
-    in your project to contain the flags required to compile and link
-    coarray-parallel code.
+    Define ``fflags_coarray`` and ``ldflags_coarray`` in your project to contain
+    the flags needed to compile and link coarray-parallel code.
 
-    *Note*: If Fortuno is already installed on your system, the settings
-    described above will automatically use the installed version rather than
-    downloading and building it during your project's build process.
-
-
-Installing Fortuno on your system
----------------------------------
-
-As an alternative to downloading and building Fortuno on-the-fly during your
-project's build process, it is also possible to install the library directly on
-your system and use the installed version during the build. This can be useful
-for avoiding repeated downloads as well as for using Fortuno with other build
-systems (e.g. Make).
+    *Note*: If Fortuno is already installed on your system, these settings will
+    automatically use the installed version instead of downloading and building
+    it during your build process.
 
 
-Installing from source
-.......................
+Building and installing Fortuno from source
+-------------------------------------------
 
-To install Fortuno from the downloaded source, you must follow the standard CMake workflow:
+You can also build and install Fortuno from source using a typical CMake
+workflow.
 
-* Review the ``config.cmake`` file for variables that allow you to customize the
-  build.
+* Review the ``config.cmake`` file for customizable build variables.
 
 * Configure Fortuno::
 
@@ -191,7 +198,7 @@ To install Fortuno from the downloaded source, you must follow the standard CMak
 
   Ensure CMake selects the correct Fortran compiler by explicitly setting the
   ``FC`` environment variable. You should also customize the installation
-  directory by setting the ``CMAKE_INSTALL_PREFIX`` variable accordingly.
+  directory by setting ``CMAKE_INSTALL_PREFIX``.
 
 * Build the library::
 
@@ -205,51 +212,65 @@ To install Fortuno from the downloaded source, you must follow the standard CMak
 Using the installed library
 ...........................
 
-How you integrate the installed Fortuno library into your project depends on the
-build system you are using for your project:
+To integrate the manually installed Fortuno library into your project, follow
+these instructions based on your build system:
 
 * **CMake**:  Follow the CMake instructions outlined earlier. Ensure the
   ``CMAKE_PREFIX_PATH`` environment variable includes Fortuno's installation
-  location so that CMake can find the library. For example::
+  location::
 
     export CMAKE_PREFIX_PATH="${HOME}/opt/fortuno:${CMAKE_PREFIX_PATH}"
 
-* **Meson**: Follow the Meson instructions from the previous section. Make sure
-  to set the ``PKG_CONFIG_PATH`` environment variable to include Fortuno’s
-  installation location so that Meson can locate the library. For example::
+* **Meson**: Follow the Meson instructions from the previous section. Set the
+  ``PKG_CONFIG_PATH`` environment variable to include Fortuno’s installation
+  location::
 
     export PKG_CONFIG_PATH="${HOME}/opt/fortuno/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
   (Depending on your Linux distribution, you might need to use ``lib64`` instead
-  of ``lib`` in the path.)
+  of ``lib``.)
 
-* **Other build systems (e.g., Make)**: Add the directory containing the
-  installed ``.mod`` files to the compiler's search path during compilation
-  using the appropriate flag for your compiler, for example::
+* **Other build systems (e.g., Make)**: Follow your usual workflow. Add the
+  directory containing the installed ``.mod`` files to the compiler's search
+  path using the appropriate compiler flag::
 
     -I${HOME}/opt/fortuno/lib/modules
 
-  When linking the test application, ensure you link the appropriate
-  interface-specific library and the general library using the correct compiler
-  flags. For example::
+  Link the appropriate interface-specific library and the general library with
+  the appropriate compiler/linker flags::
 
     -L${HOME}/opt/fortuno/lib -lfortuno_serial -lfortuno
 
-  (You may need to use ``lib64`` instead of ``lib`` in the paths, depending on
-  your system's configuration.)
+  (You may need to use ``lib64`` instead of ``lib`` depending on your system's
+  configuration.)
+
+
+Quickstart
+==========
+
+The easiest way to start a new project utilizing the Fortuno unit testing
+framework is by using the `Cookiecutter-Fortran-project
+<https://github.com/fortuno-repos/cookiecutter-fortran-project>`_ template. This
+tool creates a minimal project ready for building, testing, and installation,
+with options to select your preferred build system (CMake, Fpm, or Meson),
+parallelization method (serial, MPI-parallel, or coarray-parallel), and Fortuno
+integration.
+
+To add Fortuno unit tests to an existing project, follow the instructions below.
+The examples assume your library includes a module called ``mylib`` with a
+``factorial()`` function for calculating the factorial of integers. Adjust the
+names to match your actual library and function names.
 
 
 Writing unit tests
 ------------------
 
-In Fortuno, writing unit tests is straightforward. For basic cases, tests are
-written as simple subroutines without arguments. Aside from the test routines
-themselves, only a minimal amount of additional code is required to register the
-tests in the framework and provide a command-line test driver to execute them.
+Writing unit tests in Fortuno is straightforward. For basic cases, tests are
+written as simple subroutines without arguments. Minimal additional code is
+required to register the tests and provide a command-line test driver.
 
-For example, given a hypothetical library ``mylib`` that provides a
-``factorial()`` function, a minimal test program checking the results for two
-different input values might look like this::
+For example, the following minimal working example tests a ``factorial()``
+function in a hypothetical library ``mylib``::
 
   ! file: testapp.f90
 
@@ -337,7 +358,7 @@ your chosen build system:
 
 * **Meson**: In the ``meson.build`` file, declare an executable ``testapp``
   using ``testapp.f90`` as the source and ``fortuno_serial_dep`` as a
-  dependency. Also include your library (e.g., ``mylib_dep``) as a dependency::
+  dependency. Also, include your library (e.g., ``mylib_dep``) as a dependency::
 
     testapp_exe = executable(
       'testapp',
@@ -395,13 +416,13 @@ Further information
 
 For more detailed explanations, additional features, and various use cases,
 refer to the `Fortuno documentation <https://fortuno.readthedocs.io>`_ and
-explore the examples in the `example folder <example/>`_.
+explore the examples in the `example <example/>`_ folder.
 
 
 Compiler compatibility
 ======================
 
-To provide a simple interface along with maximum flexibility and extensibility,
+To provide a simple interface with maximum flexibility and extensibility,
 Fortuno leverages modern Fortran constructs extensively. Therefore, building
 Fortuno requires a compiler that supports Fortran 2018. Below is a table of
 compilers that have been successfully tested for building Fortuno. We recommend
