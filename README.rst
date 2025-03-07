@@ -438,6 +438,9 @@ using these or newer versions.
 | GNU 13.2, 14.1         | * OK (serial, mpi)                                  |
 |                        | * untested (coarray)                                |
 +------------------------+-----------------------------------------------------+
+| Flang 20.1.0           | * OK (serial)                                       |
+|                        | * untested (mpi, coarray)                           |
++------------------------+-----------------------------------------------------+
 
 If you know of other compilers that can successfully build Fortuno, please
 consider opening a pull request to update this table.
