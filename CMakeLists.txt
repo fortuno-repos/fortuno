@@ -69,6 +69,26 @@ endif ()
 #                                 Install or Export                                               #
 ]=================================================================================================]
 
+# cmake export files (both for install and build tree)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  # TODO: Switch to SameMajorVersion as soon as project version reaches 1.0.
+  COMPATIBILITY SameMinorVersion
+)
+configure_package_config_file(
+  cmake/FortunoConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
+)
+
+# export the current targets to the build tree
+export(
+  EXPORT FortunoTargets
+  FILE FortunoTargets.cmake
+  NAMESPACE Fortuno::
+)
+
 if (FORTUNO_INSTALL)
 
   # pkg-config files
@@ -107,29 +127,12 @@ if (FORTUNO_INSTALL)
   endif ()
 
   # cmake export files
-  write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    # TODO: Switch to SameMajorVersion as soon as project version reaches 1.0.
-    COMPATIBILITY SameMinorVersion
-  )
-  configure_package_config_file(
-      cmake/FortunoConfig.cmake.in
-      ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
-      INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
-  )
   install(
     FILES
       ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
     COMPONENT Fortuno_development
-  )
-
-  export(
-    EXPORT FortunoTargets
-    FILE FortunoTargets.cmake
-    NAMESPACE Fortuno::
   )
   install(
     EXPORT FortunoTargets
