@@ -2,25 +2,23 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-list(APPEND CMAKE_MESSAGE_CONTEXT Serial)
+cmake_minimum_required(VERSION 3.22...3.31)
 
-add_library(fortuno_example_serial_mylib)
-set_target_properties(
-  fortuno_example_serial_mylib PROPERTIES
-  OUTPUT_NAME mylib
+project(serial-example
+    LANGUAGES Fortran
 )
+
+find_package(Fortuno CONFIG REQUIRED)
+
+add_library(mylib)
 target_sources(
-  fortuno_example_serial_mylib PRIVATE
+  mylib PRIVATE
   mylib.f90
 )
 
-add_executable(fortuno_example_serial_testapp)
-set_target_properties(
-  fortuno_example_serial_testapp PROPERTIES
-  OUTPUT_NAME testapp
-)
+add_executable(testapp)
 target_sources(
-  fortuno_example_serial_testapp PRIVATE
+  testapp PRIVATE
   testapp.f90
   test_fixtured.f90
   test_fixtured_module.f90
@@ -29,5 +27,10 @@ target_sources(
   test_simple.f90
 )
 target_link_libraries(
-  fortuno_example_serial_testapp PRIVATE fortuno_example_serial_mylib Fortuno::fortuno_serial
+  testapp PRIVATE mylib Fortuno::fortuno_serial
+)
+
+enable_testing()
+add_test(NAME fortuno_test
+    COMMAND testapp
 )

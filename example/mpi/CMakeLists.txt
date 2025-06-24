@@ -2,30 +2,34 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-list(APPEND CMAKE_MESSAGE_CONTEXT Mpi)
+cmake_minimum_required(VERSION 3.22...3.31)
 
-add_library(fortuno_example_mpi_mylib)
-set_target_properties(
-  fortuno_example_mpi_mylib PROPERTIES
-  OUTPUT_NAME mylib
+project(mpi-example
+    LANGUAGES Fortran
 )
+
+find_package(MPI MODULE COMPONENTS Fortran)
+find_package(Fortuno CONFIG REQUIRED)
+
+add_library(mylib)
 target_sources(
-  fortuno_example_mpi_mylib PRIVATE
+  mylib PRIVATE
   mylib.f90
 )
-target_link_libraries(fortuno_example_mpi_mylib PRIVATE MPI::MPI_Fortran)
+target_link_libraries(mylib PRIVATE MPI::MPI_Fortran)
 
-add_executable(fortuno_example_mpi_testapp)
-set_target_properties(
-  fortuno_example_mpi_testapp PROPERTIES
-  OUTPUT_NAME testapp
-)
+add_executable(testapp)
 target_sources(
-  fortuno_example_mpi_testapp PRIVATE
+  testapp PRIVATE
   test_simple.f90
   testapp.f90
 )
 target_link_libraries(
-  fortuno_example_mpi_testapp PRIVATE
-  fortuno_example_mpi_mylib Fortuno::fortuno_mpi MPI::MPI_Fortran
+  testapp PRIVATE
+  mylib Fortuno::fortuno_mpi MPI::MPI_Fortran
+)
+
+enable_testing()
+add_test(NAME fortuno_test
+    COMMAND testapp
 )

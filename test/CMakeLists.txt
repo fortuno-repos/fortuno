@@ -4,4 +4,7 @@
 
 list(APPEND CMAKE_MESSAGE_CONTEXT Test)
 
+include(FortunoTestHelpers)
+
 add_subdirectory(unit)
+add_subdirectory(example)

@@ -2,34 +2,44 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-list(APPEND CMAKE_MESSAGE_CONTEXT MpiFpp)
+cmake_minimum_required(VERSION 3.22...3.31)
 
-add_library(fortuno_example_mpi_fpp_mylib)
-set_target_properties(
-  fortuno_example_mpi_fpp_mylib PROPERTIES
-  OUTPUT_NAME mylib
+project(mpi-fpp-example
+    LANGUAGES Fortran
 )
+
+find_package(MPI MODULE COMPONENTS Fortran)
+find_package(Fortuno CONFIG REQUIRED)
+
+# TODO: decouple this from config.cmake setup
+# TODO: Do not hardcode the path dependence
+# Get the absolute path of the Fortuno repo
+cmake_path(SET Fortuno_Source_Dir NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../..")
+include(${Fortuno_Source_Dir}/config.cmake)
+
+add_library(mylib)
 target_sources(
-  fortuno_example_mpi_fpp_mylib PRIVATE
+  mylib PRIVATE
   mylib.f90
 )
-target_link_libraries(fortuno_example_mpi_fpp_mylib PRIVATE MPI::MPI_Fortran)
+target_link_libraries(mylib PRIVATE MPI::MPI_Fortran)
 
-add_executable(fortuno_example_mpi_fpp_testapp)
-set_target_properties(
-  fortuno_example_mpi_fpp_testapp PROPERTIES
-  OUTPUT_NAME testapp
-)
+add_executable(testapp)
 target_sources(
-  fortuno_example_mpi_fpp_testapp PRIVATE
+  testapp PRIVATE
   test_simple_fpp.F90
   testapp.f90
 )
-target_compile_options(fortuno_example_mpi_fpp_testapp PRIVATE ${FORTUNO_FFLAGS_FPP})
+target_compile_options(testapp PRIVATE ${FORTUNO_FFLAGS_FPP})
 target_link_libraries(
-  fortuno_example_mpi_fpp_testapp
+  testapp
   PRIVATE
-  fortuno_example_mpi_fpp_mylib
+  mylib
   Fortuno::fortuno_mpi
   MPI::MPI_Fortran
+)
+
+enable_testing()
+add_test(NAME fortuno_test
+    COMMAND testapp
 )
