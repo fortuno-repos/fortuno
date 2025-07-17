@@ -47,6 +47,7 @@ module fortuno_testcontext
     procedure :: check_failed => test_context_check_failed
     procedure :: failed => test_context_failed
     procedure :: skip => test_context_skip
+    procedure :: skipped => test_context_skipped
     procedure :: status => test_context_status
     procedure :: pop_failure_info => test_context_pop_failure_info
     procedure :: push_scope_ptr => test_context_push_scope_ptr
@@ -232,6 +233,20 @@ contains
     if (this%status_ == teststatus%succeeded) this%status_ = teststatus%skipped
 
   end subroutine test_context_skip
+
+
+  !> Whether the test had been requested to be skip
+  pure function test_context_skipped(this) result(skipped)
+
+    !> Instance
+    class(test_context), intent(in) :: this
+
+    !> Skip status
+    logical :: skipped
+
+    skipped = this%status_ == teststatus%skipped
+
+  end function test_context_skipped
 
 
   !> Pops the failure info from the context

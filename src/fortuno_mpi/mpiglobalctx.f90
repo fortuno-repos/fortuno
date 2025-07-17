@@ -12,7 +12,7 @@ module fortuno_mpi_mpiglobalctx
   private
   public :: mpiglobalctx
   public :: set_mpi_global_context
-  public :: mpi_check, mpi_check_failed, mpi_failed, mpi_skip
+  public :: mpi_check, mpi_check_failed, mpi_failed, mpi_skip, mpi_skipped
   public :: mpi_scope_pointers
   public :: global_comm, global_comm_id
   public :: num_ranks, this_rank
@@ -108,11 +108,25 @@ contains
 
 
   !> Mark current test/context as skipped
+  !!
+  !! Note: All processes must call skip() synchronously to ensure consistent behavior
+  !!
   subroutine mpi_skip()
 
     call mpiglobalctx%skip()
 
   end subroutine mpi_skip
+
+
+  !> Whether the test had been marked as skipped
+  function mpi_skipped() result(skipped)
+
+    !> Skip status
+    logical :: skipped
+
+    skipped = mpiglobalctx%skipped()
+
+  end function mpi_skipped
 
 
   !> Returns the enclosing suite pointers
