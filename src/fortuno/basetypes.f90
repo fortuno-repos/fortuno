@@ -10,6 +10,7 @@ module fortuno_basetypes
   public :: test_base, test_case_base, test_suite_base
   public :: test_item, test_ptr_item
   public :: test_list
+  public :: error_info
 
 
   !> Base class for all test objects
@@ -83,7 +84,20 @@ module fortuno_basetypes
 
   end type test_suite_base
 
+
+  !> Contains info about an internal error
+  type :: error_info
+
+    !> Error code
+    integer :: code
+
+    !> Error message
+    character(:), allocatable :: msg
+
+  end type error_info
+
 contains
+
 
   !> Initializes a test item with the copy of a test_base instance.
   !!

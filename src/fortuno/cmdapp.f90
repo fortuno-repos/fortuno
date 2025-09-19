@@ -6,7 +6,7 @@
 module fortuno_cmdapp
   use fortuno_argumentparser, only : argtypes, argument_def, argument_values, argument_parser,&
       & init_argument_parser
-  use fortuno_basetypes, only : test_list
+  use fortuno_basetypes, only : error_info, test_list
   use fortuno_utils, only : string_item
   use fortuno_testdriver, only : test_driver, test_selection
   use fortuno_testlogger, only : test_logger
@@ -88,11 +88,17 @@ contains
 
     type(test_selection), allocatable :: selections(:)
     type(string_item), allocatable :: selectors(:), testnames(:)
+    type(error_info), allocatable :: error
     integer :: itest
 
     exitcode = -1
     if (this%argvals%has("tests")) then
-      call this%argvals%get_value("tests", selectors)
+      call this%argvals%get_value("tests", selectors, error)
+      if (allocated(error)) then
+        call this%logger%log_error("internal error  " // error%msg)
+        exitcode = error%code
+        return
+      end if
       call get_selections(selectors, selections)
     end if
     call this%driver%register_tests(testitems, selections=selections)
