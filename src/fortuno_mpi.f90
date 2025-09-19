@@ -5,6 +5,7 @@
 !> Exports the MPI-dependent part of Fortuno
 module fortuno_mpi
   use fortuno
+  use fortuno_mpi_mpibasetypes, only : mpi_case_base, mpi_suite_base
   use fortuno_mpi_mpicmdapp, only : mpi_cmd_app, execute_mpi_cmd_app
   use fortuno_mpi_mpicontext, only : mpi_context
   use fortuno_mpi_mpiglobalctx, only : global_comm, global_comm_id, mpi_check, mpi_check_failed,&
