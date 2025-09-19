@@ -11,7 +11,9 @@ module fortuno_serial_serialglobalctx
   private
   public :: serialglobalctx
   public :: set_serial_global_context
-  public :: serial_check, serial_check_failed, serial_failed, serial_skip, serial_store_state
+  public :: serial_check, serial_check_failed, serial_failed
+  public :: serial_skip, serial_skipped
+  public :: serial_store_state
   public :: serial_scope_pointers
 
 
@@ -109,6 +111,17 @@ contains
     call serialglobalctx%skip()
 
   end subroutine serial_skip
+
+
+  !> Whether test had been marked as skipped
+  function serial_skipped() result(skipped)
+
+    !> Skip status
+    logical :: skipped
+
+    skipped = serialglobalctx%skipped()
+
+  end function serial_skipped
 
 
   !> Returns the enclosing suite pointers
