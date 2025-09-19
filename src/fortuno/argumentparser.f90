@@ -4,6 +4,7 @@
 
 !> Implements a simple command line argument parser
 module fortuno_argumentparser
+  use fortuno_basetypes, only : error_info
   use fortuno_env, only : nl
   use fortuno_testlogger, only : test_logger
   use fortuno_utils, only : basename, string_item, string_item_list
@@ -277,7 +278,7 @@ contains
 
 
   !> Returns the value of a parsed argument as array of strings
-  subroutine argument_values_get_value_stringlist(this, name, val)
+  subroutine argument_values_get_value_stringlist(this, name, val, error)
 
     !> Instance
     class(argument_values), intent(in) :: this
@@ -285,8 +286,15 @@ contains
     !> Name of the argument
     character(*), intent(in) :: name
 
-    !> Value on exit
+    !> Value on exit, might be unallocated in case of an error
     type(string_item), allocatable, intent(out) :: val(:)
+
+    !> Error in case of an error occured, unallocated otherwise
+    !!
+    !! 1: invalid argument type
+    !! 2: argument with given name not found
+    !!
+    type(error_info), allocatable, intent(out) :: error
 
     logical :: found
     integer :: iargval
@@ -301,10 +309,12 @@ contains
       type is (string_item_list)
         val = argval%items
       class default
-        error stop "Invalid argument type for argument '" // name // "'"
+        error = error_info(1, "Invalid argument type for argument '" // name // "'")
+        return
       end select
     else
-      error stop "Argument '" // name // "' not found"
+      error = error_info(2, "Argument '" // name // "' not found")
+      return
     end if
 
   end subroutine argument_values_get_value_stringlist
