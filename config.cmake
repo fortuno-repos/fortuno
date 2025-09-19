@@ -15,7 +15,12 @@ option(FORTUNO_WITH_COARRAY "Fortuno: whether library with coarray interface sho
 
 option(FORTUNO_WITH_TESTS "Fortuno: whether to build test suite" ${PROJECT_IS_TOP_LEVEL})
 
-option(FORTUNO_WITH_EXAMPLES "Fortuno: whether to build example apps" ${PROJECT_IS_TOP_LEVEL})
+if (FORTUNO_WITH_EXAMPLES)
+  message(WARNING
+      "FORTUNO_WITH_EXAMPLES is deprecated and has no effect. "
+      "This is now part of the tests"
+  )
+endif ()
 
 option(FORTUNO_INSTALL "Fortuno: Install project" ${PROJECT_IS_TOP_LEVEL})
 
