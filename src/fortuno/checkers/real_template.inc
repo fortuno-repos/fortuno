@@ -56,7 +56,8 @@
           & checkresult)
       return
     end if
-    match = is_close_elem(value1, value2, atol=atol, rtol=rtol)
+    allocate(match(size(value1, dim=1)))
+    match(:) = is_close_elem(value1, value2, atol=atol, rtol=rtol)
     mismatchloc(:) = findloc(match, .false., kind=i64)
     if (all(mismatchloc /= 0)) then
       call add_value_mismatch_details("real values differing beyond tolerance",&
@@ -95,7 +96,8 @@
           & checkresult)
       return
     end if
-    match = is_close_elem(value1, value2, atol=atol, rtol=rtol)
+    allocate(match(size(value1, dim=1), size(value1, dim=2)))
+    match(:,:) = is_close_elem(value1, value2, atol=atol, rtol=rtol)
     mismatchloc(:) = findloc(match, .false., kind=i64)
     if (all(mismatchloc /= 0)) then
       call add_value_mismatch_details("real values differing beyond tolerance",&
@@ -130,7 +132,8 @@
     logical, allocatable :: match(:)
     integer(i64) :: mismatchloc(1)
 
-    match = is_close_elem(value1, value2, atol=atol, rtol=rtol)
+    allocate(match(size(value1, dim=1)))
+    match(:) = is_close_elem(value1, value2, atol=atol, rtol=rtol)
     mismatchloc(:) = findloc(match, .false., kind=i64)
     if (all(mismatchloc /= 0)) then
       call add_value_mismatch_details("real values differing beyond tolerance",&
@@ -164,7 +167,8 @@
     logical, allocatable :: match(:)
     integer(i64) :: mismatchloc(1)
 
-    match = is_close_elem(value1, value2, atol=atol, rtol=rtol)
+    allocate(match(size(value2, dim=1)))
+    match(:) = is_close_elem(value1, value2, atol=atol, rtol=rtol)
     mismatchloc(:) = findloc(match, .false., kind=i64)
     if (all(mismatchloc /= 0)) then
       call add_value_mismatch_details("real values differing beyond tolerance",&
@@ -198,7 +202,8 @@
     logical, allocatable :: match(:,:)
     integer(i64) :: mismatchloc(2)
 
-    match = is_close_elem(value1, value2, atol=atol, rtol=rtol)
+    allocate(match(size(value1, dim=1), size(value1, dim=2)))
+    match(:,:) = is_close_elem(value1, value2, atol=atol, rtol=rtol)
     mismatchloc(:) = findloc(match, .false., kind=i64)
     if (all(mismatchloc /= 0)) then
       call add_value_mismatch_details("real values differing beyond tolerance",&
@@ -233,7 +238,8 @@
     logical, allocatable :: match(:,:)
     integer(i64) :: mismatchloc(2)
 
-    match = is_close_elem(value1, value2, atol=atol, rtol=rtol)
+    allocate(match(size(value2, dim=1), size(value2, dim=2)))
+    match(:,:) = is_close_elem(value1, value2, atol=atol, rtol=rtol)
     mismatchloc(:) = findloc(match, .false., kind=i64)
     if (all(mismatchloc /= 0)) then
       call add_value_mismatch_details("real values differing beyond tolerance",&
