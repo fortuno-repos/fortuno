@@ -34,16 +34,24 @@ module fortuno_mpi_mpienv
 contains
 
   !> Initializes the MPI environment
-  subroutine init_mpi_env(this)
+  subroutine init_mpi_env(this, comm)
 
     !> Instance
     type(mpi_env), intent(out) :: this
 
+    !> Optional MPI communicator provided by caller
+    type(MPI_Comm), optional, intent(in) :: comm
+
     integer :: ierror
 
-    call MPI_Init(ierror)
-    if (ierror /= 0) error stop "MPI_Init failed in init_mpi_env"
-    this%comm = MPI_COMM_WORLD
+    if (present(comm)) then
+      this%comm = comm
+    else
+      call MPI_Init(ierror)
+      if (ierror /= 0) error stop "MPI_Init failed in init_mpi_env"
+      this%comm = MPI_COMM_WORLD
+    endif
+
     call MPI_Comm_size(this%comm, this%nranks, ierror)
     if (ierror /= 0) error stop "MPI_Comm_size failed in init_mpi_env"
     call MPI_Comm_rank(this%comm, this%rank, ierror)

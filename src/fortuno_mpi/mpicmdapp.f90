@@ -4,6 +4,7 @@
 
 !> Contains the command line app for driving mpi tests
 module fortuno_mpi_mpicmdapp
+  use mpi_f08, only : MPI_Comm
   use fortuno, only : cmd_app, test_list
   use fortuno_mpi_mpidriver, only : init_mpi_driver, mpi_driver
   use fortuno_mpi_mpienv, only : init_mpi_env, final_mpi_env, mpi_env
@@ -24,21 +25,24 @@ contains
   !!
   !! Note: This routine stops the code during execution and never returns.
   !!
-  subroutine execute_mpi_cmd_app(tests)
+  subroutine execute_mpi_cmd_app(tests, comm)
 
     !> Items to be considered by the app
     type(test_list), intent(in) :: tests
 
+    !> Optional MPI communicator provided by caller
+    type(MPI_Comm), optional, intent(in) :: comm
+
     integer :: exitcode
 
-    call run_mpi_cmd_app(tests, exitcode)
+    call run_mpi_cmd_app(tests, exitcode, comm)
     stop exitcode, quiet=.true.
 
   end subroutine execute_mpi_cmd_app
 
 
-  !> Sets up and runs the mpi command line up
-  subroutine run_mpi_cmd_app(tests, exitcode)
+  !> Sets up and runs the mpi command line
+  subroutine run_mpi_cmd_app(tests, exitcode, comm)
 
     !> Items to be considered by the app
     type(test_list), intent(in) :: tests
@@ -46,10 +50,13 @@ contains
     !> Exit code
     integer, intent(out) :: exitcode
 
+    !> Optional MPI communicator provided by caller
+    type(MPI_Comm), optional, intent(in) :: comm
+
     type(mpi_cmd_app) :: app
     type(mpi_env) :: mpienv
 
-    call init_mpi_env(mpienv)
+    call init_mpi_env(mpienv, comm)
     call init_mpi_cmd_app(app, mpienv)
     call app%run(tests, exitcode)
     call final_mpi_env(mpienv)
