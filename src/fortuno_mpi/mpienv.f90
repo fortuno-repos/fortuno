@@ -5,8 +5,8 @@
 !> Contains a type to deal with the mpi environment
 module fortuno_mpi_mpienv
   use mpi_f08, only : MPI_Allreduce, MPI_CHAR, MPI_Comm, MPI_Comm_rank, MPI_Comm_size,&
-      & MPI_COMM_WORLD, MPI_IN_PLACE, MPI_Init, MPI_INTEGER, MPI_Finalize, MPI_PROD, MPI_Recv,&
-      & MPI_Send, MPI_Status
+      & MPI_COMM_WORLD, MPI_IN_PLACE, MPI_Init_thread, MPI_INTEGER, MPI_Finalize, MPI_PROD,&
+      & MPI_Recv, MPI_Send, MPI_Status, MPI_THREAD_SINGLE
   implicit none
 
   private
