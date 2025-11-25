@@ -34,15 +34,25 @@ module fortuno_mpi_mpienv
 contains
 
   !> Initializes the MPI environment
-  subroutine init_mpi_env(this)
+  subroutine init_mpi_env(this, mpi_thread_level)
 
     !> Instance
     type(mpi_env), intent(out) :: this
 
-    integer :: ierror
+    !> MPI thread level
+    integer, optional, intent(in) :: mpi_thread_level
 
-    call MPI_Init(ierror)
-    if (ierror /= 0) error stop "MPI_Init failed in init_mpi_env"
+    integer :: required, provided, ierror
+
+    if (present(mpi_thread_level)) then
+      required = mpi_thread_level
+    else
+      required = MPI_THREAD_SINGLE
+    end if
+
+    call MPI_Init_thread(required, provided, ierror)
+    if (ierror /= 0) error stop "MPI_Init_thread failed in init_mpi_env"
+    if (provided < required) error stop "Required thread support not available in init_mpi_env"
     this%comm = MPI_COMM_WORLD
     call MPI_Comm_size(this%comm, this%nranks, ierror)
     if (ierror /= 0) error stop "MPI_Comm_size failed in init_mpi_env"

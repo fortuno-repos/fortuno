@@ -24,21 +24,24 @@ contains
   !!
   !! Note: This routine stops the code during execution and never returns.
   !!
-  subroutine execute_mpi_cmd_app(tests)
+  subroutine execute_mpi_cmd_app(tests, mpi_thread_level)
 
     !> Items to be considered by the app
     type(test_list), intent(in) :: tests
 
+    !> MPI thread level
+    integer, optional, intent(in) :: mpi_thread_level
+
     integer :: exitcode
 
-    call run_mpi_cmd_app(tests, exitcode)
+    call run_mpi_cmd_app(tests, exitcode, mpi_thread_level)
     stop exitcode, quiet=.true.
 
   end subroutine execute_mpi_cmd_app
 
 
   !> Sets up and runs the mpi command line up
-  subroutine run_mpi_cmd_app(tests, exitcode)
+  subroutine run_mpi_cmd_app(tests, exitcode, mpi_thread_level)
 
     !> Items to be considered by the app
     type(test_list), intent(in) :: tests
@@ -46,10 +49,13 @@ contains
     !> Exit code
     integer, intent(out) :: exitcode
 
+    !> MPI thread level
+    integer, optional, intent(in) :: mpi_thread_level
+
     type(mpi_cmd_app) :: app
     type(mpi_env) :: mpienv
 
-    call init_mpi_env(mpienv)
+    call init_mpi_env(mpienv, mpi_thread_level)
     call init_mpi_cmd_app(app, mpienv)
     call app%run(tests, exitcode)
     call final_mpi_env(mpienv)
