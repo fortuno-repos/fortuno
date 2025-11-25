@@ -44,7 +44,10 @@ jobs:
 
       - name: Setup build tools
         run: |
-          pip install fpm
+          # Workaround: PyPI version of fpm 0.12 segfaults with MPI dependency, version pinned
+          # temporarily to 0.11.
+          # See: https://github.com/fortran-lang/fpm/issues/1207
+          pip install fpm==0.11
 
       - name: Test fpm export
         run: |
