@@ -11,7 +11,7 @@ module fortuno_mpi_mpicmdapp
   implicit none
 
   private
-  public :: init_mpi_cmd_app, execute_mpi_cmd_app, mpi_cmd_app
+  public :: init_mpi_cmd_app, execute_mpi_cmd_app, mpi_cmd_app, run_mpi_cmd_app
 
 
   !> App for driving mpi tests through command line app
