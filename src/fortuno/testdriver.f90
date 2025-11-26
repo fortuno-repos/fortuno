@@ -277,12 +277,14 @@ contains
 
     class(test_context), allocatable :: ctx
     character(:), allocatable :: repr
-    integer :: iselect, idata, depstatus, iresult
+    integer :: iselect, idata, depstatus, iresult, testtype
 
     if (initializer) then
       iresult = 1
+      testtype = testtypes%suitesetup
     else
       iresult = 2
+      testtype = testtypes%suiteteardown
     end if
 
     do iselect = 1, size(suiteselection%fwd)
@@ -322,7 +324,7 @@ contains
         call set_repr_name_(suiteresults(iresult, :), iselect, repr)
         if (allocated(repr)) deallocate(repr)
 
-        call logger%log_test_result(testtypes%suitesetup, suiteresult(iresult))
+        call logger%log_test_result(testtype, suiteresult(iresult))
       end associate
     end do
 

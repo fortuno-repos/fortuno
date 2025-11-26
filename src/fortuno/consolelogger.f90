@@ -6,7 +6,7 @@
 module fortuno_consolelogger
   use fortuno_env, only : ansicolors, stderr, stdout
   use fortuno_testinfo, only : drive_result, failure_info, test_result, teststatus
-  use fortuno_testlogger, only : test_logger
+  use fortuno_testlogger, only : test_logger, testtypes
   use fortuno_utils, only : str
   implicit none
 
@@ -32,9 +32,11 @@ module fortuno_consolelogger
 
   character(*), parameter :: notrun_short_ = "!"
   character(*), parameter :: succeeded_short_ = "."
-  character(*), parameter :: failed_short_ = "F"
+  character(*), parameter :: test_run_failed_short_ = "F"
+  character(*), parameter :: suite_setup_failed_short_ = "<"
+  character(*), parameter :: suite_teardown_failed_short_ = ">"
   character(*), parameter :: skipped_short_ = "s"
-  character(*), parameter :: ignored_short_ = "I"
+  character(*), parameter :: ignored_short_ = "i"
   character(*), parameter :: unknown_short_ = "?"
 
   character(*), parameter :: notrun_long_ =&
@@ -186,7 +188,7 @@ contains
     type(test_result), intent(in) :: testresult
 
     if (.not. this%is_active()) return
-    write(stdout, "(a)", advance="no") status_short_repr_(testresult%status)
+    write(stdout, "(a)", advance="no") status_short_repr_(testtype, testresult%status)
 
   end subroutine console_logger_log_test_result
 
@@ -208,21 +210,19 @@ contains
 
     maxitems = maxval([sum(driveresult%suitestats, dim=1), sum(driveresult%teststats)])
     numfieldwidth = len(str(maxitems))
-    call log_summary_("# Suite set-ups", driveresult%suiteresults(1, :),&
-        & driveresult%suitestats(:, 1), numfieldwidth)
-    call log_summary_("# Suite tear-downs", driveresult%suiteresults(2, :),&
-        & driveresult%suitestats(:, 2), numfieldwidth)
-    call log_summary_("# Test runs", driveresult%testresults, driveresult%teststats,&
-        & numfieldwidth)
+    call log_summary_("# Suite set-ups", driveresult%suitestats(:, 1), numfieldwidth)
+    call log_summary_("# Suite tear-downs", driveresult%suitestats(:, 2), numfieldwidth)
+    call log_summary_("# Test runs", driveresult%teststats, numfieldwidth)
     call log_success_(driveresult%successful)
 
   end subroutine console_logger_log_drive_result
 
 
   !! Returns a single character representation of the test status.
-  pure function status_short_repr_(status) result(repr)
+  pure function status_short_repr_(testtype, status) result(repr)
     integer, intent(in) :: status
     character(:), allocatable :: repr
+    integer, intent(in) :: testtype
 
     select case (status)
     case (teststatus%notrun)
@@ -230,7 +230,14 @@ contains
     case (teststatus%succeeded)
       repr = succeeded_short_
     case (teststatus%failed)
-      repr = failed_short_
+      select case (testtype)
+      case (testtypes%testrun)
+        repr = test_run_failed_short_
+      case (testtypes%suitesetup)
+        repr = suite_setup_failed_short_
+      case (testtypes%suiteteardown)
+        repr = suite_teardown_failed_short_
+      end select
     case (teststatus%skipped)
       repr = skipped_short_
     case (teststatus%ignored)
@@ -366,9 +373,8 @@ contains
 
 
   !! Logs test summary
-  subroutine log_summary_(header, testresults, teststats, numfieldwidth)
+  subroutine log_summary_(header, teststats, numfieldwidth)
     character(*), intent(in) :: header
-    type(test_result), intent(in) :: testresults(:)
     integer, intent(in) :: teststats(:)
     integer, intent(in) :: numfieldwidth
 
