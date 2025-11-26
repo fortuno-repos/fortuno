@@ -6,7 +6,8 @@
 module fortuno_mpi
   use fortuno
   use fortuno_mpi_mpibasetypes, only : mpi_case_base, mpi_suite_base
-  use fortuno_mpi_mpicmdapp, only : execute_mpi_cmd_app, init_mpi_cmd_app, mpi_cmd_app
+  use fortuno_mpi_mpicmdapp, only : execute_mpi_cmd_app, init_mpi_cmd_app, mpi_cmd_app,&
+      & run_mpi_cmd_app
   use fortuno_mpi_mpicontext, only : mpi_context
   use fortuno_mpi_mpiglobalctx, only : global_comm, global_comm_id, mpi_check, mpi_check_failed,&
       & mpi_failed, mpi_scope_pointers, mpi_skip, mpi_skipped, num_ranks, this_rank
