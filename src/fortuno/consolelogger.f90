@@ -208,12 +208,9 @@ contains
 
     maxitems = maxval([sum(driveresult%suitestats, dim=1), sum(driveresult%teststats)])
     numfieldwidth = len(str(maxitems))
-    call log_summary_("# Suite set-ups", driveresult%suiteresults(1, :),&
-        & driveresult%suitestats(:, 1), numfieldwidth)
-    call log_summary_("# Suite tear-downs", driveresult%suiteresults(2, :),&
-        & driveresult%suitestats(:, 2), numfieldwidth)
-    call log_summary_("# Test runs", driveresult%testresults, driveresult%teststats,&
-        & numfieldwidth)
+    call log_summary_("# Suite set-ups", driveresult%suitestats(:, 1), numfieldwidth)
+    call log_summary_("# Suite tear-downs", driveresult%suitestats(:, 2), numfieldwidth)
+    call log_summary_("# Test runs", driveresult%teststats, numfieldwidth)
     call log_success_(driveresult%successful)
 
   end subroutine console_logger_log_drive_result
@@ -366,9 +363,8 @@ contains
 
 
   !! Logs test summary
-  subroutine log_summary_(header, testresults, teststats, numfieldwidth)
+  subroutine log_summary_(header, teststats, numfieldwidth)
     character(*), intent(in) :: header
-    type(test_result), intent(in) :: testresults(:)
     integer, intent(in) :: teststats(:)
     integer, intent(in) :: numfieldwidth
 

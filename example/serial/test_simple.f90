@@ -68,7 +68,7 @@ contains
 
     real(r32), allocatable :: yvals(:,:)
 
-    yvals = cotanvals
+    allocate(yvals, source=cotanvals)
     ! We add a "bug" for the 3rd element to demonstrate the failure
     yvals(1, 2) = yvals(1, 2) + 0.1_r32
 
