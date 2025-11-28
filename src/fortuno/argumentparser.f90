@@ -4,6 +4,7 @@
 
 !> Implements a simple command line argument parser
 module fortuno_argumentparser
+  use fortuno_basetypes, only : error_info
   use fortuno_env, only : nl
   use fortuno_testlogger, only : test_logger
   use fortuno_utils, only : basename, string_item, string_item_list
@@ -12,13 +13,15 @@ module fortuno_argumentparser
   private
   public :: argtypes, argument_def, argument_values, argument_parser, init_argument_parser
 
+
   ! Helper type for argument types
   type :: argument_types_enum_
     integer :: bool = 1
-    integer :: int = 2
-    integer :: float = 3
-    integer :: string = 4
     integer :: stringlist = 5
+    !! Following types are not implemented yet
+    ! integer :: int = 2
+    ! integer :: float = 3
+    ! integer :: string = 4
   end type argument_types_enum_
 
   !> Possible argument types
@@ -135,12 +138,16 @@ contains
     exitcode = -1
 
     call get_command_line_args_(cmdargs)
+    ! cmdargs starts with index 0 (entry 0 containing the command)
     nargs = ubound(cmdargs, dim=1)
     nargdefs = size(this%argdefs)
     allocate(processed(nargdefs), source=.false.)
 
+    ! Initial allocation, will be grown dynamically during argument processing
     allocate(argumentvalues%argvals(0))
     allocate(posargs(0))
+
+    ! Parsing dashed arguments as options enabled; will be disabled if "--" is encountered
     optionsallowed = .true.
 
     ! Process all arguments
@@ -153,20 +160,20 @@ contains
           cycle
         end if
         if (.not. optionsallowed .or. arg(1:1) /= "-") then
-          posargs =  [posargs, string_item(arg)]
+          posargs = [posargs, string_item(arg)]
           cycle
         end if
-        islong = arg(1:min(len(arg), 2)) == "--"
+        islong = arg(1 : min(len(arg), 2)) == "--"
         if (islong) then
           argname = arg(3:)
         else if (len(arg) == 2) then
           argname = arg(2:2)
         else
-          call logger%log_error("Invalid short option '" // cmdargs(iarg)%value // "'")
+          call logger%log_error("Invalid short option '" // arg // "'")
           exitcode = 1
           return
         end if
-        if ((islong .and. argname == "help") .or. (.not. islong .and.  argname == "h")) then
+        if ((islong .and. argname == "help") .or. (.not. islong .and. argname == "h")) then
           call print_help_(logger, cmdargs(0)%value, this%description, this%argdefs)
           exitcode = 0
           return
@@ -215,7 +222,8 @@ contains
 
     ! Check collected positional arguments
     associate (argdef => this%argdefs(nargdefs))
-      ! If the last argdef was not an option, store all position arguments under this name
+
+      ! If last argdef was not an option, it defines name for all collected positional arguments
       if (.not. allocated(argdef%longopt) .and. argdef%shortopt == "") then
         ! Workaround:gfortran:14.1 (bug 116679)
         ! Omit array expression to avoid memory leak
@@ -234,11 +242,13 @@ contains
         end block
         ! +}
 
+      ! If last argdef was an option, no positional arguments are allowed
       else if (size(posargs) > 1) then
         call logger%log_error("Superfluous positional arguments found")
         exitcode = 1
         return
       end if
+
     end associate
 
   end subroutine argument_parser_parse_args
@@ -268,7 +278,7 @@ contains
 
 
   !> Returns the value of a parsed argument as array of strings
-  subroutine argument_values_get_value_stringlist(this, name, val)
+  subroutine argument_values_get_value_stringlist(this, name, val, error)
 
     !> Instance
     class(argument_values), intent(in) :: this
@@ -276,8 +286,15 @@ contains
     !> Name of the argument
     character(*), intent(in) :: name
 
-    !> Value on exit
+    !> Value on exit, might be unallocated in case of an error
     type(string_item), allocatable, intent(out) :: val(:)
+
+    !> Error in case of an error occured, unallocated otherwise
+    !!
+    !! 1: invalid argument type
+    !! 2: argument with given name not found
+    !!
+    type(error_info), allocatable, intent(out) :: error
 
     logical :: found
     integer :: iargval
@@ -292,10 +309,12 @@ contains
       type is (string_item_list)
         val = argval%items
       class default
-        error stop "Invalid argument type for argument '" // name // "'"
+        error = error_info(1, "Invalid argument type for argument '" // name // "'")
+        return
       end select
     else
-      error stop "Argument '" // name // "' not found"
+      error = error_info(2, "Argument '" // name // "' not found")
+      return
     end if
 
   end subroutine argument_values_get_value_stringlist
@@ -315,7 +334,10 @@ contains
   end function new_argument_value
 
 
-  !! Returns the command line arguments as an array of strings.
+  !! Returns the command line arguments returned by get_command_argument as an array of strings.
+  !!
+  !! Note: returned array is indexed from zero (in analogy to get_command_argument())
+  !!
   subroutine get_command_line_args_(cmdargs)
     type(string_item), allocatable :: cmdargs(:)
 
@@ -356,7 +378,7 @@ contains
     call logger%log_message(line // nl // nl)
     call logger%log_message(description)
     associate (argdef => argdefs(size(argdefs)))
-      ! If last argument is a positional argument
+      ! If last argument is a positional argument, print its help (before optional arguments)
       if (argdef%shortopt == "" .and. .not. allocated(argdef%longopt)) then
         call print_argument_help_(logger, argdef%name, argdef%helpmsg, terminal_width_)
       end if
@@ -375,15 +397,14 @@ contains
         else
           cycle
         end if
-        line = "  " // buffer // repeat(" ", max(0, 24 - len(buffer) - 2)) // argdef%helpmsg
-        call logger%log_message(line)
+        call print_argument_help_(logger, buffer, argdef%helpmsg, terminal_width_)
       end associate
     end do
 
   end subroutine print_help_
 
 
-  !! Prints the help for a single argument.
+  !! Prints help message for a single argument.
   subroutine print_argument_help_(logger, argument, helpmsg, linelength)
     class(test_logger), intent(inout) :: logger
     character(*), intent(in) :: argument, helpmsg
@@ -396,6 +417,7 @@ contains
 
     write(formatstr, "(a, i0, a)") "(2x, a, t", offset, ", a)"
     maxwidth = linelength - offset
+    ! Position within the help message
     curpos = 1
     do while (curpos <= len(helpmsg))
       if (curpos + maxwidth - 1 > len(helpmsg)) then

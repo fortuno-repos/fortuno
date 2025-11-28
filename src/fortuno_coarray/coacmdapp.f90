@@ -11,7 +11,7 @@ module fortuno_coarray_coacmdapp
   implicit none
 
   private
-  public :: init_coa_cmd_app, execute_coa_cmd_app, coa_cmd_app
+  public :: init_coa_cmd_app, execute_coa_cmd_app, coa_cmd_app, run_coa_cmd_app
 
 
   !> App for driving coarray tests through command line app

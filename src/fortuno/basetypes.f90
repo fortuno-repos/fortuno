@@ -10,6 +10,7 @@ module fortuno_basetypes
   public :: test_base, test_case_base, test_suite_base
   public :: test_item, test_ptr_item
   public :: test_list
+  public :: error_info
 
 
   !> Base class for all test objects
@@ -33,6 +34,7 @@ module fortuno_basetypes
   contains
 
     procedure :: init => test_item_init
+    procedure :: free => test_item_free
 
   end type test_item
 
@@ -43,6 +45,10 @@ module fortuno_basetypes
 
 
   !> Wrapped test_base class pointer for building arrays of generic test object view pointers
+  !!
+  !! Note: This is type is only there to provide a view to a generic test object (test case or test
+  !! suite) and is not reponsible to free any allocated resources associated with the test.
+  !!
   type :: test_ptr_item
 
     !> Actual test_base class pointer
@@ -54,7 +60,7 @@ module fortuno_basetypes
   !> A list of test_base instances
   type :: test_list
     private
-    type(test_ptr_item), pointer :: storage_(:) => null()
+    type(test_item), allocatable :: storage_(:)
     integer :: nitems = 0
   contains
     procedure :: size => test_list_size
@@ -83,7 +89,20 @@ module fortuno_basetypes
 
   end type test_suite_base
 
+
+  !> Contains info about an internal error
+  type :: error_info
+
+    !> Error code
+    integer :: code
+
+    !> Error message
+    character(:), allocatable :: msg
+
+  end type error_info
+
 contains
+
 
   !> Initializes a test item with the copy of a test_base instance.
   !!
@@ -102,6 +121,23 @@ contains
     allocate(this%item, source=test)
 
   end subroutine test_item_init
+
+
+  !> Deallocates the test stored in the item.
+  recursive subroutine test_item_free(this)
+
+    !> Instance
+    class(test_item), intent(inout) :: this
+
+    if (.not. associated(this%item)) return
+    select type (item => this%item)
+    class is (test_suite_base)
+      call item%tests%free()
+    end select
+    deallocate(this%item)
+    nullify(this%item)
+
+  end subroutine test_item_free
 
 
   !> Returns a test item with the copy a test_base instance.
@@ -127,12 +163,8 @@ contains
     !> Initialized instance on return
     type(test_list) :: this
 
-    integer :: ii
-
     call this%ensure_storage_size_(size(testitems))
-    do ii = 1, size(testitems)
-      this%storage_(ii)%item => testitems(ii)%item
-    end do
+    this%storage_(1 : size(testitems)) = testitems
     this%nitems = size(testitems)
 
   end function new_test_list_from_items
@@ -148,15 +180,13 @@ contains
     type(test_list) :: this
 
     integer :: totalsize
-    integer :: ilist, iitem
+    integer :: ilist
 
     totalsize = sum(testlists%size())
     call this%ensure_storage_size_(totalsize)
     do ilist = 1, size(testlists)
       associate (list => testlists(ilist))
-        do iitem = 1, list%nitems
-          this%storage_(this%nitems + iitem)%item => list%storage_(iitem)%item
-        end do
+        this%storage_(this%nitems + 1 : this%nitems + list%nitems) = list%storage_(1 : list%nitems)
         this%nitems = this%nitems + list%nitems
       end associate
     end do
@@ -195,21 +225,16 @@ contains
   end function test_list_view
 
 
-  !> Recursively frees all elements contained in the list
+  !> Recursively frees all items contained in the list
   recursive subroutine test_list_free(this)
     class(test_list), intent(inout) :: this
 
     integer :: ii
 
-    if (.not. associated(this%storage_)) return
+    if (.not. allocated(this%storage_)) return
     do ii = 1, this%nitems
-      select type (item => this%storage_(ii)%item)
-      class is (test_suite_base)
-        call item%tests%free()
-      end select
-      deallocate(this%storage_(ii)%item)
+      call this%storage_(ii)%free()
     end do
-    deallocate(this%storage_)
     this%nitems = 0
 
   end subroutine test_list_free
@@ -220,24 +245,19 @@ contains
     class(test_list), intent(inout) :: this
     integer, intent(in) :: newsize
 
-    type(test_ptr_item), pointer :: buffer(:)
+    type(test_item), allocatable :: buffer(:)
     integer :: storagesize
 
-    if (associated(this%storage_)) then
+    if (allocated(this%storage_)) then
       storagesize = size(this%storage_)
+      if (storagesize >= newsize) return
+      call move_alloc(this%storage_, buffer)
     else
       storagesize = 0
     end if
-    if (newsize <= storagesize) return
-
-    if (associated(this%storage_)) then
-      buffer => this%storage_
-    else
-      buffer => null()
-    end if
     storagesize = max(newsize, storagesize + 10, int(real(storagesize) * 1.3))
     allocate(this%storage_(storagesize))
-    if (associated(buffer)) this%storage_(1:this%nitems) = buffer(1:this%nitems)
+    if (allocated(buffer)) this%storage_(1:this%nitems) = buffer(1:this%nitems)
 
   end subroutine test_list_ensure_storage_size_
 
