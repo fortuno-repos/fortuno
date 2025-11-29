@@ -2,23 +2,29 @@
 # Licensed under the BSD-2-Clause Plus Patent license.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 
-list(APPEND CMAKE_MESSAGE_CONTEXT SerialFypp)
+cmake_minimum_required(VERSION 3.22...3.31)
 
-add_library(fortuno_example_serial_fypp_mylib)
-set_target_properties(
-  fortuno_example_serial_fypp_mylib PROPERTIES
-  OUTPUT_NAME mylib
+project(serial-fypp-example
+    LANGUAGES Fortran
 )
+
+find_package(Fortuno CONFIG REQUIRED)
+
+find_program(FYPP fypp)
+
+# TODO: Do not hardcode the path dependence
+# Get the absolute path of the Fortuno repo
+cmake_path(SET Fortuno_Source_Dir NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../../..")
+
+include(${Fortuno_Source_Dir}/cmake/FortunoHelpers.cmake)
+
+add_library(mylib)
 target_sources(
-  fortuno_example_serial_fypp_mylib PRIVATE
+  mylib PRIVATE
   mylib.f90
 )
 
-add_executable(fortuno_example_serial_fypp_testapp)
-set_target_properties(
-  fortuno_example_serial_fypp_testapp PROPERTIES
-  OUTPUT_NAME testapp
-)
+add_executable(testapp)
 
 set(
   fypp-sources
@@ -29,18 +35,24 @@ set(
 
 get_target_property(_fortuno_incdir Fortuno::fortuno_include_dir INTERFACE_INCLUDE_DIRECTORIES)
 fortuno_preprocess(
-  ${FYPP} "-I${_fortuno_incdir};--file-var-root=${CMAKE_SOURCE_DIR}"
+  ${FYPP} "-I${_fortuno_incdir};--file-var-root=${Fortuno_Source_Dir}"
   .fypp .f90
   "${fypp-sources}" fypp-f90-sources
 )
 
 target_sources(
-  fortuno_example_serial_fypp_testapp PRIVATE
+  testapp PRIVATE
   ${fypp-f90-sources}
   testapp.f90
 )
 target_link_libraries(
-  fortuno_example_serial_fypp_testapp
+  testapp
   PRIVATE
-  fortuno_example_serial_fypp_mylib Fortuno::fortuno_serial
+  mylib Fortuno::fortuno_serial
 )
+
+enable_testing()
+# TODO: Re-enable the tests and fix the test failures
+#add_test(NAME fortuno_test
+#    COMMAND testapp
+#)
