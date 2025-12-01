@@ -127,7 +127,7 @@ contains
     integer :: nn
 
     nn = -1
-    scopeptrs = scope_pointers()
+    allocate(scopeptrs, source=scope_pointers())
     ! scopeptrs(1): current scope - random_test_case instance
     ! scopeptrs(2): first enclosing scope - random_test_suite instance
     if (size(scopeptrs) < 2)&
