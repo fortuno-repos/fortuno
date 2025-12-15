@@ -17,11 +17,11 @@ module fortuno_argumentparser
   ! Helper type for argument types
   type :: argument_types_enum_
     integer :: bool = 1
+    integer :: string = 4
     integer :: stringlist = 5
     !! Following types are not implemented yet
     ! integer :: int = 2
     ! integer :: float = 3
-    ! integer :: string = 4
   end type argument_types_enum_
 
   !> Possible argument types
@@ -71,14 +71,15 @@ module fortuno_argumentparser
   end interface
 
 
-  !> Collection of all argument values obtained after command line had been prased
+  !> Collection of all argument values obtained after command line had been parsed
   type :: argument_values
     private
     type(argument_value), allocatable :: argvals(:)
   contains
     procedure :: has => argument_values_has
     procedure :: get_value_stringlist => argument_values_get_value_stringlist
-    generic :: get_value => get_value_stringlist
+    procedure :: get_value_string => argument_values_get_value_string
+    generic :: get_value => get_value_stringlist, get_value_string
   end type argument_values
 
 
@@ -205,6 +206,33 @@ contains
                 end block
                 ! +}
 
+                case (argtypes%string)
+                ! Require next argument as value
+                iarg = iarg + 1
+                if (iarg > nargs) then
+                  call logger%log_error("Missing value for argument '" // arg // "'")
+                  exitcode = 1
+                  return
+                end if
+                ! Workaround:gfortran:14.1 (bug 116679)
+                ! Omit array expression to avoid memory leak
+                ! {-
+                ! argumentvalues%argvals = [argumentvalues%argvals,&
+                !     & argument_value(argdef%name, argval=string_item(cmdargs(iarg)%value))]
+                ! -}{+
+                block
+                  type(argument_value), allocatable :: argvalbuffer(:)
+                  type(string_item) :: sval
+                  integer :: nn
+                  sval%value = cmdargs(iarg)%value
+                  nn = size(argumentvalues%argvals)
+                  allocate(argvalbuffer(nn + 1))
+                  argvalbuffer(1 : nn) = argumentvalues%argvals
+                  argvalbuffer(nn + 1) = argument_value(argdef%name, argval=sval)
+                  call move_alloc(argvalbuffer, argumentvalues%argvals)
+                end block
+                ! +}
+
               case default
                 call logger%log_error("Unknown argument type")
                 exitcode = 1
@@ -304,20 +332,67 @@ contains
       found = this%argvals(iargval)%name == name
       if (found) exit
     end do
-    if (found) then
-      select type (argval => this%argvals(iargval)%argval)
-      type is (string_item_list)
-        val = argval%items
-      class default
-        error = error_info(1, "Invalid argument type for argument '" // name // "'")
-        return
-      end select
-    else
+
+    if (.not. found) then
       error = error_info(2, "Argument '" // name // "' not found")
       return
     end if
 
+    select type (argval => this%argvals(iargval)%argval)
+    type is (string_item_list)
+      val = argval%items
+    class default
+      error = error_info(1, "Invalid argument type for argument '" // name // "' (expected string_item_list)")
+      return
+    end select
+
   end subroutine argument_values_get_value_stringlist
+
+
+
+  !> Returns the value of a parsed argument as a single string
+  subroutine argument_values_get_value_string(this, name, val, error)
+
+    !> Instance
+    class(argument_values), intent(in) :: this
+
+    !> Name of the argument
+    character(*), intent(in) :: name
+
+    !> Value on exit, might be unallocated in case of an error
+    type(string_item), allocatable, intent(out) :: val
+
+    !> Error in case of an error occured, unallocated otherwise
+    !!
+    !! 1: invalid argument type
+    !! 2: argument with given name not found
+    !!
+    type(error_info), allocatable, intent(out) :: error
+
+    logical :: found
+    integer :: iargval
+    
+    ! Find argument position
+    found = .false.
+    do iargval = 1, size(this%argvals)
+      found = this%argvals(iargval)%name == name
+      if (found) exit
+    end do
+
+    if (.not. found) then
+      error = error_info(2, "Argument '" // name // "' not found")
+      return
+    end if
+    
+    select type (argval => this%argvals(iargval)%argval)
+    type is (string_item)
+      val = argval
+    class default
+      error = error_info(1, "Invalid argument type for argument '" // name // "' (expected string_item)")
+      return
+    end select
+
+  end subroutine argument_values_get_value_string
 
 
   !> User defined structure constructor for argument_value
