@@ -118,8 +118,14 @@ if (FORTUNO_INSTALL)
       ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
       INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
   )
+  configure_file(
+    cmake/Fortuno.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/Fortuno.cmake
+    COPYONLY
+  )
   install(
     FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/Fortuno.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfigVersion.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/FortunoConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Fortuno
@@ -143,6 +149,9 @@ endif ()
 
 # Make project available for FetchContent
 if (NOT PROJECT_IS_TOP_LEVEL)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+
   # Propagate variables
   if (CMAKE_VERSION VERSION_LESS 3.25)
     # TODO: Remove when required minimum cmake version is >= 3.25

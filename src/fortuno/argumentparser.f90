@@ -160,7 +160,19 @@ contains
           cycle
         end if
         if (.not. optionsallowed .or. arg(1:1) /= "-") then
-          posargs = [posargs, string_item(arg)]
+          ! Workaround:gfortran:14.1 (bug 116679)
+          ! Omit array expression to avoid memory leak
+          ! {-
+          ! posargs = [posargs, string_item(arg)]
+          ! -}{+
+          block
+            type(string_item), allocatable :: tmp(:)
+            allocate(tmp(size(posargs) + 1))
+            if (size(posargs) > 0) tmp(1:size(posargs)) = posargs
+            tmp(size(posargs) + 1) = string_item(arg)
+            call move_alloc(tmp, posargs)
+          end block
+          ! +}
           cycle
         end if
         islong = arg(1 : min(len(arg), 2)) == "--"
@@ -410,7 +422,7 @@ contains
     character(*), intent(in) :: argument, helpmsg
     integer, intent(in) :: linelength
 
-    integer, parameter :: offset = 25
+    integer, parameter :: offset = 29
     character(20) :: formatstr
     character(linelength) :: buffer
     integer :: maxwidth, curpos, seppos

@@ -192,7 +192,7 @@ contains
 
 
   !> Registers tests to consider
-  subroutine test_driver_register_tests(this, testlist, selections)
+  subroutine test_driver_register_tests(this, testlist, strict_matching_success, selections)
 
     !> Instance
     class(test_driver), intent(inout) :: this
@@ -203,13 +203,16 @@ contains
     !> Selection rule to constrain the testing only to a subset of the test items
     type(test_selection), optional, intent(in) :: selections(:)
 
+    !> True if all selections were matched successfully, false otherwise
+    logical, intent(out) :: strict_matching_success
+
     this%testlist = testlist
     call init_test_data_container(this%suitedatacont, 100)
     call init_test_data_container(this%testdatacont, 5000)
     call build_test_data_(this%testlist, "", [integer ::], [integer ::], this%testdatacont,&
         & this%suitedatacont)
     call get_selected_suites_and_tests_(this%suitedatacont, this%testdatacont, this%suiteselection,&
-        & this%testselection, selections)
+        & this%testselection, strict_matching_success, selections)
 
   end subroutine test_driver_register_tests
 
@@ -572,16 +575,19 @@ contains
 
   !! Returns indices of selected suites and tests.
   subroutine get_selected_suites_and_tests_(suitedatacont, testdatacont, suiteselection,&
-        & testselection, selections)
+        & testselection, strict_matching_success, selections)
     type(test_data_container), intent(in) :: suitedatacont, testdatacont
     type(reversible_mapping), intent(out) :: suiteselection, testselection
     type(test_selection), optional, intent(in) :: selections(:)
+    logical, intent(out) :: strict_matching_success
 
     logical, allocatable :: testmask(:), suitemask(:)
-    logical :: hasselection, selected, isincluded
+    logical :: hasselection, selected, isincluded, found_match
     integer :: iselect, itest
     integer :: selectnamelen
     integer :: ii
+
+    strict_matching_success = .true.
 
     hasselection = present(selections)
     if (hasselection) hasselection = size(selections) > 0
@@ -597,6 +603,7 @@ contains
     ! If first option is an exclusion, include all tests by default otherwise exclude them.
     testmask(:) = selections(1)%selectiontype == "-"
     do iselect = 1, size(selections)
+      found_match = .false.
       associate(selection => selections(iselect))
         isincluded = selection%selectiontype == "+"
         selectnamelen = len(selection%name)
@@ -610,9 +617,16 @@ contains
             else
               selected = .false.
             end if
-            if (selected) testmask(itest) = isincluded
+
+            if (selected) then
+              testmask(itest) = isincluded
+              found_match = .true.
+            end if
+
           end associate
         end do
+
+        if (.not. found_match) strict_matching_success = .false.
       end associate
     end do
 

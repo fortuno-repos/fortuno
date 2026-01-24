@@ -4,8 +4,8 @@ Fortuno – flextensible unit testing framework for Fortran
 
 **Fortuno** (Fortran Unit Testing Objects) is a flexible & extensible,
 object-oriented unit testing framework designed for the Fortran programming
-language. It emphasizes ease of use by minimizing boiler plate code when writing
-tests while prioratizing modularity and extensibility. Fortuno provides the
+language. It emphasizes ease of use by minimizing boilerplate code when writing
+tests while prioritizing modularity and extensibility. Fortuno provides the
 essential building blocks to help developers create customized unit testing
 solutions.
 
@@ -336,12 +336,17 @@ your chosen build system:
 * **CMake**:  In your ``CMakeLists.txt`` file, declare an executable ``testapp``
   using ``testapp.f90`` as the source file and add ``Fortuno::fortuno_serial``
   as a dependency. Be sure to also link your library (e.g. ``mylib``).
-  Additionally, register the executable as a test, so that it can be executed
-  with ``ctest``::
+  Finally, use ``fortuno_discover_tests()`` to register the tests, so that they
+  can be executed with ``ctest``::
 
     add_executable(testapp testapp.f90)
     target_link_libraries(testapp PRIVATE mylib Fortuno::fortuno_serial)
-    add_test(NAME factorial COMMAND testapp)
+    fortuno_discover_tests(testapp)
+
+  *Note*: Alternatively, you can register the test executable manually with
+  ``add_test(NAME factorial COMMAND testapp)``. However,
+  ``fortuno_discover_tests()`` is recommended as it automatically discovers and
+  registers all tests in the executable.
 
   *Note*:  If you are using the MPI or coarray interface, replace
   ``Fortuno::fortuno_serial`` with ``Fortuno::fortuno_mpi`` or

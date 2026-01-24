@@ -9,6 +9,7 @@ module fortuno_cmdapp
   use fortuno_basetypes, only : error_info, test_list
   use fortuno_utils, only : string_item
   use fortuno_testdriver, only : test_driver, test_selection
+  use fortuno_testinfo, only : teststatus
   use fortuno_testlogger, only : test_logger
   implicit none
 
@@ -89,6 +90,7 @@ contains
     type(test_selection), allocatable :: selections(:)
     type(string_item), allocatable :: selectors(:), testnames(:)
     type(error_info), allocatable :: error
+    logical :: strict_matching_success
     integer :: itest
 
     exitcode = -1
@@ -101,10 +103,17 @@ contains
       end if
       call get_selections(selectors, selections)
     end if
-    call this%driver%register_tests(testitems, selections=selections)
+    call this%driver%register_tests(testitems, strict_matching_success, selections=selections)
+    
+    if (.not. strict_matching_success .or. this%argvals%has("ignore-no-match") ) then
+      call this%logger%log_error("Error: One or more test selection arguments had no effect.&
+          & Use --ignore-no-match to disable this error.")
+      exitcode = 1
+    end if
+
+    call this%driver%get_test_names(testnames)
 
     if (this%argvals%has("list")) then
-      call this%driver%get_test_names(testnames)
       do itest = 1, size(testnames)
         call this%logger%log_message(testnames(itest)%value)
       end do
@@ -125,10 +134,11 @@ contains
     integer, intent(out) :: exitcode
 
     call this%driver%run_tests(this%logger)
-    if (this%driver%driveresult%successful) then
-      exitcode = 0
-    else
+
+    if (.not. this%driver%driveresult%successful) then
       exitcode = 1
+    else
+      exitcode = 0
     end if
 
   end subroutine cmd_app_run_tests
@@ -175,6 +185,10 @@ contains
     !     & argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
     !     & helpmsg="show list of tests to run and exit"),&
     !     & &
+    !     & argument_def("ignore-no-match", argtypes%bool, &
+    !     & longopt="ignore-no-match",&
+    !     & helpmsg="Allow test selection arguments with no effect."),&
+    !     & &
     !     & argument_def("tests", argtypes%stringlist,&
     !     & helpmsg="list of tests and suites to include or to exclude when prefixed with '~' (e.g.&
     !     & 'somesuite ~somesuite/avoidedtest' would run all tests except 'avoidedtest' in the test&
@@ -182,10 +196,13 @@ contains
     !     & &
     !     & ]
     ! -}{+
-    allocate(argdefs(2))
-    argdefs(1) =  argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
+    allocate(argdefs(3))
+    argdefs(1) = argument_def("list", argtypes%bool, shortopt="l", longopt="list",&
         & helpmsg="show list of tests to run and exit")
-    argdefs(2) = argument_def("tests", argtypes%stringlist,&
+    argdefs(2) = argument_def("disable-strict-matching", argtypes%bool, &
+        & longopt="ignore-no-match",&
+        & helpmsg="Allow test selection arguments with no effect.")
+    argdefs(3) = argument_def("tests", argtypes%stringlist,&
         & helpmsg="list of tests and suites to include or to exclude when prefixed with '~' (e.g.&
         & 'somesuite ~somesuite/avoidedtest' would run all tests except 'avoidedtest' in the test&
         & suite 'somesuite')")
