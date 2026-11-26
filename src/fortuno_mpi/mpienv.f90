@@ -13,7 +13,7 @@ module fortuno_mpi_mpienv
   public :: init_mpi_env, final_mpi_env, mpi_env
 
 
-  !> Contains main charateristics of the MPI environment
+  !> Contains main characteristics of the MPI environment
   type :: mpi_env
 
     !> MPI communicator
