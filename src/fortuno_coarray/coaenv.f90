@@ -10,7 +10,7 @@ module fortuno_coarray_coaenv
   public :: init_coa_env, final_coa_env, coa_env
 
 
-  !> Contains main charateristics of the coarray environment
+  !> Contains main characteristics of the coarray environment
   type :: coa_env
 
     !> Nr. of images
